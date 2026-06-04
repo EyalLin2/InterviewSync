@@ -135,7 +135,7 @@ def me():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if session.get("token"):
-        return redirect(url_for("admin_dashboard") if session.get("role") == "admin" else url_for("index"))
+        return redirect(url_for("admin_hub") if session.get("role") == "admin" else url_for("index"))
 
     if request.method == "POST":
         r = api_post("/api/auth/login", json={
@@ -150,7 +150,7 @@ def login():
             session["user"]    = {"name": data["name"], "role": data["role"]}
             flash(f"ברוך הבא, {data['name']}!", "success")
             if data["role"] == "admin":
-                return redirect(url_for("admin_dashboard"))
+                return redirect(url_for("admin_hub"))
             if not data.get("profile_complete"):
                 return redirect(url_for("onboarding"))
             return redirect(url_for("index"))
@@ -253,10 +253,30 @@ def meeting_confirm(mid):
 
 
 # ─────────────────────────────────────────────
-# Routes — Admin
+# Routes — Admin Hub (switcher)
 # ─────────────────────────────────────────────
 
 @app.route("/admin")
+@admin_required
+def admin_hub():
+    """Landing page — pick Private CRM or Business dashboard."""
+    r_biz = api_get("/api/business/overview")
+    biz   = r_biz.json() if r_biz.status_code == 200 else {}
+    r_stu = api_get("/api/students")
+    students_count = len(r_stu.json()) if r_stu.status_code == 200 else 0
+    return render_template("admin_hub.html",
+        user=me(),
+        students_count=students_count,
+        inquiries_new=biz.get("inquiries_new", 0),
+        upcoming_meetings_count=0,
+    )
+
+
+# ─────────────────────────────────────────────
+# Routes — Admin Private (CRM)
+# ─────────────────────────────────────────────
+
+@app.route("/admin/private")
 @admin_required
 def admin_dashboard():
     r_students = api_get("/api/students")
@@ -284,7 +304,7 @@ def admin_dashboard():
     )
 
 
-@app.route("/admin/students", methods=["POST"])
+@app.route("/admin/private/students", methods=["POST"])
 @admin_required
 def admin_create_student():
     r = api_post("/api/students", json={
@@ -300,7 +320,7 @@ def admin_create_student():
     return redirect(url_for("admin_dashboard"))
 
 
-@app.route("/admin/taskbank", methods=["POST"])
+@app.route("/admin/private/taskbank", methods=["POST"])
 @admin_required
 def admin_taskbank():
     action = request.form.get("action")
@@ -346,7 +366,7 @@ def admin_taskbank():
     return redirect(url_for("admin_dashboard") + "#tab-taskbank")
 
 
-@app.route("/admin/student/<int:sid>", methods=["GET", "POST"])
+@app.route("/admin/private/student/<int:sid>", methods=["GET", "POST"])
 @admin_required
 def student_file(sid):
     if request.method == "POST":
@@ -406,7 +426,7 @@ def student_file(sid):
     )
 
 
-@app.route("/admin/ai-tasks/<int:sid>", methods=["POST"])
+@app.route("/admin/private/ai-tasks/<int:sid>", methods=["POST"])
 @admin_required
 def ai_tasks_for_student(sid):
     r = api_post(f"/api/ai/tasks/{sid}")
@@ -417,7 +437,7 @@ def ai_tasks_for_student(sid):
     return redirect(url_for("student_file", sid=sid))
 
 
-@app.route("/admin/schedule", methods=["GET", "POST"])
+@app.route("/admin/private/schedule", methods=["GET", "POST"])
 @admin_required
 def admin_schedule():
     if request.method == "POST":
@@ -482,6 +502,115 @@ def admin_schedule():
         next_year=data.get("next_year"),  next_month=data.get("next_month"),
         today=data.get("today", ""),
     )
+
+
+# ─────────────────────────────────────────────
+# Routes — Admin Business
+# ─────────────────────────────────────────────
+
+@app.route("/admin/business")
+@admin_required
+def admin_business():
+    r = api_get("/api/business/overview")
+    data = r.json() if r.status_code == 200 else {}
+    r_ws  = api_get("/api/workshops")
+    r_iq  = api_get("/api/inquiries")
+    r_act = api_get("/api/activities")
+    workshops  = r_ws.json()  if r_ws.status_code  == 200 else []
+    inquiries  = r_iq.json()  if r_iq.status_code  == 200 else []
+    activities = r_act.json() if r_act.status_code == 200 else []
+    return render_template("admin_business.html",
+        user=me(),
+        overview=data,
+        workshops=workshops,
+        inquiries=inquiries,
+        activities=activities,
+        topic_categories=data.get("topic_categories", []),
+    )
+
+
+@app.route("/admin/business/workshops", methods=["POST"])
+@admin_required
+def admin_workshops():
+    action = request.form.get("action")
+    if action == "add":
+        r = api_post("/api/workshops", json={
+            "title":            request.form.get("title", "").strip(),
+            "description":      request.form.get("description", "").strip(),
+            "topic_category":   request.form.get("topic_category", "כללי"),
+            "workshop_type":    request.form.get("workshop_type", "one_time"),
+            "scheduled_at":     request.form.get("scheduled_at") or None,
+            "location":         request.form.get("location", "").strip(),
+            "max_participants": request.form.get("max_participants", type=int),
+            "notes":            request.form.get("notes", "").strip(),
+        })
+        _flash_from_response(r, "הסדנה נוספה בהצלחה.", "success")
+    elif action == "edit":
+        wid  = request.form.get("workshop_id", type=int)
+        body = {f: request.form.get(f) for f in
+                ("title", "description", "topic_category", "workshop_type", "status", "location", "notes")
+                if request.form.get(f) is not None}
+        body["scheduled_at"]     = request.form.get("scheduled_at") or None
+        body["max_participants"] = request.form.get("max_participants", type=int)
+        r = api_patch(f"/api/workshops/{wid}", json=body)
+        _flash_from_response(r, "הסדנה עודכנה.")
+    elif action == "delete":
+        wid = request.form.get("workshop_id", type=int)
+        r   = api_delete(f"/api/workshops/{wid}")
+        _flash_from_response(r, "הסדנה נמחקה.")
+    return redirect(url_for("admin_business") + "#tab-workshops")
+
+
+@app.route("/admin/business/inquiries", methods=["POST"])
+@admin_required
+def admin_inquiries():
+    action = request.form.get("action")
+    if action == "add":
+        r = api_post("/api/inquiries", json={
+            "full_name": request.form.get("full_name", "").strip(),
+            "phone":     request.form.get("phone", "").strip(),
+            "email":     request.form.get("email", "").strip(),
+            "topic":     request.form.get("topic", "").strip(),
+            "source":    request.form.get("source", ""),
+            "notes":     request.form.get("notes", "").strip(),
+        })
+        _flash_from_response(r, "הפנייה נוספה.", "success")
+    elif action == "update_status":
+        iid  = request.form.get("inquiry_id", type=int)
+        body = {"status": request.form.get("status", "")}
+        wid  = request.form.get("workshop_id", type=int)
+        if wid:
+            body["workshop_id"] = wid
+        r = api_patch(f"/api/inquiries/{iid}", json=body)
+        _flash_from_response(r, "הפנייה עודכנה.")
+    elif action == "delete":
+        iid = request.form.get("inquiry_id", type=int)
+        r   = api_delete(f"/api/inquiries/{iid}")
+        _flash_from_response(r, "הפנייה נמחקה.")
+    return redirect(url_for("admin_business") + "#tab-inquiries")
+
+
+@app.route("/admin/business/activities", methods=["POST"])
+@admin_required
+def admin_activities():
+    action = request.form.get("action")
+    if action == "add":
+        r = api_post("/api/activities", json={
+            "title":              request.form.get("title", "").strip(),
+            "activity_type":      request.form.get("activity_type", "other"),
+            "topic_category":     request.form.get("topic_category", ""),
+            "activity_date":      request.form.get("activity_date", ""),
+            "duration_min":       request.form.get("duration_min", type=int),
+            "participants_count": request.form.get("participants_count", type=int),
+            "description":        request.form.get("description", "").strip(),
+            "workshop_id":        request.form.get("workshop_id", type=int),
+        })
+        _flash_from_response(r, "הפעילות תועדה.", "success")
+    elif action == "delete":
+        aid = request.form.get("activity_id", type=int)
+        r   = api_delete(f"/api/activities/{aid}")
+        _flash_from_response(r, "הפעילות נמחקה.")
+    return redirect(url_for("admin_business") + "#tab-activities")
 
 
 # ─────────────────────────────────────────────

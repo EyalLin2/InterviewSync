@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InterviewSync — לוח עסקי</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
+  <style>
+    body { font-family: 'Heebo', sans-serif; background: #f0f4f8; }
+    .navbar-biz { background: #0d1f1a; }
+    .navbar-brand-text { font-weight: 800; color: #fff; font-size: 1.1rem; }
+
+    .stat-card { background: #fff; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.06); padding: 1.1rem 1.25rem; text-align: center; }
+    .stat-num  { font-size: 2rem; font-weight: 800; line-height: 1; }
+    .stat-lbl  { font-size: .78rem; color: #6b7280; margin-top: 4px; }
+
+    .section-card { background: #fff; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.06); padding: 1.5rem; margin-bottom: 1.5rem; }
+    .section-title { font-size: .72rem; font-weight: 700; text-transform: uppercase; color: #9ca3af; letter-spacing: .5px; margin-bottom: 1rem; }
+
+    /* Workshop cards */
+    .workshop-card { border-radius: 12px; border: 1px solid #e4e8f0; padding: 1rem 1.25rem; margin-bottom: .75rem; background: #fff; }
+    .workshop-card:hover { border-color: #10b981; }
+
+    .type-one-time  { background: #dbeafe; color: #1d4ed8; }
+    .type-recurring { background: #d1fae5; color: #065f46; }
+    .type-custom    { background: #fde68a; color: #92400e; }
+
+    .status-planned   { background: #e0f2fe; color: #0277bd; }
+    .status-active    { background: #d1fae5; color: #065f46; }
+    .status-completed { background: #f3f4f6; color: #374151; }
+    .status-cancelled { background: #fee2e2; color: #991b1b; }
+
+    /* Inquiry table */
+    .inquiry-row { padding: .65rem 0; border-bottom: 1px solid #f0f1f5; font-size: .88rem; }
+    .inquiry-row:last-child { border-bottom: none; }
+    .source-wa    { background: #d1fae5; color: #065f46; }
+    .source-email { background: #dbeafe; color: #1d4ed8; }
+    .source-ref   { background: #ede9fe; color: #5b21b6; }
+    .source-other { background: #f3f4f6; color: #374151; }
+
+    /* Activity timeline */
+    .activity-item { display: flex; gap: 1rem; padding: .75rem 0; border-bottom: 1px solid #f0f1f5; }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-icon { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+    .icon-workshop { background: #d1fae5; }
+    .icon-lecture  { background: #dbeafe; }
+    .icon-meeting  { background: #ede9fe; }
+    .icon-other    { background: #f3f4f6; }
+
+    /* Forms */
+    .btn-biz { background: #10b981; border-color: #10b981; color: #fff; }
+    .btn-biz:hover { background: #059669; border-color: #059669; color: #fff; }
+    .form-control:focus, .form-select:focus { border-color: #10b981; box-shadow: 0 0 0 .2rem rgba(16,185,129,.15); }
+
+    /* Nav pills */
+    .nav-pills .nav-link.active { background: #10b981; }
+    .nav-pills .nav-link { color: #374151; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-biz px-4 py-2">
+    <span class="navbar-brand-text">&#127891; InterviewSync</span>
+    <div class="ms-2">
+      <span class="badge" style="background:#10b981; font-size:.62rem;">עסקי</span>
+    </div>
+    <div class="ms-auto d-flex align-items-center gap-3">
+      <a href="{{ url_for('admin_hub') }}" class="btn btn-outline-light btn-sm">&#8592; לוח הבית</a>
+      <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">התנתקות</a>
+    </div>
+  </nav>
+
+  <div class="container-fluid py-4 px-4">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="alert alert-{{ cat }} alert-dismissible fade show py-2 small" role="alert">
+          {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endwith %}
+
+    <!-- Stats -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-sm-3">
+        <div class="stat-card">
+          <div class="stat-num" style="color:#10b981;">{{ overview.workshops_total or 0 }}</div>
+          <div class="stat-lbl">&#127979; סדנאות והרצאות</div>
+        </div>
+      </div>
+      <div class="col-6 col-sm-3">
+        <div class="stat-card">
+          {% set new_count = overview.inquiries_new or 0 %}
+          <div class="stat-num {{ 'text-warning' if new_count > 0 else 'text-muted' }}">{{ overview.inquiries_total or 0 }}</div>
+          <div class="stat-lbl">
+            &#128172; פניות
+            {% if new_count > 0 %}<span class="badge bg-warning text-dark ms-1" style="font-size:.6rem;">{{ new_count }} חדשות</span>{% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-sm-3">
+        <div class="stat-card">
+          <div class="stat-num text-primary">{{ overview.activities_this_month or 0 }}</div>
+          <div class="stat-lbl">&#128203; פעילויות החודש</div>
+        </div>
+      </div>
+      <div class="col-6 col-sm-3">
+        <div class="stat-card">
+          <div class="stat-num" style="color:#f59e0b;">{{ overview.workshops_this_month or 0 }}</div>
+          <div class="stat-lbl">&#9889; סדנאות החודש</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-pills mb-4 gap-2" id="bizTabs">
+      <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-overview" type="button">&#128202; סקירה</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-workshops" id="workshops-tab-btn" type="button">&#127979; סדנאות והרצאות</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-inquiries" id="inquiries-tab-btn" type="button">
+        &#128172; פניות יזומות
+        {% if overview.inquiries_new > 0 %}<span class="badge bg-warning text-dark ms-1">{{ overview.inquiries_new }}</span>{% endif %}
+      </button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-activities" id="activities-tab-btn" type="button">&#128203; תיעוד פעילות</button></li>
+    </ul>
+
+    <div class="tab-content">
+
+      <!-- ── Tab 1: Overview ── -->
+      <div class="tab-pane fade show active" id="tab-overview">
+        <div class="row g-4">
+          <div class="col-md-6">
+            <div class="section-card">
+              <div class="section-title">&#127919; סדנאות קרובות</div>
+              {% if overview.upcoming_workshops %}
+                {% for w in overview.upcoming_workshops %}
+                  <div class="d-flex align-items-start gap-2 py-2 border-bottom">
+                    <div class="flex-grow-1">
+                      <div class="fw-semibold small">{{ w.title }}</div>
+                      <div class="text-muted" style="font-size:.75rem;">
+                        {% if w.scheduled_at %}{{ w.scheduled_at | dt }}{% else %}ללא תאריך{% endif %}
+                        · {{ w.topic_category }}
+                      </div>
+                    </div>
+                    <span class="badge type-{{ w.workshop_type }} rounded-pill" style="font-size:.65rem;">
+                      {% if w.workshop_type == 'one_time' %}חד פעמי
+                      {% elif w.workshop_type == 'recurring' %}קבוע
+                      {% else %}מותאם{% endif %}
+                    </span>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <p class="text-muted small">אין סדנאות מתוכננות קרובות.</p>
+              {% endif %}
+              <a href="{{ url_for('admin_business') }}#tab-workshops" class="btn btn-sm btn-biz mt-3">+ סדנה חדשה</a>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="section-card">
+              <div class="section-title">&#128172; פניות אחרונות</div>
+              {% if overview.recent_inquiries %}
+                {% for i in overview.recent_inquiries %}
+                  <div class="inquiry-row d-flex align-items-start gap-2">
+                    <div class="flex-grow-1">
+                      <div class="fw-semibold small">{{ i.full_name }}</div>
+                      <div class="text-muted" style="font-size:.75rem; max-width:250px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">{{ i.topic or '—' }}</div>
+                    </div>
+                    <span class="badge status-{{ i.status }} rounded-pill" style="font-size:.63rem;">
+                      {% if i.status == 'new' %}חדש
+                      {% elif i.status == 'in_contact' %}בתקשורת
+                      {% elif i.status == 'assigned' %}שויך
+                      {% else %}סגור{% endif %}
+                    </span>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <p class="text-muted small">אין פניות עדיין.</p>
+              {% endif %}
+              <a href="{{ url_for('admin_business') }}#tab-inquiries" class="btn btn-sm btn-biz mt-3">+ פנייה חדשה</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Tab 2: Workshops ── -->
+      <div class="tab-pane fade" id="tab-workshops">
+        <div class="row g-4">
+          <!-- Add form -->
+          <div class="col-lg-4">
+            <div class="section-card">
+              <div class="section-title">&#10133; הוסף סדנה / הרצאה</div>
+              <form method="POST" action="{{ url_for('admin_workshops') }}">
+                <input type="hidden" name="action" value="add">
+                <div class="mb-2">
+                  <input type="text" name="title" class="form-control form-control-sm" placeholder="כותרת *" required>
+                </div>
+                <div class="mb-2">
+                  <textarea name="description" class="form-control form-control-sm" rows="2" placeholder="תיאור (אופציונלי)"></textarea>
+                </div>
+                <div class="row g-2 mb-2">
+                  <div class="col-6">
+                    <select name="workshop_type" class="form-select form-select-sm">
+                      <option value="one_time">חד פעמי</option>
+                      <option value="recurring">קבוע/חוזר</option>
+                      <option value="custom">מותאם מפניות</option>
+                    </select>
+                  </div>
+                  <div class="col-6">
+                    <select name="topic_category" class="form-select form-select-sm">
+                      {% for cat in topic_categories %}
+                        <option value="{{ cat }}">{{ cat }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                </div>
+                <div class="mb-2">
+                  <input type="datetime-local" name="scheduled_at" class="form-control form-control-sm">
+                  <div class="form-text">תאריך ושעה (אופציונלי)</div>
+                </div>
+                <div class="mb-2">
+                  <input type="text" name="location" class="form-control form-control-sm" placeholder="מיקום / קישור זום">
+                </div>
+                <div class="mb-3">
+                  <input type="number" name="max_participants" class="form-control form-control-sm" placeholder="מקסימום משתתפים" min="1">
+                </div>
+                <button type="submit" class="btn btn-biz btn-sm w-100 fw-semibold">הוסף סדנה</button>
+              </form>
+            </div>
+          </div>
+          <!-- Workshops list -->
+          <div class="col-lg-8">
+            {% set type_labels = {'one_time': 'חד פעמי', 'recurring': 'קבוע', 'custom': 'מותאם'} %}
+            {% set status_labels = {'planned': 'מתוכנן', 'active': 'פעיל', 'completed': 'הושלם', 'cancelled': 'בוטל'} %}
+            {% for status_key, status_lbl in [('active','פעיל'),('planned','מתוכנן'),('completed','הושלם'),('cancelled','בוטל')] %}
+              {% set group = workshops | selectattr('status','equalto',status_key) | list %}
+              {% if group %}
+                <div class="section-title mb-2 mt-3">{{ status_lbl }} ({{ group|length }})</div>
+                {% for w in group %}
+                  <div class="workshop-card">
+                    <div class="d-flex align-items-start gap-2">
+                      <div class="flex-grow-1">
+                        <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                          <span class="fw-semibold">{{ w.title }}</span>
+                          <span class="badge type-{{ w.workshop_type }} rounded-pill" style="font-size:.65rem;">{{ type_labels.get(w.workshop_type, w.workshop_type) }}</span>
+                          <span class="badge status-{{ w.status }} rounded-pill" style="font-size:.65rem;">{{ status_labels.get(w.status, w.status) }}</span>
+                        </div>
+                        <div class="text-muted small">
+                          {{ w.topic_category }}
+                          {% if w.scheduled_at %} · {{ w.scheduled_at | dt }}{% endif %}
+                          {% if w.location %} · {{ w.location }}{% endif %}
+                          {% if w.inquiries_count %} · {{ w.inquiries_count }} פניות{% endif %}
+                        </div>
+                        {% if w.description %}<div class="text-muted" style="font-size:.8rem; margin-top:.25rem;">{{ w.description }}</div>{% endif %}
+                      </div>
+                      <div class="d-flex gap-1 flex-shrink-0">
+                        <button class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:.72rem;"
+                                data-bs-toggle="modal" data-bs-target="#editWS{{ w.id }}">&#9998;</button>
+                        <form method="POST" action="{{ url_for('admin_workshops') }}"
+                              onsubmit="return confirm('למחוק סדנה זו?')">
+                          <input type="hidden" name="action" value="delete">
+                          <input type="hidden" name="workshop_id" value="{{ w.id }}">
+                          <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:.72rem;">✕</button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Edit Modal -->
+                  <div class="modal fade" id="editWS{{ w.id }}" tabindex="-1">
+                    <div class="modal-dialog"><div class="modal-content">
+                      <form method="POST" action="{{ url_for('admin_workshops') }}">
+                        <input type="hidden" name="action" value="edit">
+                        <input type="hidden" name="workshop_id" value="{{ w.id }}">
+                        <div class="modal-header"><h6 class="modal-title fw-bold">עריכת סדנה</h6>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                        <div class="modal-body">
+                          <div class="mb-2"><input type="text" name="title" class="form-control form-control-sm" value="{{ w.title }}" required></div>
+                          <div class="mb-2"><textarea name="description" class="form-control form-control-sm" rows="2">{{ w.description }}</textarea></div>
+                          <div class="row g-2 mb-2">
+                            <div class="col-4"><select name="workshop_type" class="form-select form-select-sm">
+                              <option value="one_time" {{ 'selected' if w.workshop_type == 'one_time' }}>חד פעמי</option>
+                              <option value="recurring" {{ 'selected' if w.workshop_type == 'recurring' }}>קבוע</option>
+                              <option value="custom" {{ 'selected' if w.workshop_type == 'custom' }}>מותאם</option>
+                            </select></div>
+                            <div class="col-4"><select name="status" class="form-select form-select-sm">
+                              <option value="planned" {{ 'selected' if w.status == 'planned' }}>מתוכנן</option>
+                              <option value="active" {{ 'selected' if w.status == 'active' }}>פעיל</option>
+                              <option value="completed" {{ 'selected' if w.status == 'completed' }}>הושלם</option>
+                              <option value="cancelled" {{ 'selected' if w.status == 'cancelled' }}>בוטל</option>
+                            </select></div>
+                            <div class="col-4"><select name="topic_category" class="form-select form-select-sm">
+                              {% for cat in topic_categories %}<option value="{{ cat }}" {{ 'selected' if w.topic_category == cat }}>{{ cat }}</option>{% endfor %}
+                            </select></div>
+                          </div>
+                          <div class="mb-2"><input type="datetime-local" name="scheduled_at" class="form-control form-control-sm"
+                            value="{{ w.scheduled_at[:16] if w.scheduled_at else '' }}"></div>
+                          <div class="mb-2"><input type="text" name="location" class="form-control form-control-sm" value="{{ w.location }}" placeholder="מיקום"></div>
+                          <div class="mb-2"><input type="number" name="max_participants" class="form-control form-control-sm" value="{{ w.max_participants or '' }}" placeholder="מקסימום משתתפים"></div>
+                          <div class="mb-1"><textarea name="notes" class="form-control form-control-sm" rows="2" placeholder="הערות">{{ w.notes }}</textarea></div>
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ביטול</button>
+                          <button type="submit" class="btn btn-biz btn-sm fw-semibold">שמור</button>
+                        </div>
+                      </form>
+                    </div></div>
+                  </div>
+                {% endfor %}
+              {% endif %}
+            {% endfor %}
+            {% if not workshops %}<p class="text-muted small">אין סדנאות עדיין — הוסף את הראשונה.</p>{% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Tab 3: Inquiries ── -->
+      <div class="tab-pane fade" id="tab-inquiries">
+        <div class="row g-4">
+          <!-- Add inquiry -->
+          <div class="col-lg-4">
+            <div class="section-card">
+              <div class="section-title">&#10133; הוסף פנייה חדשה</div>
+              <form method="POST" action="{{ url_for('admin_inquiries') }}">
+                <input type="hidden" name="action" value="add">
+                <div class="mb-2"><input type="text" name="full_name" class="form-control form-control-sm" placeholder="שם מלא *" required></div>
+                <div class="mb-2"><input type="tel" name="phone" class="form-control form-control-sm" placeholder="טלפון / WhatsApp"></div>
+                <div class="mb-2"><input type="email" name="email" class="form-control form-control-sm" placeholder="אימייל (אופציונלי)"></div>
+                <div class="mb-2">
+                  <textarea name="topic" class="form-control form-control-sm" rows="2" placeholder="נושא הפנייה — מה הם מחפשים?"></textarea>
+                </div>
+                <div class="mb-3">
+                  <select name="source" class="form-select form-select-sm">
+                    <option value="">מקור הפנייה...</option>
+                    <option value="whatsapp">WhatsApp</option>
+                    <option value="email">אימייל</option>
+                    <option value="referral">המלצה</option>
+                    <option value="other">אחר</option>
+                  </select>
+                </div>
+                <button type="submit" class="btn btn-biz btn-sm w-100 fw-semibold">הוסף פנייה</button>
+              </form>
+            </div>
+          </div>
+          <!-- Inquiries table -->
+          <div class="col-lg-8">
+            <div class="section-card">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="section-title mb-0">פניות יזומות ({{ inquiries|length }})</div>
+                <select id="inquiryFilter" class="form-select form-select-sm ms-auto" style="max-width:150px;">
+                  <option value="">הכל</option>
+                  <option value="new">חדש</option>
+                  <option value="in_contact">בתקשורת</option>
+                  <option value="assigned">שויך</option>
+                  <option value="closed">סגור</option>
+                </select>
+              </div>
+              {% set source_classes = {'whatsapp':'source-wa','email':'source-email','referral':'source-ref','other':'source-other',''  :'source-other'} %}
+              {% set status_labels_iq = {'new':'חדש','in_contact':'בתקשורת','assigned':'שויך','closed':'סגור'} %}
+              <div id="inquiriesList">
+                {% for i in inquiries %}
+                  <div class="inquiry-row d-flex align-items-start gap-3" data-status="{{ i.status }}">
+                    <div class="flex-grow-1">
+                      <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <span class="fw-semibold small">{{ i.full_name }}</span>
+                        <span class="badge {{ source_classes.get(i.source, 'source-other') }} rounded-pill" style="font-size:.63rem;">{{ i.source or 'אחר' }}</span>
+                        <span class="badge status-{{ i.status }} rounded-pill" style="font-size:.63rem;">{{ status_labels_iq.get(i.status, i.status) }}</span>
+                        {% if i.workshop_title %}<span class="badge bg-light text-muted border rounded-pill" style="font-size:.63rem;">{{ i.workshop_title }}</span>{% endif %}
+                      </div>
+                      <div class="text-muted" style="font-size:.78rem; margin-top:.2rem;">
+                        {% if i.phone %}<a href="https://wa.me/{{ i.phone | replace('+','') }}" target="_blank" style="color:#25d366; text-decoration:none;">&#128242; {{ i.phone }}</a> · {% endif %}
+                        {{ i.topic | truncate(70) if i.topic else '—' }}
+                      </div>
+                      <div class="text-muted" style="font-size:.7rem;">{{ i.created_at | dt }}</div>
+                    </div>
+                    <!-- Quick actions -->
+                    <div class="d-flex gap-1 flex-shrink-0">
+                      <button class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:.7rem;"
+                              data-bs-toggle="modal" data-bs-target="#editIQ{{ i.id }}">&#9998;</button>
+                      <form method="POST" action="{{ url_for('admin_inquiries') }}"
+                            onsubmit="return confirm('למחוק פנייה זו?')">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="inquiry_id" value="{{ i.id }}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:.7rem;">✕</button>
+                      </form>
+                    </div>
+                  </div>
+                  <!-- Edit inquiry modal -->
+                  <div class="modal fade" id="editIQ{{ i.id }}" tabindex="-1">
+                    <div class="modal-dialog"><div class="modal-content">
+                      <form method="POST" action="{{ url_for('admin_inquiries') }}">
+                        <input type="hidden" name="action" value="update_status">
+                        <input type="hidden" name="inquiry_id" value="{{ i.id }}">
+                        <div class="modal-header"><h6 class="modal-title fw-bold">עדכון פנייה — {{ i.full_name }}</h6>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                        <div class="modal-body">
+                          <div class="mb-3">
+                            <label class="form-label fw-semibold small">סטטוס</label>
+                            <select name="status" class="form-select form-select-sm">
+                              <option value="new" {{ 'selected' if i.status == 'new' }}>חדש</option>
+                              <option value="in_contact" {{ 'selected' if i.status == 'in_contact' }}>בתקשורת</option>
+                              <option value="assigned" {{ 'selected' if i.status == 'assigned' }}>שויך לסדנה</option>
+                              <option value="closed" {{ 'selected' if i.status == 'closed' }}>סגור</option>
+                            </select>
+                          </div>
+                          <div class="mb-3">
+                            <label class="form-label fw-semibold small">שייך לסדנה (אופציונלי)</label>
+                            <select name="workshop_id" class="form-select form-select-sm">
+                              <option value="">— ללא שיוך —</option>
+                              {% for w in workshops %}
+                                <option value="{{ w.id }}" {{ 'selected' if i.workshop_id == w.id }}>{{ w.title }}</option>
+                              {% endfor %}
+                            </select>
+                          </div>
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ביטול</button>
+                          <button type="submit" class="btn btn-biz btn-sm fw-semibold">שמור</button>
+                        </div>
+                      </form>
+                    </div></div>
+                  </div>
+                {% endfor %}
+                {% if not inquiries %}<p class="text-muted small">אין פניות עדיין.</p>{% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Tab 4: Activity Log ── -->
+      <div class="tab-pane fade" id="tab-activities">
+        <div class="row g-4">
+          <!-- Log form -->
+          <div class="col-lg-4">
+            <div class="section-card">
+              <div class="section-title">&#128203; תעד פעילות</div>
+              <form method="POST" action="{{ url_for('admin_activities') }}">
+                <input type="hidden" name="action" value="add">
+                <div class="mb-2"><input type="text" name="title" class="form-control form-control-sm" placeholder="כותרת הפעילות *" required></div>
+                <div class="row g-2 mb-2">
+                  <div class="col-6"><select name="activity_type" class="form-select form-select-sm">
+                    <option value="workshop">סדנה</option>
+                    <option value="lecture">הרצאה</option>
+                    <option value="meeting">פגישה</option>
+                    <option value="other">אחר</option>
+                  </select></div>
+                  <div class="col-6"><select name="topic_category" class="form-select form-select-sm">
+                    <option value="">קטגוריה...</option>
+                    {% for cat in topic_categories %}<option value="{{ cat }}">{{ cat }}</option>{% endfor %}
+                  </select></div>
+                </div>
+                <div class="mb-2"><input type="date" name="activity_date" class="form-control form-control-sm" required value="{{ now_date }}"></div>
+                <div class="row g-2 mb-2">
+                  <div class="col-6"><input type="number" name="duration_min" class="form-control form-control-sm" placeholder="משך (דקות)" min="1"></div>
+                  <div class="col-6"><input type="number" name="participants_count" class="form-control form-control-sm" placeholder="משתתפים" min="1"></div>
+                </div>
+                <div class="mb-2">
+                  <select name="workshop_id" class="form-select form-select-sm">
+                    <option value="">קשור לסדנה (אופציונלי)</option>
+                    {% for w in workshops %}<option value="{{ w.id }}">{{ w.title }}</option>{% endfor %}
+                  </select>
+                </div>
+                <div class="mb-3"><textarea name="description" class="form-control form-control-sm" rows="2" placeholder="תיאור / הערות"></textarea></div>
+                <button type="submit" class="btn btn-biz btn-sm w-100 fw-semibold">תעד פעילות</button>
+              </form>
+            </div>
+          </div>
+          <!-- Timeline -->
+          <div class="col-lg-8">
+            <div class="section-card">
+              <div class="section-title">ציר זמן פעילות ({{ activities|length }})</div>
+              {% set act_icons = {'workshop':'🎪','lecture':'🎤','meeting':'🤝','other':'📌'} %}
+              {% set icon_cls  = {'workshop':'icon-workshop','lecture':'icon-lecture','meeting':'icon-meeting','other':'icon-other'} %}
+              {% for a in activities %}
+                <div class="activity-item">
+                  <div class="activity-icon {{ icon_cls.get(a.activity_type,'icon-other') }}">
+                    {{ act_icons.get(a.activity_type,'📌') }}
+                  </div>
+                  <div class="flex-grow-1">
+                    <div class="d-flex align-items-start justify-content-between gap-2">
+                      <div>
+                        <div class="fw-semibold small">{{ a.title }}</div>
+                        <div class="text-muted" style="font-size:.75rem;">
+                          {{ a.activity_date | dt }}
+                          {% if a.duration_min %} · {{ a.duration_min }} דקות{% endif %}
+                          {% if a.participants_count %} · {{ a.participants_count }} משתתפים{% endif %}
+                          {% if a.topic_category %} · {{ a.topic_category }}{% endif %}
+                        </div>
+                        {% if a.description %}<div class="text-muted" style="font-size:.78rem; margin-top:.2rem;">{{ a.description }}</div>{% endif %}
+                        {% if a.workshop_title %}<span class="badge bg-light text-muted border" style="font-size:.63rem; margin-top:.2rem;">{{ a.workshop_title }}</span>{% endif %}
+                      </div>
+                      <form method="POST" action="{{ url_for('admin_activities') }}"
+                            onsubmit="return confirm('למחוק?')">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="activity_id" value="{{ a.id }}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:.7rem;">✕</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+              {% if not activities %}<p class="text-muted small">אין פעילויות מתועדות עדיין.</p>{% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- tab-content -->
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Auto-open tab from URL hash
+    const hash = window.location.hash;
+    if (hash) {
+      const btn = document.querySelector(`[data-bs-target="${hash}"]`);
+      if (btn) btn.click();
+    }
+
+    // Inquiry status filter
+    document.getElementById('inquiryFilter')?.addEventListener('change', function() {
+      const val = this.value;
+      document.querySelectorAll('#inquiriesList .inquiry-row').forEach(row => {
+        row.style.display = (!val || row.dataset.status === val) ? '' : 'none';
+      });
+    });
+  </script>
+</body>
+</html>

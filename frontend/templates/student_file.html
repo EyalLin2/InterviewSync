@@ -60,6 +60,7 @@
   <nav class="navbar navbar-expand-lg navbar-admin px-4 py-2">
     <span class="navbar-brand-text">&#127891; InterviewSync</span>
     <div class="ms-auto d-flex align-items-center gap-3">
+      <a href="{{ url_for('admin_hub') }}" class="btn btn-outline-light btn-sm">&#8592; לוח הבית</a>
       <a href="{{ url_for('admin_schedule') }}" class="btn btn-outline-light btn-sm">&#128197; לוז</a>
       <span class="text-white-50 small">{{ user.username }}</span>
       <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">התנתקות</a>

@@ -13,7 +13,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from openai import OpenAI
 
-from models import db, get_database_url, User, StudentProfile, TaskBank, AssignedTask, Meeting
+from models import (db, get_database_url,
+                    User, StudentProfile, TaskBank, AssignedTask, Meeting,
+                    Workshop, Inquiry, ActivityLog, TOPIC_CATEGORIES)
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"]     = get_database_url()
@@ -806,6 +808,270 @@ def confirm_meeting(mid):
 def serve_file(filepath):
     directory = UPLOAD_FOLDER
     return send_from_directory(directory, filepath)
+
+
+# ─────────────────────────────────────────────
+# Routes — Business (admin only)
+# ─────────────────────────────────────────────
+
+def _workshop_dict(w: Workshop) -> dict:
+    return {
+        "id": w.id, "title": w.title, "description": w.description,
+        "topic_category": w.topic_category, "workshop_type": w.workshop_type,
+        "status": w.status,
+        "scheduled_at": w.scheduled_at.isoformat() if w.scheduled_at else None,
+        "location": w.location, "max_participants": w.max_participants,
+        "notes": w.notes,
+        "inquiries_count": len(w.inquiries),
+        "created_at": w.created_at.isoformat(),
+    }
+
+
+def _inquiry_dict(i: Inquiry) -> dict:
+    return {
+        "id": i.id, "full_name": i.full_name, "phone": i.phone, "email": i.email,
+        "topic": i.topic, "source": i.source, "notes": i.notes, "status": i.status,
+        "workshop_id": i.workshop_id,
+        "workshop_title": i.workshop.title if i.workshop else None,
+        "created_at": i.created_at.isoformat(),
+    }
+
+
+def _activity_dict(a: ActivityLog) -> dict:
+    return {
+        "id": a.id, "title": a.title, "activity_type": a.activity_type,
+        "topic_category": a.topic_category,
+        "activity_date": a.activity_date.isoformat(),
+        "duration_min": a.duration_min,
+        "participants_count": a.participants_count,
+        "description": a.description, "workshop_id": a.workshop_id,
+        "workshop_title": a.workshop.title if a.workshop else None,
+        "created_at": a.created_at.isoformat(),
+    }
+
+
+@app.route("/api/business/overview")
+@require_admin
+def business_overview():
+    now = datetime.utcnow()
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    workshops_total  = Workshop.query.count()
+    workshops_month  = Workshop.query.filter(Workshop.created_at >= month_start).count()
+    inquiries_new    = Inquiry.query.filter_by(status="new").count()
+    inquiries_total  = Inquiry.query.count()
+    activities_month = ActivityLog.query.filter(ActivityLog.activity_date >= month_start.date()).count()
+
+    upcoming = (Workshop.query
+                .filter(Workshop.scheduled_at >= now, Workshop.status != "cancelled")
+                .order_by(Workshop.scheduled_at).limit(3).all())
+    recent_inquiries = Inquiry.query.order_by(Inquiry.created_at.desc()).limit(5).all()
+
+    return jsonify({
+        "workshops_total":    workshops_total,
+        "workshops_this_month": workshops_month,
+        "inquiries_new":      inquiries_new,
+        "inquiries_total":    inquiries_total,
+        "activities_this_month": activities_month,
+        "upcoming_workshops": [_workshop_dict(w) for w in upcoming],
+        "recent_inquiries":   [_inquiry_dict(i) for i in recent_inquiries],
+        "topic_categories":   TOPIC_CATEGORIES,
+    })
+
+
+# ── Workshops ──────────────────────────────────────────────────────────────
+
+@app.route("/api/workshops")
+@require_admin
+def list_workshops():
+    ws = Workshop.query.order_by(Workshop.created_at.desc()).all()
+    return jsonify([_workshop_dict(w) for w in ws])
+
+
+@app.route("/api/workshops", methods=["POST"])
+@require_admin
+def create_workshop():
+    body = request.get_json() or {}
+    title = body.get("title", "").strip()
+    if not title:
+        return jsonify({"error": "title required"}), 400
+
+    sched = None
+    if body.get("scheduled_at"):
+        try:
+            sched = datetime.fromisoformat(body["scheduled_at"])
+        except ValueError:
+            return jsonify({"error": "Invalid scheduled_at format"}), 400
+
+    w = Workshop(
+        title=title,
+        description=body.get("description", ""),
+        topic_category=body.get("topic_category", "כללי"),
+        workshop_type=body.get("workshop_type", "one_time"),
+        status=body.get("status", "planned"),
+        scheduled_at=sched,
+        location=body.get("location", ""),
+        max_participants=body.get("max_participants"),
+        notes=body.get("notes", ""),
+    )
+    db.session.add(w)
+    db.session.commit()
+    return jsonify(_workshop_dict(w)), 201
+
+
+@app.route("/api/workshops/<int:wid>", methods=["PATCH"])
+@require_admin
+def update_workshop(wid):
+    w    = Workshop.query.get_or_404(wid)
+    body = request.get_json() or {}
+    for field in ("title", "description", "topic_category", "workshop_type",
+                  "status", "location", "notes"):
+        if field in body:
+            setattr(w, field, body[field])
+    if "max_participants" in body:
+        w.max_participants = body["max_participants"]
+    if "scheduled_at" in body:
+        val = body["scheduled_at"]
+        w.scheduled_at = datetime.fromisoformat(val) if val else None
+    db.session.commit()
+    return jsonify(_workshop_dict(w))
+
+
+@app.route("/api/workshops/<int:wid>", methods=["DELETE"])
+@require_admin
+def delete_workshop(wid):
+    w = Workshop.query.get_or_404(wid)
+    # Unlink inquiries and activities before deleting
+    Inquiry.query.filter_by(workshop_id=wid).update({"workshop_id": None})
+    ActivityLog.query.filter_by(workshop_id=wid).update({"workshop_id": None})
+    db.session.delete(w)
+    db.session.commit()
+    return jsonify({"ok": True})
+
+
+# ── Inquiries ──────────────────────────────────────────────────────────────
+
+@app.route("/api/inquiries")
+@require_admin
+def list_inquiries():
+    status_filter = request.args.get("status")
+    q = Inquiry.query.order_by(Inquiry.created_at.desc())
+    if status_filter:
+        q = q.filter_by(status=status_filter)
+    return jsonify([_inquiry_dict(i) for i in q.all()])
+
+
+@app.route("/api/inquiries", methods=["POST"])
+@require_admin
+def create_inquiry():
+    body = request.get_json() or {}
+    name = body.get("full_name", "").strip()
+    if not name:
+        return jsonify({"error": "full_name required"}), 400
+    i = Inquiry(
+        full_name=name,
+        phone=body.get("phone", ""),
+        email=body.get("email", ""),
+        topic=body.get("topic", ""),
+        source=body.get("source", ""),
+        notes=body.get("notes", ""),
+    )
+    db.session.add(i)
+    db.session.commit()
+    return jsonify(_inquiry_dict(i)), 201
+
+
+@app.route("/api/inquiries/<int:iid>", methods=["PATCH"])
+@require_admin
+def update_inquiry(iid):
+    i    = Inquiry.query.get_or_404(iid)
+    body = request.get_json() or {}
+    for field in ("status", "notes", "topic", "phone", "email", "source"):
+        if field in body:
+            setattr(i, field, body[field])
+    if "workshop_id" in body:
+        i.workshop_id = body["workshop_id"]
+        if body["workshop_id"] and i.status == "new":
+            i.status = "assigned"
+    db.session.commit()
+    return jsonify(_inquiry_dict(i))
+
+
+@app.route("/api/inquiries/<int:iid>", methods=["DELETE"])
+@require_admin
+def delete_inquiry(iid):
+    i = Inquiry.query.get_or_404(iid)
+    db.session.delete(i)
+    db.session.commit()
+    return jsonify({"ok": True})
+
+
+# ── Activity Log ───────────────────────────────────────────────────────────
+
+@app.route("/api/activities")
+@require_admin
+def list_activities():
+    acts = ActivityLog.query.order_by(ActivityLog.activity_date.desc()).all()
+    return jsonify([_activity_dict(a) for a in acts])
+
+
+@app.route("/api/activities", methods=["POST"])
+@require_admin
+def create_activity():
+    body = request.get_json() or {}
+    title = body.get("title", "").strip()
+    if not title:
+        return jsonify({"error": "title required"}), 400
+    dt_raw = body.get("activity_date", "")
+    if not dt_raw:
+        return jsonify({"error": "activity_date required"}), 400
+    try:
+        act_date = date.fromisoformat(dt_raw)
+    except ValueError:
+        return jsonify({"error": "Invalid date format"}), 400
+
+    a = ActivityLog(
+        title=title,
+        activity_type=body.get("activity_type", "other"),
+        topic_category=body.get("topic_category", ""),
+        activity_date=act_date,
+        duration_min=body.get("duration_min"),
+        participants_count=body.get("participants_count"),
+        description=body.get("description", ""),
+        workshop_id=body.get("workshop_id"),
+    )
+    db.session.add(a)
+    db.session.commit()
+    return jsonify(_activity_dict(a)), 201
+
+
+@app.route("/api/activities/<int:aid>", methods=["PATCH"])
+@require_admin
+def update_activity(aid):
+    a    = ActivityLog.query.get_or_404(aid)
+    body = request.get_json() or {}
+    for field in ("title", "activity_type", "topic_category", "description"):
+        if field in body:
+            setattr(a, field, body[field])
+    for field in ("duration_min", "participants_count", "workshop_id"):
+        if field in body:
+            setattr(a, field, body[field])
+    if "activity_date" in body:
+        try:
+            a.activity_date = date.fromisoformat(body["activity_date"])
+        except ValueError:
+            pass
+    db.session.commit()
+    return jsonify(_activity_dict(a))
+
+
+@app.route("/api/activities/<int:aid>", methods=["DELETE"])
+@require_admin
+def delete_activity(aid):
+    a = ActivityLog.query.get_or_404(aid)
+    db.session.delete(a)
+    db.session.commit()
+    return jsonify({"ok": True})
 
 
 # ─────────────────────────────────────────────

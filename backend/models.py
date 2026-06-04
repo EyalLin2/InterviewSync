@@ -85,3 +85,65 @@ class Meeting(db.Model):
     notes        = db.Column(db.Text, default="")
     status       = db.Column(db.String(20), default="pending")
     created_at   = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+# ── Business-side models ───────────────────────────────────────────────────
+
+TOPIC_CATEGORIES = [
+    "LinkedIn",
+    "קריירה וחיפוש עבודה",
+    "פיתוח אישי",
+    "הכנה לראיונות",
+    "בניית קורות חיים",
+    "כללי",
+]
+
+
+class Workshop(db.Model):
+    __tablename__ = "workshops"
+    id               = db.Column(db.Integer, primary_key=True)
+    title            = db.Column(db.String(255), nullable=False)
+    description      = db.Column(db.Text, default="")
+    topic_category   = db.Column(db.String(100), default="כללי")
+    workshop_type    = db.Column(db.String(20), default="one_time")
+    # one_time | recurring | custom
+    status           = db.Column(db.String(20), default="planned")
+    # planned | active | completed | cancelled
+    scheduled_at     = db.Column(db.DateTime, nullable=True)
+    location         = db.Column(db.String(255), default="")
+    max_participants = db.Column(db.Integer, nullable=True)
+    notes            = db.Column(db.Text, default="")
+    created_at       = db.Column(db.DateTime, default=datetime.utcnow)
+    inquiries        = db.relationship("Inquiry", backref="workshop", lazy=True)
+    activities       = db.relationship("ActivityLog", backref="workshop", lazy=True)
+
+
+class Inquiry(db.Model):
+    __tablename__ = "inquiries"
+    id          = db.Column(db.Integer, primary_key=True)
+    full_name   = db.Column(db.String(120), nullable=False)
+    phone       = db.Column(db.String(30), default="")
+    email       = db.Column(db.String(120), default="")
+    topic       = db.Column(db.Text, default="")
+    source      = db.Column(db.String(30), default="")
+    # whatsapp | email | referral | other
+    notes       = db.Column(db.Text, default="")
+    status      = db.Column(db.String(20), default="new")
+    # new | in_contact | assigned | closed
+    workshop_id = db.Column(db.Integer, db.ForeignKey("workshops.id"), nullable=True)
+    created_at  = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class ActivityLog(db.Model):
+    __tablename__ = "activity_logs"
+    id                 = db.Column(db.Integer, primary_key=True)
+    title              = db.Column(db.String(255), nullable=False)
+    activity_type      = db.Column(db.String(30), default="other")
+    # workshop | lecture | meeting | other
+    topic_category     = db.Column(db.String(100), default="")
+    activity_date      = db.Column(db.Date, nullable=False)
+    duration_min       = db.Column(db.Integer, nullable=True)
+    participants_count = db.Column(db.Integer, nullable=True)
+    description        = db.Column(db.Text, default="")
+    workshop_id        = db.Column(db.Integer, db.ForeignKey("workshops.id"), nullable=True)
+    created_at         = db.Column(db.DateTime, default=datetime.utcnow)
