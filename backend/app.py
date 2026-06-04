@@ -151,12 +151,36 @@ def ai_coaching_strategy(profile: StudentProfile) -> str:
     client = _ai_client()
     if not client:
         return ""
-    edu   = "תיכון" if profile.education_level == "highschool" else "מכללה/אוניברסיטה"
+
+    lvl = profile.education_level or "college"
+    if lvl == "highschool":
+        context = (
+            f"תלמיד/ה תיכון, כיתה {profile.current_occupation_or_grade}. "
+            f"תחומי עניין: {profile.interests_hobbies or 'לא צוין'}. "
+            f"מטרות: {profile.career_goals}. חששות: {profile.fears_weaknesses or 'לא צוין'}."
+        )
+        focus = "הכנה ראשונה לשוק העבודה, בניית ניסיון ראשוני, LinkedIn, כישורים רכים"
+    elif lvl == "college":
+        context = (
+            f"סטודנט/ית — {profile.current_occupation_or_grade} "
+            f"ב-{profile.institution_name or 'מוסד לא צוין'}"
+            f"{f', שנת סיום {profile.graduation_year}' if profile.graduation_year else ''}. "
+            f"מטרות: {profile.career_goals}. חששות: {profile.fears_weaknesses or 'לא צוין'}."
+        )
+        focus = "קורות חיים, LinkedIn, הכנה לראיונות, הגעה לתפקיד ראשון בתחום"
+    else:  # career
+        context = (
+            f"מחפש/ת הכוונה תעסוקתית. תפקיד נוכחי/קודם: {profile.current_job or 'לא צוין'}. "
+            f"ניסיון: {profile.years_experience or '?'} שנים. "
+            f"סיבה לפנייה: {profile.reason_for_guidance or 'לא צוין'}. "
+            f"מטרות: {profile.career_goals}. חששות: {profile.fears_weaknesses or 'לא צוין'}."
+        )
+        focus = "מיתוג מקצועי, אסטרטגיית חיפוש עבודה, קורות חיים, LinkedIn, ניהול מעבר קריירה"
+
     prompt = (
-        f"אתה יועץ קריירה מומחה. פרופיל הסטודנט:\n"
-        f"שם: {profile.full_name} | רמה: {edu} | שלב: {profile.current_occupation_or_grade}\n"
-        f"מטרות: {profile.career_goals} | חששות: {profile.fears_weaknesses}\n\n"
-        f"כתוב אסטרטגיית הדרכה (4-5 נקודות) עבור המנטור בעברית מקצועית."
+        f"אתה יועץ קריירה מומחה. פרופיל:\n{context}\n\n"
+        f"תחומי מיקוד רלוונטיים: {focus}\n\n"
+        f"כתוב אסטרטגיית הדרכה (4-5 נקודות) מותאמת אישית עבור המנטור בעברית מקצועית."
     )
     try:
         r = client.chat.completions.create(
@@ -228,6 +252,13 @@ def _profile_dict(p: StudentProfile | None) -> dict:
         "target_end_date":    p.target_end_date.isoformat()    if p.target_end_date    else None,
         "mentor_notes":   p.mentor_notes,
         "student_status": p.student_status or "active",
+        # type-specific fields
+        "interests_hobbies":    p.interests_hobbies or "",
+        "institution_name":     p.institution_name or "",
+        "graduation_year":      p.graduation_year,
+        "current_job":          p.current_job or "",
+        "years_experience":     p.years_experience,
+        "reason_for_guidance":  p.reason_for_guidance or "",
     }
 
 
@@ -325,9 +356,17 @@ def save_onboarding():
     profile = user.profile or StudentProfile(user_id=user.id)
 
     for field in ("full_name", "email", "career_goals", "fears_weaknesses",
-                  "education_level", "current_occupation_or_grade"):
+                  "education_level", "current_occupation_or_grade",
+                  "interests_hobbies", "institution_name",
+                  "current_job", "reason_for_guidance"):
         if field in body:
             setattr(profile, field, body[field])
+    for int_field in ("graduation_year", "years_experience"):
+        if int_field in body and body[int_field] is not None:
+            try:
+                setattr(profile, int_field, int(body[int_field]))
+            except (ValueError, TypeError):
+                pass
 
     if "phone" in body:
         profile.phone = normalize_phone(body["phone"])
@@ -1124,6 +1163,75 @@ def delete_activity(aid):
 
 
 # ─────────────────────────────────────────────
+# Reports
+# ─────────────────────────────────────────────
+
+@app.route("/api/students/<int:sid>/report")
+@require_admin
+def student_report_data(sid):
+    """Full student data for PDF report."""
+    student = User.query.filter_by(id=sid, role="student").first_or_404()
+    notes   = (MentorNote.query.filter_by(student_id=sid)
+               .order_by(MentorNote.created_at.desc()).all())
+    active    = AssignedTask.query.filter_by(user_id=sid, status="pending").all()
+    completed = (AssignedTask.query.filter_by(user_id=sid, status="completed")
+                 .order_by(AssignedTask.completed_at.desc()).all())
+    return jsonify({
+        "student":   {"id": student.id, "username": student.username},
+        "profile":   _profile_dict(student.profile),
+        "active":    [_assignment_dict(a) for a in active],
+        "completed": [_assignment_dict(a) for a in completed],
+        "notes":     [{"text": n.text, "created_at": n.created_at.isoformat()} for n in notes],
+    })
+
+
+@app.route("/api/reports/meetings")
+@require_admin
+def meetings_report():
+    """Monthly meetings summary."""
+    year  = request.args.get("year",  type=int, default=date.today().year)
+    month = request.args.get("month", type=int, default=date.today().month)
+    from_dt = datetime(year, month, 1)
+    to_dt   = datetime(year + 1 if month == 12 else year,
+                       1 if month == 12 else month + 1, 1)
+
+    meetings = (Meeting.query
+                .filter(Meeting.scheduled_at >= from_dt,
+                        Meeting.scheduled_at <  to_dt)
+                .filter(Meeting.status != "cancelled")
+                .order_by(Meeting.scheduled_at).all())
+
+    # Aggregate per student
+    per_student: dict = {}
+    for m in meetings:
+        s = db.session.get(User, m.student_id)
+        p = s.profile if s else None
+        name = (p.full_name if p and p.full_name else (s.username if s else "?"))
+        if m.student_id not in per_student:
+            per_student[m.student_id] = {"name": name, "count": 0,
+                                          "total_min": 0, "meetings": []}
+        per_student[m.student_id]["count"]     += 1
+        per_student[m.student_id]["total_min"] += m.duration_min or 0
+        per_student[m.student_id]["meetings"].append({
+            "date":     m.scheduled_at.strftime("%d/%m/%Y"),
+            "time":     m.scheduled_at.strftime("%H:%M"),
+            "duration": m.duration_min,
+            "status":   m.status,
+            "notes":    m.notes or "",
+        })
+
+    MONTHS_HE = {1:"ינואר",2:"פברואר",3:"מרץ",4:"אפריל",5:"מאי",6:"יוני",
+                 7:"יולי",8:"אוגוסט",9:"ספטמבר",10:"אוקטובר",11:"נובמבר",12:"דצמבר"}
+    return jsonify({
+        "year": year, "month": month, "month_name": MONTHS_HE[month],
+        "total_meetings":  len(meetings),
+        "total_students":  len(per_student),
+        "total_hours":     round(sum(m.duration_min or 0 for m in meetings) / 60, 1),
+        "per_student":     list(per_student.values()),
+    })
+
+
+# ─────────────────────────────────────────────
 # Inactivity reminder (APScheduler daily job)
 # ─────────────────────────────────────────────
 
@@ -1218,10 +1326,16 @@ with app.app_context():
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     os.makedirs(os.path.join(UPLOAD_FOLDER, "tasks"), exist_ok=True)
 
-    # Safe migration for new column (idempotent)
+    # Safe migrations (idempotent — fails silently if column already exists)
     with db.engine.connect() as _conn:
         for _stmt in [
             "ALTER TABLE student_profiles ADD COLUMN student_status TEXT DEFAULT 'active'",
+            "ALTER TABLE student_profiles ADD COLUMN interests_hobbies TEXT DEFAULT ''",
+            "ALTER TABLE student_profiles ADD COLUMN institution_name TEXT DEFAULT ''",
+            "ALTER TABLE student_profiles ADD COLUMN graduation_year INTEGER",
+            "ALTER TABLE student_profiles ADD COLUMN current_job TEXT DEFAULT ''",
+            "ALTER TABLE student_profiles ADD COLUMN years_experience INTEGER",
+            "ALTER TABLE student_profiles ADD COLUMN reason_for_guidance TEXT DEFAULT ''",
         ]:
             try:
                 _conn.execute(db.text(_stmt))

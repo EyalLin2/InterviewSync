@@ -95,48 +95,99 @@
 
       <div class="divider"></div>
 
-      <!-- Section 2: Education (dynamic) -->
-      <div class="section-title">&#127979; רמת לימוד</div>
+      <!-- Section 2: Type selection (3 options) -->
+      <div class="section-title">&#9733; אני...</div>
       <div class="row g-3 mb-3">
-        <div class="col-6">
+        <div class="col-4">
           <label class="edu-option d-block">
             <input type="radio" name="education_level" value="highschool" class="d-none" id="radio-hs" required>
             <div class="edu-card text-center">
-              <div style="font-size:1.5rem;">&#127979;</div>
-              <div>תיכון</div>
+              <div style="font-size:1.6rem;">&#127979;</div>
+              <div class="fw-semibold" style="font-size:.85rem;">תלמיד/ה תיכון</div>
             </div>
           </label>
         </div>
-        <div class="col-6">
+        <div class="col-4">
           <label class="edu-option d-block">
             <input type="radio" name="education_level" value="college" class="d-none" id="radio-col">
             <div class="edu-card text-center">
-              <div style="font-size:1.5rem;">&#127979;</div>
-              <div>מכללה / אוניברסיטה</div>
+              <div style="font-size:1.6rem;">&#127979;</div>
+              <div class="fw-semibold" style="font-size:.85rem;">סטודנט/ית</div>
+              <div class="text-muted" style="font-size:.72rem;">תואר / תעודה</div>
+            </div>
+          </label>
+        </div>
+        <div class="col-4">
+          <label class="edu-option d-block">
+            <input type="radio" name="education_level" value="career" class="d-none" id="radio-car">
+            <div class="edu-card text-center">
+              <div style="font-size:1.6rem;">&#128188;</div>
+              <div class="fw-semibold" style="font-size:.85rem;">הכוונה תעסוקתית</div>
+              <div class="text-muted" style="font-size:.72rem;">בוגר/ת עם ניסיון</div>
             </div>
           </label>
         </div>
       </div>
 
-      <!-- High school: grade -->
-      <div id="section-highschool" class="mb-3">
-        <label class="form-label fw-semibold">כיתה</label>
-        <select name="current_occupation_or_grade_hs" class="form-select" id="select-hs">
-          <option value="">בחר/י כיתה...</option>
-          <option value="כיתה ז׳">כיתה ז׳</option>
-          <option value="כיתה ח׳">כיתה ח׳</option>
-          <option value="כיתה ט׳">כיתה ט׳</option>
-          <option value="כיתה י׳">כיתה י׳</option>
-          <option value="כיתה י״א">כיתה י״א</option>
-          <option value="כיתה י״ב">כיתה י״ב</option>
-        </select>
+      <!-- HS: grade + interests -->
+      <div id="section-highschool" class="mb-3" style="display:none;">
+        <div class="row g-2">
+          <div class="col-sm-5">
+            <label class="form-label fw-semibold small">כיתה</label>
+            <select id="select-hs" class="form-select">
+              <option value="">בחר/י כיתה...</option>
+              <option>כיתה ז׳</option><option>כיתה ח׳</option><option>כיתה ט׳</option>
+              <option>כיתה י׳</option><option>כיתה י״א</option><option>כיתה י״ב</option>
+            </select>
+          </div>
+          <div class="col-sm-7">
+            <label class="form-label fw-semibold small">תחומי עניין ותחביבים</label>
+            <input type="text" name="interests_hobbies" class="form-control"
+                   placeholder="לדוגמה: טכנולוגיה, ספורט, מוסיקה...">
+          </div>
+        </div>
       </div>
 
-      <!-- College: degree -->
-      <div id="section-college" class="mb-3">
-        <label class="form-label fw-semibold">תואר ותחום לימוד</label>
-        <input type="text" id="input-college" class="form-control"
-               placeholder="לדוגמה: תואר ראשון במדעי המחשב">
+      <!-- College: degree + institution + year -->
+      <div id="section-college" class="mb-3" style="display:none;">
+        <div class="row g-2">
+          <div class="col-12">
+            <label class="form-label fw-semibold small">תחום לימוד ותואר <span class="text-danger">*</span></label>
+            <input type="text" id="input-college" class="form-control"
+                   placeholder="לדוגמה: תואר ראשון מדעי המחשב">
+          </div>
+          <div class="col-sm-7">
+            <label class="form-label fw-semibold small">שם המוסד</label>
+            <input type="text" name="institution_name" class="form-control"
+                   placeholder="אוניברסיטה / מכללה">
+          </div>
+          <div class="col-sm-5">
+            <label class="form-label fw-semibold small">שנת סיום צפויה</label>
+            <input type="number" name="graduation_year" class="form-control"
+                   placeholder="2026" min="2024" max="2032">
+          </div>
+        </div>
+      </div>
+
+      <!-- Career: current job + experience + reason -->
+      <div id="section-career" class="mb-3" style="display:none;">
+        <div class="row g-2">
+          <div class="col-sm-7">
+            <label class="form-label fw-semibold small">תפקיד נוכחי / קודם <span class="text-danger">*</span></label>
+            <input type="text" name="current_job" class="form-control"
+                   placeholder="לדוגמה: מנהל מכירות, מהנדסת תוכנה...">
+          </div>
+          <div class="col-sm-5">
+            <label class="form-label fw-semibold small">שנות ניסיון</label>
+            <input type="number" name="years_experience" class="form-control"
+                   placeholder="5" min="0" max="40">
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-semibold small">מה הביא אותך לפנות?</label>
+            <textarea name="reason_for_guidance" class="form-control" rows="2"
+                      placeholder="שינוי קריירה, חיפוש כיוון, חזרה לשוק העבודה..."></textarea>
+          </div>
+        </div>
       </div>
 
       <!-- Hidden combined field -->
@@ -170,30 +221,29 @@
   <script>
     const radioHS  = document.getElementById('radio-hs');
     const radioCol = document.getElementById('radio-col');
+    const radioCar = document.getElementById('radio-car');
     const secHS    = document.getElementById('section-highschool');
     const secCol   = document.getElementById('section-college');
+    const secCar   = document.getElementById('section-career');
     const selHS    = document.getElementById('select-hs');
     const inpCol   = document.getElementById('input-college');
     const combined = document.getElementById('combined-occupation');
 
-    function toggleEdu() {
-      if (radioHS.checked) {
-        secHS.style.display = 'block';
-        secCol.style.display = 'none';
-      } else if (radioCol.checked) {
-        secHS.style.display = 'none';
-        secCol.style.display = 'block';
-      }
+    function toggleType() {
+      secHS.style.display  = radioHS.checked  ? 'block' : 'none';
+      secCol.style.display = radioCol.checked ? 'block' : 'none';
+      secCar.style.display = radioCar.checked ? 'block' : 'none';
     }
-    radioHS.addEventListener('change', toggleEdu);
-    radioCol.addEventListener('change', toggleEdu);
+    [radioHS, radioCol, radioCar].forEach(r => r.addEventListener('change', toggleType));
 
-    // Before submit, combine the occupation field
+    // Before submit, set combined occupation field
     document.getElementById('onboardingForm').addEventListener('submit', function() {
-      if (radioHS.checked) {
-        combined.value = selHS.value;
-      } else if (radioCol.checked) {
-        combined.value = inpCol.value;
+      if (radioHS.checked)       combined.value = selHS.value;
+      else if (radioCol.checked) combined.value = inpCol.value;
+      else if (radioCar.checked) {
+        const job = document.querySelector('[name="current_job"]').value;
+        const exp = document.querySelector('[name="years_experience"]').value;
+        combined.value = job + (exp ? ` (${exp} שנות ניסיון)` : '');
       }
     });
   </script>

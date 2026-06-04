@@ -91,6 +91,7 @@
     </div>
     <div class="ms-auto d-flex align-items-center gap-3">
       <a href="{{ url_for('admin_hub') }}" class="btn btn-outline-light btn-sm">&#8592; לוח הבית</a>
+      <a href="{{ url_for('meetings_report') }}" target="_blank" class="btn btn-outline-light btn-sm">&#128438; דוח פגישות</a>
       <a href="{{ url_for('admin_schedule') }}" class="btn btn-outline-light btn-sm position-relative">
         &#128197; לוז
         {% if upcoming_count > 0 %}
@@ -210,9 +211,11 @@
                     </td>
                     <td>
                       {% if p and p.education_level == 'highschool' %}
-                        <span class="badge edu-badge-hs rounded-pill">תיכון</span>
+                        <span class="badge edu-badge-hs rounded-pill">&#127979; תיכון</span>
                       {% elif p and p.education_level == 'college' %}
-                        <span class="badge edu-badge-col rounded-pill">מכללה</span>
+                        <span class="badge edu-badge-col rounded-pill">&#127979; סטודנט</span>
+                      {% elif p and p.education_level == 'career' %}
+                        <span class="badge rounded-pill" style="background:#ede9fe;color:#5b21b6;font-size:.7rem;">&#128188; קריירה</span>
                       {% else %}
                         <span class="text-muted small">לא מולא</span>
                       {% endif %}

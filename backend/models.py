@@ -50,6 +50,16 @@ class StudentProfile(db.Model):
     mentor_notes                = db.Column(db.Text, default="")
     student_status              = db.Column(db.String(20), default="active")
     # active | paused | completed
+    # ── Type-specific fields ──────────────────────────────────────────
+    # highschool
+    interests_hobbies           = db.Column(db.Text, default="")
+    # college
+    institution_name            = db.Column(db.String(200), default="")
+    graduation_year             = db.Column(db.Integer, nullable=True)
+    # career
+    current_job                 = db.Column(db.String(200), default="")
+    years_experience            = db.Column(db.Integer, nullable=True)
+    reason_for_guidance         = db.Column(db.Text, default="")
     created_at                  = db.Column(db.DateTime, default=datetime.utcnow)
 
 

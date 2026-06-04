@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>דוח פגישות — {{ report.month_name }} {{ report.year }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Heebo', sans-serif; background: #f4f5f9; color: #1a1f36; margin: 0; padding: 0; }
+    .page { max-width: 820px; margin: 0 auto; padding: 2rem; }
+    .no-print { }
+    .print-btn { background: #635bff; color: #fff; border: none; border-radius: 8px; padding: .5rem 1.25rem; font-size: .9rem; font-weight: 700; cursor: pointer; margin-bottom: 1.5rem; }
+    .back-btn { background: #f3f4f6; color: #374151; border: none; border-radius: 8px; padding: .5rem 1rem; font-size: .85rem; font-weight: 600; cursor: pointer; margin-left: .5rem; text-decoration: none; }
+    h1 { font-size: 1.6rem; font-weight: 800; margin-bottom: .2rem; }
+    .sub { color: #6b7280; margin-bottom: 1.5rem; font-size: .88rem; }
+    .stats-row { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    .stat-box { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.06); padding: 1rem 1.25rem; text-align: center; flex: 1; min-width: 100px; }
+    .stat-num { font-size: 2rem; font-weight: 800; color: #635bff; line-height: 1; }
+    .stat-lbl { font-size: .72rem; color: #9ca3af; margin-top: 4px; }
+    .student-card { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.06); padding: 1.25rem 1.5rem; margin-bottom: .75rem; }
+    .student-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: .75rem; }
+    .student-name { font-weight: 700; font-size: 1rem; }
+    .meeting-row { display: flex; gap: .75rem; padding: .35rem 0; border-bottom: 1px solid #f3f4f6; font-size: .83rem; align-items: center; }
+    .meeting-row:last-child { border-bottom: none; }
+    .badge-conf { background: #d1fae5; color: #065f46; padding: .1rem .45rem; border-radius: 4px; font-size: .7rem; font-weight: 700; }
+    .badge-pend { background: #fef3c7; color: #92400e; padding: .1rem .45rem; border-radius: 4px; font-size: .7rem; font-weight: 700; }
+    .month-nav { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+    .nav-link { color: #635bff; text-decoration: none; font-weight: 600; font-size: .88rem; }
+
+    @media print {
+      body { background: #fff; }
+      .no-print { display: none !important; }
+      .page { padding: 1rem; }
+      .student-card { break-inside: avoid; box-shadow: none; border: 1px solid #e5e7eb; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="no-print">
+    <button class="print-btn" onclick="window.print()">&#128424;&#65039; הדפס / PDF</button>
+    <a href="javascript:history.back()" class="back-btn">&#8592; חזרה</a>
+  </div>
+
+  <!-- Month navigation -->
+  {% set prev_m = report.month - 1 if report.month > 1 else 12 %}
+  {% set prev_y = report.year if report.month > 1 else report.year - 1 %}
+  {% set next_m = report.month + 1 if report.month < 12 else 1 %}
+  {% set next_y = report.year if report.month < 12 else report.year + 1 %}
+  <div class="month-nav no-print">
+    <a href="{{ url_for('meetings_report', year=prev_y, month=prev_m) }}" class="nav-link">&#8250; חודש קודם</a>
+    <span style="font-weight:700;">{{ report.month_name }} {{ report.year }}</span>
+    <a href="{{ url_for('meetings_report', year=next_y, month=next_m) }}" class="nav-link">חודש הבא &#8249;</a>
+  </div>
+
+  <h1>דוח פגישות — {{ report.month_name }} {{ report.year }}</h1>
+  <div class="sub">הופק {{ now_date | dt }}</div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-num">{{ report.total_meetings }}</div>
+      <div class="stat-lbl">&#128197; סה"כ פגישות</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">{{ report.total_students }}</div>
+      <div class="stat-lbl">&#128100; תלמידים</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">{{ report.total_hours }}</div>
+      <div class="stat-lbl">&#9202; שעות ליווי</div>
+    </div>
+  </div>
+
+  {% if not report.per_student %}
+    <div style="text-align:center; color:#9ca3af; padding:2rem;">אין פגישות בחודש זה.</div>
+  {% else %}
+    {% for s in report.per_student | sort(attribute='count', reverse=True) %}
+      <div class="student-card">
+        <div class="student-header">
+          <div>
+            <div class="student-name">{{ s.name }}</div>
+            <div style="font-size:.75rem; color:#9ca3af;">{{ s.count }} פגישות · {{ s.total_min // 60 }}ש׳{{ s.total_min % 60 }}ד׳ סה"כ</div>
+          </div>
+          <span style="font-size:1.4rem; font-weight:800; color:#635bff;">{{ s.count }}</span>
+        </div>
+        {% for m in s.meetings %}
+          <div class="meeting-row">
+            <span class="{{ 'badge-conf' if m.status == 'confirmed' else 'badge-pend' }}">
+              {{ 'מאושר' if m.status == 'confirmed' else 'ממתין' }}
+            </span>
+            <span style="min-width:80px;">{{ m.date }}</span>
+            <span style="color:#6b7280;">{{ m.time }}</span>
+            <span style="color:#9ca3af; font-size:.78rem;">{{ m.duration }} דק׳</span>
+            {% if m.notes %}<span style="color:#6b7280; font-size:.78rem;">· {{ m.notes | truncate(50) }}</span>{% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  {% endif %}
+
+</div>
+</body>
+</html>

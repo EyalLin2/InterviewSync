@@ -184,6 +184,13 @@ def onboarding():
             "current_occupation_or_grade": request.form.get("current_occupation_or_grade", "").strip(),
             "career_goals":                request.form.get("career_goals", "").strip(),
             "fears_weaknesses":            request.form.get("fears_weaknesses", "").strip(),
+            # type-specific fields
+            "interests_hobbies":    request.form.get("interests_hobbies", "").strip(),
+            "institution_name":     request.form.get("institution_name", "").strip(),
+            "graduation_year":      request.form.get("graduation_year") or None,
+            "current_job":          request.form.get("current_job", "").strip(),
+            "years_experience":     request.form.get("years_experience") or None,
+            "reason_for_guidance":  request.form.get("reason_for_guidance", "").strip(),
         })
         if r.status_code == 200:
             flash("הפרופיל נשמר! המנטור שלך יצור עבורך תוכנית.", "success")
@@ -454,6 +461,41 @@ def student_file(sid):
         student_meetings=student.get("meetings", []),
         notes=notes,
     )
+
+
+@app.route("/admin/private/student/<int:sid>/report")
+@admin_required
+def student_report(sid):
+    r = api_get(f"/api/students/{sid}/report")
+    if r.status_code != 200:
+        flash("סטודנט לא נמצא.", "danger")
+        return redirect(url_for("admin_dashboard"))
+    data = r.json()
+    r_notes = api_get(f"/api/students/{sid}/notes")
+    notes   = r_notes.json() if r_notes.status_code == 200 else []
+    return render_template("student_report.html",
+        user=me(),
+        student=data["student"],
+        profile=data["profile"],
+        active=data["active"],
+        completed=data["completed"],
+        notes=notes,
+        now_date=_date.today(),
+    )
+
+
+@app.route("/admin/private/reports/meetings")
+@admin_required
+def meetings_report():
+    year  = request.args.get("year",  type=int)
+    month = request.args.get("month", type=int)
+    params = {}
+    if year:  params["year"]  = year
+    if month: params["month"] = month
+    r    = api_get("/api/reports/meetings", params=params)
+    data = r.json() if r.status_code == 200 else {}
+    return render_template("meetings_report.html",
+        user=me(), report=data)
 
 
 @app.route("/admin/private/ai-tasks/<int:sid>", methods=["POST"])

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>דוח תלמיד — {{ profile.full_name or student.username }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Heebo', sans-serif; background: #fff; color: #1a1f36; max-width: 800px; margin: 0 auto; padding: 2rem; }
+    .print-btn { background: #635bff; color: #fff; border: none; border-radius: 8px; padding: .5rem 1.25rem; font-size: .9rem; font-weight: 700; cursor: pointer; margin-bottom: 1.5rem; }
+    h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: .25rem; }
+    .sub { color: #6b7280; font-size: .85rem; margin-bottom: 1.5rem; }
+    .section { border-top: 2px solid #e5e7eb; padding-top: 1rem; margin-top: 1rem; }
+    .section h2 { font-size: 1rem; font-weight: 700; color: #635bff; margin-bottom: .75rem; }
+    .field-row { display: flex; gap: 2rem; flex-wrap: wrap; margin-bottom: .75rem; }
+    .field { flex: 1; min-width: 160px; }
+    .field-lbl { font-size: .68rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .3px; }
+    .field-val { font-size: .88rem; margin-top: 2px; }
+    .strategy-box { background: #f8f7ff; border-right: 4px solid #635bff; border-radius: 8px 0 0 8px; padding: .75rem 1rem; font-size: .85rem; white-space: pre-wrap; line-height: 1.7; }
+    .task-item { padding: .4rem 0; border-bottom: 1px solid #f3f4f6; font-size: .85rem; display: flex; gap: .75rem; align-items: flex-start; }
+    .task-item:last-child { border-bottom: none; }
+    .cat { font-size: .65rem; font-weight: 700; border-radius: 50px; padding: .1rem .45rem; background: #f3f4f6; color: #374151; flex-shrink: 0; }
+    .note-entry { background: #f8f9ff; border-radius: 6px; padding: .4rem .65rem; margin-bottom: .35rem; font-size: .83rem; }
+    .note-ts { font-size: .68rem; color: #9ca3af; }
+    .resume-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: .75rem 1rem; font-size: .83rem; white-space: pre-wrap; line-height: 1.6; }
+    .badge-done { background: #d1fae5; color: #065f46; padding: .1rem .4rem; border-radius: 4px; font-size: .72rem; }
+    .sub-preview { background: #eff6ff; border-right: 2px solid #635bff; border-radius: 4px 0 0 4px; padding: .25rem .5rem; font-size: .78rem; color: #374151; margin-top: .25rem; }
+
+    @media print {
+      .print-btn { display: none; }
+      body { padding: 1rem; }
+      .section { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <button class="print-btn" onclick="window.print()">&#128424;&#65039; הדפס / שמור כ-PDF</button>
+
+  <h1>{{ profile.full_name or student.username }}</h1>
+  <div class="sub">
+    @{{ student.username }}
+    {% if profile.education_level == 'highschool' %}· 🏫 תיכון{% elif profile.education_level == 'college' %}· 🎓 סטודנט{% elif profile.education_level == 'career' %}· 💼 הכוונה תעסוקתית{% endif %}
+    · דוח הופק {{ now_date | dt }}
+  </div>
+
+  <!-- Profile -->
+  <div class="section">
+    <h2>&#128100; פרטים אישיים ורקע</h2>
+    <div class="field-row">
+      {% if profile.email %}<div class="field"><div class="field-lbl">אימייל</div><div class="field-val">{{ profile.email }}</div></div>{% endif %}
+      {% if profile.phone %}<div class="field"><div class="field-lbl">טלפון</div><div class="field-val">{{ profile.phone }}</div></div>{% endif %}
+    </div>
+    <div class="field-row">
+      {% if profile.education_level == 'highschool' %}
+        <div class="field"><div class="field-lbl">כיתה</div><div class="field-val">{{ profile.current_occupation_or_grade or '—' }}</div></div>
+        <div class="field"><div class="field-lbl">תחומי עניין</div><div class="field-val">{{ profile.interests_hobbies or '—' }}</div></div>
+      {% elif profile.education_level == 'college' %}
+        <div class="field"><div class="field-lbl">תואר ותחום</div><div class="field-val">{{ profile.current_occupation_or_grade or '—' }}</div></div>
+        <div class="field"><div class="field-lbl">מוסד</div><div class="field-val">{{ profile.institution_name or '—' }}</div></div>
+        {% if profile.graduation_year %}<div class="field"><div class="field-lbl">שנת סיום</div><div class="field-val">{{ profile.graduation_year }}</div></div>{% endif %}
+      {% else %}
+        <div class="field"><div class="field-lbl">תפקיד נוכחי/קודם</div><div class="field-val">{{ profile.current_job or '—' }}</div></div>
+        <div class="field"><div class="field-lbl">שנות ניסיון</div><div class="field-val">{{ profile.years_experience or '—' }}</div></div>
+        {% if profile.reason_for_guidance %}<div class="field"><div class="field-lbl">סיבה לפנייה</div><div class="field-val">{{ profile.reason_for_guidance }}</div></div>{% endif %}
+      {% endif %}
+    </div>
+    <div class="field-row">
+      <div class="field"><div class="field-lbl">מטרות קריירה</div><div class="field-val">{{ profile.career_goals or '—' }}</div></div>
+      <div class="field"><div class="field-lbl">חששות ונקודות חולשה</div><div class="field-val">{{ profile.fears_weaknesses or '—' }}</div></div>
+    </div>
+    {% if profile.process_start_date %}
+    <div class="field-row">
+      <div class="field"><div class="field-lbl">תחילת תהליך</div><div class="field-val">{{ profile.process_start_date | dt }}</div></div>
+      {% if profile.target_end_date %}<div class="field"><div class="field-lbl">תאריך יעד</div><div class="field-val">{{ profile.target_end_date | dt }}</div></div>{% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- AI Strategy -->
+  {% if profile.ai_coaching_strategy %}
+  <div class="section">
+    <h2>&#129504; אסטרטגיית הדרכה AI</h2>
+    <div class="strategy-box">{{ profile.ai_coaching_strategy }}</div>
+  </div>
+  {% endif %}
+
+  <!-- Active Tasks -->
+  {% if active %}
+  <div class="section">
+    <h2>&#9889; משימות פעילות ({{ active|length }})</h2>
+    {% for at in active %}
+      <div class="task-item">
+        <span class="cat">{{ at.task.category }}</span>
+        <div>
+          <div style="font-weight:600;">{{ at.task.title }}</div>
+          <div style="font-size:.75rem; color:#9ca3af;">שויך {{ at.assigned_at | dt }}</div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Completed Tasks -->
+  {% if completed %}
+  <div class="section">
+    <h2>&#10003; משימות שהושלמו ({{ completed|length }})</h2>
+    {% for at in completed %}
+      <div class="task-item">
+        <span class="badge-done">&#10003;</span>
+        <div>
+          <div style="font-weight:600; text-decoration:line-through; color:#6b7280;">{{ at.task.title }}</div>
+          <div style="font-size:.75rem; color:#9ca3af;">{{ at.completed_at | dt if at.completed_at else '' }}</div>
+          {% if at.submission_note %}
+            <div class="sub-preview">{{ at.submission_note[:200] }}{% if at.submission_note|length > 200 %}...{% endif %}</div>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- CV -->
+  {% if profile.resume_content %}
+  <div class="section">
+    <h2>&#128196; קורות חיים / CV</h2>
+    <div class="resume-box">{{ profile.resume_content }}</div>
+  </div>
+  {% endif %}
+
+  <!-- Mentor Notes -->
+  {% if notes %}
+  <div class="section">
+    <h2>&#128221; הערות מנטור ({{ notes|length }})</h2>
+    {% for n in notes %}
+      <div class="note-entry">
+        {{ n.text }}
+        <div class="note-ts">{{ n.created_at | dt('%d/%m/%Y %H:%M') }}</div>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+</body>
+</html>

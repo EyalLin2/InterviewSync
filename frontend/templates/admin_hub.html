@@ -8,183 +8,101 @@
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       font-family: 'Heebo', sans-serif;
-      background: #0a0e1a;
+      background: #0d1117;
       color: #fff;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+      display: flex; flex-direction: column;
     }
 
-    /* ── Top bar ── */
+    /* Top bar */
     .top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: .9rem 2rem;
       border-bottom: 1px solid rgba(255,255,255,.06);
     }
-    .logo { font-size: 1rem; font-weight: 700; color: rgba(255,255,255,.7); letter-spacing: -.2px; }
-    .logo span { color: #fff; }
-    .top-right { display: flex; align-items: center; gap: 1.5rem; font-size: .82rem; color: rgba(255,255,255,.4); }
-    .top-right a { color: rgba(255,255,255,.35); text-decoration: none; }
-    .top-right a:hover { color: rgba(255,255,255,.7); }
+    .logo { font-size: .95rem; font-weight: 700; color: rgba(255,255,255,.5); }
+    .logo strong { color: #fff; font-weight: 800; }
+    .top-right { display: flex; align-items: center; gap: 1.5rem; }
+    .top-right span { font-size: .82rem; color: rgba(255,255,255,.35); }
+    .top-right a { font-size: .82rem; color: rgba(255,255,255,.3); text-decoration: none; }
+    .top-right a:hover { color: rgba(255,255,255,.6); }
 
-    /* ── Main ── */
-    main {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem 1.5rem;
-    }
+    /* Main */
+    main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 3rem 1.5rem; }
 
-    .hub {
-      width: 100%;
-      max-width: 760px;
-    }
+    .hub { width: 100%; max-width: 680px; }
+    .hub-heading { text-align: center; margin-bottom: 2.5rem; }
+    .hub-heading h1 { font-size: 1.4rem; font-weight: 700; color: rgba(255,255,255,.75); margin-bottom: .3rem; }
+    .hub-heading p  { font-size: .85rem; color: rgba(255,255,255,.3); }
 
-    .hub-greeting {
-      text-align: center;
-      margin-bottom: 2.5rem;
-    }
-    .hub-greeting h1 {
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: rgba(255,255,255,.85);
-      margin-bottom: .35rem;
-    }
-    .hub-greeting p {
-      font-size: .88rem;
-      color: rgba(255,255,255,.35);
-    }
-
-    /* ── Cards ── */
-    .cards {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-    }
+    /* Cards */
+    .cards { display: grid; grid-template-columns: 1fr 1fr; gap: .875rem; }
 
     .card {
-      display: block;
-      text-decoration: none;
-      border-radius: 16px;
-      padding: 2rem 1.75rem;
-      border: 1px solid rgba(255,255,255,.08);
-      transition: border-color .15s, transform .12s, box-shadow .15s;
-      position: relative;
-      overflow: hidden;
+      display: block; text-decoration: none;
+      border-radius: 12px;
+      padding: 1.75rem 1.5rem;
+      border: 1px solid rgba(255,255,255,.07);
+      transition: border-color .15s, background .15s;
+      cursor: pointer;
     }
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 40px rgba(0,0,0,.4);
-    }
-    .card-private {
-      background: linear-gradient(145deg, #12173a 0%, #181e45 100%);
-    }
-    .card-private:hover { border-color: rgba(99,91,255,.4); }
+    .card:hover { border-color: rgba(255,255,255,.18); }
 
-    .card-business {
-      background: linear-gradient(145deg, #0c1f18 0%, #0f2820 100%);
-    }
-    .card-business:hover { border-color: rgba(16,185,129,.4); }
+    .card-private  { background: #131929; }
+    .card-private:hover  { background: #161e30; }
+    .card-business { background: #0f1e16; }
+    .card-business:hover { background: #122019; }
 
-    .card-accent {
-      position: absolute;
-      top: 0; right: 0;
-      width: 120px; height: 120px;
-      border-radius: 50%;
-      opacity: .06;
-      filter: blur(30px);
+    .card-label {
+      font-size: .68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .8px; margin-bottom: .6rem;
     }
-    .card-private .card-accent  { background: #635bff; }
-    .card-business .card-accent { background: #10b981; }
+    .card-private  .card-label { color: #7c6cf8; }
+    .card-business .card-label { color: #34a471; }
 
-    .card-icon {
-      font-size: 1.8rem;
-      margin-bottom: 1rem;
-      display: block;
-    }
     .card-title {
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: .4rem;
+      font-size: 1.15rem; font-weight: 800; color: #fff; margin-bottom: .4rem;
     }
     .card-desc {
-      font-size: .82rem;
-      color: rgba(255,255,255,.4);
-      line-height: 1.6;
-      margin-bottom: 1.25rem;
+      font-size: .82rem; color: rgba(255,255,255,.4); line-height: 1.5; margin-bottom: 1.25rem;
     }
 
-    .card-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: .4rem;
-      margin-bottom: 1.5rem;
+    .card-meta { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .meta-tag {
+      font-size: .72rem; color: rgba(255,255,255,.35);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 50px; padding: .18rem .6rem;
     }
-    .tag {
-      font-size: .72rem;
-      color: rgba(255,255,255,.4);
-      background: rgba(255,255,255,.05);
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 50px;
-      padding: .2rem .65rem;
-    }
+    {% if inquiries_new is defined and inquiries_new > 0 %}
+    .badge-new { background: #92400e; color: #fef3c7; border-color: transparent; font-weight: 700; }
+    {% endif %}
 
-    .card-cta {
-      display: inline-flex;
-      align-items: center;
-      gap: .4rem;
-      font-size: .82rem;
-      font-weight: 600;
-      padding: .5rem 1.1rem;
-      border-radius: 8px;
+    .card-arrow {
+      display: inline-flex; align-items: center; gap: .35rem;
+      font-size: .82rem; font-weight: 600;
     }
-    .card-private  .card-cta { background: rgba(99,91,255,.2);  color: #a78bfa; }
-    .card-business .card-cta { background: rgba(16,185,129,.18); color: #34d399; }
-    .card:hover .card-cta { opacity: .85; }
+    .card-private  .card-arrow { color: #7c6cf8; }
+    .card-business .card-arrow { color: #34a471; }
 
-    /* badge */
-    .badge-new {
-      display: inline-block;
-      background: #f59e0b;
-      color: #000;
-      font-size: .62rem;
-      font-weight: 700;
-      border-radius: 50px;
-      padding: .1rem .5rem;
-      margin-right: .3rem;
-      vertical-align: middle;
-    }
+    /* Flash */
+    .flash-wrap { padding: .5rem 2rem 0; }
+    .flash { padding: .5rem 1rem; border-radius: 8px; font-size: .82rem; margin-bottom: .35rem; }
+    .flash-success { background: rgba(52,164,113,.12); color: #6ee7b7; border: 1px solid rgba(52,164,113,.2); }
+    .flash-danger  { background: rgba(239,68,68,.12);  color: #fca5a5; border: 1px solid rgba(239,68,68,.2); }
+    .flash-info    { background: rgba(59,130,246,.12); color: #93c5fd; border: 1px solid rgba(59,130,246,.2); }
+    .flash-warning { background: rgba(245,158,11,.12); color: #fcd34d; border: 1px solid rgba(245,158,11,.2); }
 
-    /* flash */
-    .flash-wrap { padding: .75rem 2rem 0; }
-    .flash {
-      padding: .5rem 1rem;
-      border-radius: 8px;
-      font-size: .82rem;
-      margin-bottom: .5rem;
-    }
-    .flash-success { background: rgba(16,185,129,.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,.2); }
-    .flash-danger  { background: rgba(239,68,68,.15);  color: #fca5a5; border: 1px solid rgba(239,68,68,.2); }
-    .flash-info    { background: rgba(59,130,246,.15); color: #93c5fd; border: 1px solid rgba(59,130,246,.2); }
-    .flash-warning { background: rgba(245,158,11,.15); color: #fcd34d; border: 1px solid rgba(245,158,11,.2); }
-
-    @media (max-width: 600px) {
+    @media (max-width: 560px) {
       .cards { grid-template-columns: 1fr; }
-      .hub-greeting h1 { font-size: 1.3rem; }
     }
   </style>
 </head>
 <body>
 
   <div class="top">
-    <div class="logo">&#127891; <span>InterviewSync</span></div>
+    <div class="logo">&#127891; <strong>InterviewSync</strong></div>
     <div class="top-right">
       <span>{{ user.name or 'מנהל' }}</span>
       <a href="{{ url_for('logout') }}">התנתקות</a>
@@ -204,44 +122,39 @@
   <main>
     <div class="hub">
 
-      <div class="hub-greeting">
-        <h1>שלום, {{ (user.name or 'מנהל').split()[0] }} — לאיזה לוח תרצה להיכנס?</h1>
-        <p>בחר את המצב הרצוי כדי להתחיל</p>
+      <div class="hub-heading">
+        <h1>שלום{% if user and user.name %}, {{ user.name.split()[0] }}{% endif %} — בחר לוח עבודה</h1>
+        <p>שני מצבי עבודה, חנ מוקד נפרד</p>
       </div>
 
       <div class="cards">
 
-        <!-- Private -->
         <a href="{{ url_for('admin_dashboard') }}" class="card card-private">
-          <div class="card-accent"></div>
-          <span class="card-icon">&#128100;</span>
-          <div class="card-title">פרטי — ניהול תלמידים</div>
-          <div class="card-desc">ניהול תיקי תלמידים, שיוך משימות, פגישות ומעקב התקדמות אישי.</div>
-          <div class="card-tags">
-            <span class="tag">{{ students_count }} תלמידים</span>
-            <span class="tag">משימות</span>
-            <span class="tag">לוח פגישות</span>
-            <span class="tag">AI Coaching</span>
+          <div class="card-label">ניהול תלמידים</div>
+          <div class="card-title">פרטי</div>
+          <div class="card-desc">תיקי תלמידים, שיוך משימות, פגישות ומעקב התקדמות אישי</div>
+          <div class="card-meta">
+            <span class="meta-tag">{{ students_count }} תלמידים</span>
+            <span class="meta-tag">משימות</span>
+            <span class="meta-tag">לוח פגישות</span>
           </div>
-          <span class="card-cta">כניסה &#8592;</span>
+          <span class="card-arrow">כניסה &#8592;</span>
         </a>
 
-        <!-- Business -->
         <a href="{{ url_for('admin_business') }}" class="card card-business">
-          <div class="card-accent"></div>
-          <span class="card-icon">&#128188;</span>
-          <div class="card-title">עסקי — סדנאות ופניות</div>
-          <div class="card-desc">ניהול הרצאות, סדנאות קבוצתיות, פניות יזומות ותיעוד פעילות.</div>
-          <div class="card-tags">
-            <span class="tag">הרצאות וסדנאות</span>
+          <div class="card-label">פעילות עסקית</div>
+          <div class="card-title">עסקי</div>
+          <div class="card-desc">הרצאות, סדנאות, פניות יזומות ותיעוד פעילות מקצועית</div>
+          <div class="card-meta">
+            <span class="meta-tag">סדנאות</span>
             {% if inquiries_new > 0 %}
-              <span class="tag"><span class="badge-new">{{ inquiries_new }}</span>פניות חדשות</span>
+              <span class="meta-tag badge-new">{{ inquiries_new }} פניות חדשות</span>
             {% else %}
-              <span class="tag">פניות יזומות</span>
+              <span class="meta-tag">פניות</span>
             {% endif %}
-            <span class="tag">תיעוד פעילות</span>
+            <span class="meta-tag">תיעוד</span>
           </div>
-          <span class="card-cta">כניסה &#8592;</span>
+          <span class="card-arrow">כניסה &#8592;</span>
         </a>
 
       </div>

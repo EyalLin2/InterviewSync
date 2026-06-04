@@ -168,9 +168,15 @@
           <li class="breadcrumb-item active">{{ profile.full_name if profile else student.username }}</li>
         </ol>
       </nav>
-      <button onclick="window.print()" class="btn btn-sm btn-outline-secondary no-print" style="font-size:.78rem;">
-        &#128424;&#65039; הדפס / PDF
-      </button>
+      <div class="d-flex gap-2 no-print">
+        <a href="{{ url_for('student_report', sid=student.id) }}" target="_blank"
+           class="btn btn-sm btn-outline-primary" style="font-size:.78rem;">
+          &#128438; הפק דוח PDF
+        </a>
+        <button onclick="window.print()" class="btn btn-sm btn-outline-secondary" style="font-size:.78rem;">
+          &#128424;&#65039; הדפס עמוד
+        </button>
+      </div>
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -304,11 +310,19 @@
             <div class="alert alert-warning py-2 small">&#9888;&#65039; הסטודנט טרם מילא פרופיל ראשוני.</div>
           {% else %}
 
-            <!-- Tabs -->
+            {% set etype = profile.education_level if profile else 'college' %}
+
+            <!-- Tabs (labels adapt to type) -->
             <ul class="nav nav-tabs-crm nav-tabs" id="fileTabs">
               <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-profile" type="button">&#128100; פרופיל</button></li>
+              <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-cv" type="button">
+                  {% if etype == 'highschool' %}&#128218; הכנה לשוק
+                  {% elif etype == 'career' %}&#128203; קו"ח + אסטרטגיה
+                  {% else %}&#128196; קו"ח{% endif %}
+                </button>
+              </li>
               <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-ai" type="button">&#129504; AI</button></li>
-              <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-cv" type="button">&#128196; קו"ח</button></li>
               <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-notes" type="button">
                 &#128221; הערות
                 {% if notes %}<span class="badge rounded-pill ms-1" style="background:#635bff;font-size:.6rem;">{{ notes|length }}</span>{% endif %}
@@ -317,9 +331,47 @@
 
             <div class="tab-content">
 
-              <!-- Tab: Profile -->
+              <!-- Tab: Profile (content adapts to type) -->
               <div class="tab-pane fade show active" id="tab-profile">
                 <div class="row g-3 small mb-3">
+                  {# ── Type-specific fields ── #}
+                  {% if etype == 'highschool' %}
+                    <div class="col-sm-4">
+                      <div class="field-lbl">&#127979; כיתה</div>
+                      <div class="field-val">{{ profile.current_occupation_or_grade or '—' }}</div>
+                    </div>
+                    <div class="col-sm-8">
+                      <div class="field-lbl">&#127919; תחומי עניין</div>
+                      <div class="field-val">{{ profile.interests_hobbies or '—' }}</div>
+                    </div>
+                  {% elif etype == 'college' %}
+                    <div class="col-sm-5">
+                      <div class="field-lbl">&#127979; תואר ותחום</div>
+                      <div class="field-val">{{ profile.current_occupation_or_grade or '—' }}</div>
+                    </div>
+                    <div class="col-sm-4">
+                      <div class="field-lbl">&#127979; מוסד לימודים</div>
+                      <div class="field-val">{{ profile.institution_name or '—' }}</div>
+                    </div>
+                    <div class="col-sm-3">
+                      <div class="field-lbl">&#127881; שנת סיום</div>
+                      <div class="field-val">{{ profile.graduation_year or '—' }}</div>
+                    </div>
+                  {% else %}{# career #}
+                    <div class="col-sm-5">
+                      <div class="field-lbl">&#128188; תפקיד נוכחי / קודם</div>
+                      <div class="field-val">{{ profile.current_job or '—' }}</div>
+                    </div>
+                    <div class="col-sm-3">
+                      <div class="field-lbl">&#9203; שנות ניסיון</div>
+                      <div class="field-val">{{ profile.years_experience or '—' }}</div>
+                    </div>
+                    <div class="col-sm-4">
+                      <div class="field-lbl">&#128172; סיבה לפנייה</div>
+                      <div class="field-val">{{ profile.reason_for_guidance or '—' }}</div>
+                    </div>
+                  {% endif %}
+                  {# ── Common fields ── #}
                   <div class="col-sm-6">
                     <div class="field-lbl">מטרות קריירה</div>
                     <div class="field-val">{{ profile.career_goals or '—' }}</div>
@@ -390,15 +442,27 @@
                 {% endif %}
               </div>
 
-              <!-- Tab: CV -->
+              <!-- Tab: CV (content adapts to type) -->
               <div class="tab-pane fade" id="tab-cv">
+                {% if etype == 'highschool' %}
+                  <div class="mb-2">
+                    <div class="field-lbl mb-1">&#128218; ניסיון עד כה — התנדבות, עבודות, פרויקטים</div>
+                    <div class="strategy-box strategy-empty" style="font-size:.8rem; margin-bottom:.75rem;">
+                      כתוב/י כאן כל ניסיון רלוונטי: עבודות קיץ, פרויקטים, תפקידים בבית ספר, התנדבות...
+                    </div>
+                  </div>
+                {% elif etype == 'career' %}
+                  <div class="mb-2">
+                    <div class="field-lbl mb-1">&#128203; קורות חיים + אסטרטגיית חיפוש</div>
+                  </div>
+                {% endif %}
                 <form method="POST">
                   <input type="hidden" name="action" value="save_resume">
                   <textarea name="resume_content" class="form-control resume-area mb-2"
-                            placeholder="הדבק/י קורות חיים או כתוב/י מאפס...">{{ profile.resume_content if profile else '' }}</textarea>
+                            placeholder="{% if etype == 'highschool' %}כתוב/י ניסיון, כישורים ותחביבים...{% elif etype == 'career' %}קורות חיים + חברות יעד + מה כבר ניסית...{% else %}הדבק/י קורות חיים או כתוב/י מאפס...{% endif %}">{{ profile.resume_content if profile else '' }}</textarea>
                   <div class="d-flex justify-content-between align-items-center">
                     <span class="text-muted small">&#128274; גלוי למנטור בלבד</span>
-                    <button type="submit" class="btn btn-crm btn-sm fw-semibold">שמור CV</button>
+                    <button type="submit" class="btn btn-crm btn-sm fw-semibold">שמור</button>
                   </div>
                 </form>
               </div>
