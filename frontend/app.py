@@ -393,8 +393,21 @@ def student_file(sid):
                 "process_start_date": request.form.get("process_start_date") or None,
                 "target_end_date":    request.form.get("target_end_date")    or None,
                 "mentor_notes":       request.form.get("mentor_notes", ""),
+                "student_status":     request.form.get("student_status", "active"),
             })
             _flash_from_response(r, "הגדרות התהליך נשמרו.")
+
+        elif action == "save_full_profile":
+            r = api_patch(f"/api/students/{sid}/profile", json={
+                "full_name":                   request.form.get("full_name", ""),
+                "email":                       request.form.get("email", ""),
+                "phone":                       request.form.get("phone", ""),
+                "education_level":             request.form.get("education_level", ""),
+                "current_occupation_or_grade": request.form.get("current_occupation_or_grade", ""),
+                "career_goals":                request.form.get("career_goals", ""),
+                "fears_weaknesses":            request.form.get("fears_weaknesses", ""),
+            })
+            _flash_from_response(r, "הפרופיל עודכן.")
 
         elif action == "regenerate_strategy":
             r = api_post(f"/api/ai/coaching-strategy/{sid}")

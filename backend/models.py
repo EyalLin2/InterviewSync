@@ -48,6 +48,8 @@ class StudentProfile(db.Model):
     process_start_date          = db.Column(db.Date, nullable=True)
     target_end_date             = db.Column(db.Date, nullable=True)
     mentor_notes                = db.Column(db.Text, default="")
+    student_status              = db.Column(db.String(20), default="active")
+    # active | paused | completed
     created_at                  = db.Column(db.DateTime, default=datetime.utcnow)
 
 

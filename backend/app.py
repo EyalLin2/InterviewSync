@@ -224,7 +224,8 @@ def _profile_dict(p: StudentProfile | None) -> dict:
         "resume_content": p.resume_content,
         "process_start_date": p.process_start_date.isoformat() if p.process_start_date else None,
         "target_end_date":    p.target_end_date.isoformat()    if p.target_end_date    else None,
-        "mentor_notes": p.mentor_notes,
+        "mentor_notes":   p.mentor_notes,
+        "student_status": p.student_status or "active",
     }
 
 
@@ -422,14 +423,19 @@ def update_student_profile(sid):
     if not p:
         return jsonify({"error": "No profile yet"}), 404
     body = request.get_json() or {}
+    # Date fields
     for field in ("process_start_date", "target_end_date"):
         if field in body:
             val = body[field]
             setattr(p, field, date.fromisoformat(val) if val else None)
-    if "mentor_notes" in body:
-        p.mentor_notes = body["mentor_notes"]
+    # Text fields editable by mentor
+    for field in ("mentor_notes", "student_status",
+                  "career_goals", "fears_weaknesses", "full_name",
+                  "email", "phone", "education_level", "current_occupation_or_grade"):
+        if field in body:
+            setattr(p, field, body[field])
     db.session.commit()
-    return jsonify({"ok": True})
+    return jsonify({"ok": True, "profile": _profile_dict(p)})
 
 
 @app.route("/api/students/<int:sid>/resume", methods=["PATCH"])
@@ -1106,6 +1112,18 @@ with app.app_context():
     db.create_all()
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     os.makedirs(os.path.join(UPLOAD_FOLDER, "tasks"), exist_ok=True)
+
+    # Safe migration for new column (idempotent)
+    with db.engine.connect() as _conn:
+        for _stmt in [
+            "ALTER TABLE student_profiles ADD COLUMN student_status TEXT DEFAULT 'active'",
+        ]:
+            try:
+                _conn.execute(db.text(_stmt))
+                _conn.commit()
+            except Exception:
+                _conn.rollback()
+
     seed_db()
 
 

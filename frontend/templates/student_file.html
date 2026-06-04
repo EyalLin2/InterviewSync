@@ -16,43 +16,87 @@
     .section-card { background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,.06); padding: 1.5rem; margin-bottom: 1.5rem; }
     .section-title { font-size: .72rem; font-weight: 700; text-transform: uppercase; color: #9ca3af; letter-spacing: .5px; margin-bottom: 1rem; }
     .field-lbl { font-size: .72rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .3px; }
-    .field-val { font-size: .9rem; color: #1a1f36; margin-top: 2px; }
+    .field-val { font-size: .88rem; color: #1a1f36; margin-top: 2px; }
 
+    /* Quick Actions Bar */
+    .quick-bar {
+      display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
+      background: #fff; border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.06);
+      padding: .75rem 1.25rem; margin-bottom: 1.25rem;
+    }
+    .qa-btn {
+      display: inline-flex; align-items: center; gap: .35rem;
+      font-size: .82rem; font-weight: 600; padding: .35rem .85rem;
+      border-radius: 8px; text-decoration: none; border: none; cursor: pointer;
+      transition: opacity .15s;
+    }
+    .qa-btn:hover { opacity: .82; }
+    .qa-wa    { background: #dcfce7; color: #166534; }
+    .qa-email { background: #dbeafe; color: #1e40af; }
+    .qa-meet  { background: #ede9fe; color: #5b21b6; }
+
+    /* Status selector */
+    .status-select { font-size: .78rem; font-weight: 700; border: none; border-radius: 50px; padding: .3rem .75rem; cursor: pointer; }
+    .st-active    { background: #d1fae5; color: #065f46; }
+    .st-paused    { background: #fef3c7; color: #92400e; }
+    .st-completed { background: #f3f4f6; color: #374151; }
+
+    /* At-a-glance */
+    .glance-bar {
+      display: flex; gap: 1.5rem; flex-wrap: wrap;
+      padding: .9rem 1.25rem; background: #f8f9ff;
+      border-radius: 10px; margin-bottom: 1.25rem;
+    }
+    .glance-item { text-align: center; }
+    .glance-num  { font-size: 1.3rem; font-weight: 800; color: #1a1f36; line-height: 1; }
+    .glance-lbl  { font-size: .68rem; color: #9ca3af; margin-top: 2px; }
+
+    /* Strategy */
     .strategy-box { background: #f8f7ff; border-right: 4px solid #635bff; border-radius: 8px 0 0 8px; padding: 1rem 1.25rem; font-size: .88rem; white-space: pre-wrap; line-height: 1.7; }
     .strategy-empty { color: #9ca3af; font-style: italic; }
 
-    .timeline-bar { height: 8px; border-radius: 8px; background: #e9ecef; overflow: hidden; }
-    .timeline-fill { height: 100%; background: linear-gradient(90deg, #635bff, #a855f7); border-radius: 8px; transition: width .3s; }
+    /* Timeline */
+    .timeline-bar  { height: 7px; border-radius: 8px; background: #e9ecef; overflow: hidden; }
+    .timeline-fill { height: 100%; background: linear-gradient(90deg, #635bff, #a855f7); border-radius: 8px; }
 
-    .avatar-lg { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.4rem; color: #fff; flex-shrink: 0; }
+    /* Avatar */
+    .avatar-lg { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.3rem; color: #fff; flex-shrink: 0; }
 
-    .task-item { display: flex; align-items: flex-start; gap: .75rem; padding: .65rem 0; border-bottom: 1px solid #f0f1f5; }
+    /* Tasks */
+    .task-item { display: flex; align-items: flex-start; gap: .65rem; padding: .6rem 0; border-bottom: 1px solid #f0f1f5; }
     .task-item:last-child { border-bottom: none; }
-    .task-item-title { font-weight: 600; font-size: .88rem; }
-    .task-item-meta  { font-size: .73rem; color: #9ca3af; }
-    .cat-pill { font-size: .65rem; font-weight: 700; border-radius: 50px; padding: .15rem .55rem; }
+    .task-item-title { font-weight: 600; font-size: .85rem; }
+    .task-item-meta  { font-size: .72rem; color: #9ca3af; }
+    .cat-pill { font-size: .62rem; font-weight: 700; border-radius: 50px; padding: .12rem .5rem; }
     .cat-resume   { background: #ffecd2; color: #b45309; }
     .cat-linkedin { background: #dbeafe; color: #1d4ed8; }
     .cat-interview{ background: #fce7f3; color: #9d174d; }
     .cat-quiz     { background: #ede9fe; color: #5b21b6; }
     .cat-general  { background: #f3f4f6; color: #374151; }
 
-    .assign-group { margin-bottom: .75rem; }
-    .assign-group-title { font-size: .75rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: .3px; margin-bottom: .3rem; }
+    /* Submission expand */
+    .submission-expand { font-size: .8rem; color: #635bff; cursor: pointer; text-decoration: none; }
+    .submission-text { background: #f8f9ff; border-right: 3px solid #635bff; border-radius: 8px 0 0 8px; padding: .5rem .75rem; font-size: .81rem; margin-top: .3rem; display: none; }
 
-    .resume-area { min-height: 200px; font-size: .85rem; resize: vertical; font-family: 'Heebo', monospace; }
+    /* Assign search */
+    .assign-search { width: 100%; font-size: .82rem; padding: .3rem .6rem; border: 1px solid #dee2e6; border-radius: 6px; margin-bottom: .75rem; }
 
-    .btn-primary-crm { background: #635bff; border-color: #635bff; }
-    .btn-primary-crm:hover { background: #4f46e5; border-color: #4f46e5; }
-    .btn-ai { background: linear-gradient(90deg, #635bff, #a855f7); border: none; }
+    /* Mentor notes */
+    .notes-area { font-size: .85rem; min-height: 80px; resize: vertical; }
+
+    /* Meetings */
+    .meeting-mini { background: #f0fdf4; border-right: 3px solid #10b981; border-radius: 8px 0 0 8px; padding: .5rem .75rem; font-size: .82rem; margin-bottom: .4rem; }
 
     .badge-done    { background: #d1fae5; color: #065f46; }
     .badge-pending { background: #fef3c7; color: #92400e; }
     .edu-badge-hs  { background: #fef3c7; color: #92400e; }
     .edu-badge-col { background: #dbeafe; color: #1e40af; }
 
-    .submission-box { background: #f8f9ff; border-right: 3px solid #635bff; border-radius: 8px 0 0 8px; padding: .5rem .75rem; font-size: .82rem; }
-    .meeting-mini { background: #f0fdf4; border-right: 3px solid #10b981; border-radius: 8px 0 0 8px; padding: .5rem .75rem; font-size: .83rem; margin-bottom: .4rem; }
+    .btn-crm { background: #635bff; border-color: #635bff; color: #fff; }
+    .btn-crm:hover { background: #4f46e5; border-color: #4f46e5; color: #fff; }
+    .btn-ai  { background: linear-gradient(90deg, #635bff, #a855f7); border: none; color: #fff; }
+    .resume-area { min-height: 180px; font-size: .84rem; resize: vertical; }
   </style>
 </head>
 <body>
@@ -67,11 +111,11 @@
     </div>
   </nav>
 
-  <div class="container-fluid py-4 px-4" style="max-width:1100px;">
+  <div class="container-fluid py-3 px-4" style="max-width:1100px;">
 
-    <nav aria-label="breadcrumb" class="mb-3">
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">לוח ניהול</a></li>
+    <nav aria-label="breadcrumb" class="mb-2">
+      <ol class="breadcrumb small">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">לוח פרטי</a></li>
         <li class="breadcrumb-item active">{{ profile.full_name if profile else student.username }}</li>
       </ol>
     </nav>
@@ -87,16 +131,110 @@
     {% set avatar_colors = ['#635bff','#f72585','#4cc9f0','#2d6a4f','#e76f51','#7209b7'] %}
     {% set acolor = avatar_colors[student.id % 6] %}
     {% set cat_class = {'קורות חיים':'cat-resume','LinkedIn':'cat-linkedin','הכנה לראיון':'cat-interview','שאלון':'cat-quiz','כללי':'cat-general'} %}
+    {% set status_lbl = {'active':'פעיל','paused':'מושהה','completed':'הושלם'} %}
+    {% set cur_status = profile.student_status if profile else 'active' %}
+
+    <!-- ── Quick Actions Bar ── -->
+    <div class="quick-bar">
+      <!-- WhatsApp -->
+      {% if profile and profile.phone %}
+        <a href="https://wa.me/{{ profile.phone | replace('+','') }}" target="_blank" class="qa-btn qa-wa">
+          &#128242; WhatsApp
+        </a>
+      {% else %}
+        <span class="qa-btn" style="background:#f3f4f6;color:#9ca3af;cursor:default;">&#128242; אין טלפון</span>
+      {% endif %}
+
+      <!-- Email -->
+      {% if profile and profile.email %}
+        <a href="mailto:{{ profile.email }}" class="qa-btn qa-email">&#9993;&#65039; אימייל</a>
+      {% endif %}
+
+      <!-- Schedule meeting -->
+      <a href="{{ url_for('admin_schedule') }}" class="qa-btn qa-meet">&#128197; קבע פגישה</a>
+
+      <!-- Spacer -->
+      <div class="ms-auto d-flex align-items-center gap-2">
+        <span class="text-muted" style="font-size:.75rem;">סטטוס:</span>
+        <!-- Quick status update form -->
+        <form method="POST" id="statusForm">
+          <input type="hidden" name="action" value="save_profile_settings">
+          <input type="hidden" name="process_start_date"
+                 value="{{ profile.process_start_date if profile and profile.process_start_date else '' }}">
+          <input type="hidden" name="target_end_date"
+                 value="{{ profile.target_end_date if profile and profile.target_end_date else '' }}">
+          <input type="hidden" name="mentor_notes"
+                 value="{{ profile.mentor_notes if profile and profile.mentor_notes else '' }}">
+          <select name="student_status" class="status-select st-{{ cur_status }}"
+                  onchange="this.form.submit()" id="statusSelect">
+            <option value="active"    {{ 'selected' if cur_status == 'active' }}>&#9889; פעיל</option>
+            <option value="paused"    {{ 'selected' if cur_status == 'paused' }}>&#9208;&#65039; מושהה</option>
+            <option value="completed" {{ 'selected' if cur_status == 'completed' }}>&#10003; הושלם</option>
+          </select>
+        </form>
+
+        <!-- Edit profile button -->
+        {% if profile %}
+          <button class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:.78rem;"
+                  data-bs-toggle="modal" data-bs-target="#editProfileModal">
+            &#9998; ערוך פרופיל
+          </button>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ── At-a-glance stats ── -->
+    {% if profile and profile.full_name %}
+      <div class="glance-bar">
+        {% if profile.process_start_date %}
+          {% set start_d = profile.process_start_date | to_date %}
+          {% set days_in = ((now_date - start_d).days) if start_d else 0 %}
+          <div class="glance-item">
+            <div class="glance-num">{{ days_in }}</div>
+            <div class="glance-lbl">&#9203; ימים בתהליך</div>
+          </div>
+        {% endif %}
+        <div class="glance-item">
+          <div class="glance-num">{{ completed|length }}/{{ (active|length)+(completed|length) }}</div>
+          <div class="glance-lbl">&#10003; משימות</div>
+        </div>
+        {% if student_meetings %}
+          <div class="glance-item">
+            <div class="glance-num" style="font-size:.95rem;">{{ student_meetings[0].scheduled_at | dt }}</div>
+            <div class="glance-lbl">&#128197; פגישה הבאה</div>
+          </div>
+        {% endif %}
+        {% if profile.process_start_date and profile.target_end_date %}
+          {% set start_d = profile.process_start_date | to_date %}
+          {% set end_d   = profile.target_end_date   | to_date %}
+          {% set total_days = ((end_d - start_d).days) if end_d and start_d else 0 %}
+          {% set elapsed    = ((now_date - start_d).days) if start_d else 0 %}
+          {% set pct = [[(elapsed / total_days * 100)|int, 0]|max, 100]|min if total_days > 0 else 0 %}
+          <div class="glance-item">
+            <div class="glance-num" style="color:#635bff;">{{ pct }}%</div>
+            <div class="glance-lbl">&#128200; מהתהליך</div>
+          </div>
+        {% endif %}
+        <div class="glance-item">
+          <div class="glance-num" style="font-size:.85rem; color:{{ '#065f46' if cur_status=='active' else ('#92400e' if cur_status=='paused' else '#374151') }};">
+            {{ status_lbl.get(cur_status, cur_status) }}
+          </div>
+          <div class="glance-lbl">&#9889; סטטוס</div>
+        </div>
+      </div>
+    {% endif %}
 
     <div class="row g-4">
 
       <!-- ── Left Column ── -->
       <div class="col-lg-7">
 
-        <!-- Section 1: Personal profile -->
+        <!-- Profile + Timeline merged -->
         <div class="section-card">
           <div class="d-flex align-items-center gap-3 mb-3">
-            <div class="avatar-lg" style="background:{{ acolor }};">{{ (profile.full_name if profile and profile.full_name else student.username)[0].upper() }}</div>
+            <div class="avatar-lg" style="background:{{ acolor }};">
+              {{ (profile.full_name if profile and profile.full_name else student.username)[0].upper() }}
+            </div>
             <div>
               <h5 class="mb-0 fw-bold">{{ profile.full_name if profile and profile.full_name else student.username }}</h5>
               <span class="text-muted small">@{{ student.username }}</span>
@@ -109,16 +247,20 @@
           </div>
 
           {% if not profile or not profile.full_name %}
-            <div class="alert alert-warning py-2 small">&#9888;&#65039; הסטודנט טרם מילא פרופיל ראשוני.</div>
+            <div class="alert alert-warning py-2 small mb-0">&#9888;&#65039; הסטודנט טרם מילא פרופיל ראשוני.</div>
           {% else %}
-            <div class="row g-3 small mb-3">
+            <div class="row g-2 small mb-3">
               <div class="col-sm-4">
                 <div class="field-lbl">אימייל</div>
-                <div class="field-val">{% if profile.email %}<a href="mailto:{{ profile.email }}" class="text-decoration-none" style="color:#635bff;">{{ profile.email }}</a>{% else %}—{% endif %}</div>
+                <div class="field-val">
+                  {% if profile.email %}<a href="mailto:{{ profile.email }}" style="color:#635bff;text-decoration:none;">{{ profile.email }}</a>{% else %}—{% endif %}
+                </div>
               </div>
               <div class="col-sm-4">
                 <div class="field-lbl">WhatsApp</div>
-                <div class="field-val">{% if profile.phone %}<a href="https://wa.me/{{ profile.phone | replace('+','') }}" target="_blank" class="text-decoration-none" style="color:#25d366;">&#128242; {{ profile.phone }}</a>{% else %}—{% endif %}</div>
+                <div class="field-val">
+                  {% if profile.phone %}<a href="https://wa.me/{{ profile.phone | replace('+','') }}" target="_blank" style="color:#25d366;text-decoration:none;">{{ profile.phone }}</a>{% else %}—{% endif %}
+                </div>
               </div>
               <div class="col-sm-4">
                 <div class="field-lbl">כיתה / תואר</div>
@@ -133,67 +275,72 @@
                 <div class="field-val">{{ profile.fears_weaknesses or '—' }}</div>
               </div>
             </div>
+
+            <!-- Timeline (inline, compact) -->
+            <div class="border-top pt-2 mt-1">
+              <form method="POST" class="row g-2 align-items-end">
+                <input type="hidden" name="action" value="save_profile_settings">
+                <input type="hidden" name="student_status" value="{{ cur_status }}">
+                <div class="col-sm-4">
+                  <label class="form-label fw-semibold" style="font-size:.72rem;">תחילת ליווי</label>
+                  <input type="date" name="process_start_date" class="form-control form-control-sm"
+                         value="{{ profile.process_start_date if profile and profile.process_start_date else '' }}">
+                </div>
+                <div class="col-sm-4">
+                  <label class="form-label fw-semibold" style="font-size:.72rem;">תאריך יעד</label>
+                  <input type="date" name="target_end_date" class="form-control form-control-sm"
+                         value="{{ profile.target_end_date if profile and profile.target_end_date else '' }}">
+                </div>
+                <div class="col-sm-4">
+                  <button type="submit" class="btn btn-crm btn-sm w-100">שמור</button>
+                </div>
+                {% if profile and profile.process_start_date and profile.target_end_date %}
+                  {% set s2 = profile.process_start_date | to_date %}
+                  {% set e2 = profile.target_end_date | to_date %}
+                  {% set td = ((e2 - s2).days) if e2 and s2 else 0 %}
+                  {% set el = ((now_date - s2).days) if s2 else 0 %}
+                  {% set p2 = [[(el / td * 100)|int, 0]|max, 100]|min if td > 0 else 0 %}
+                  <div class="col-12 mt-1">
+                    <div class="timeline-bar"><div class="timeline-fill" style="width:{{ p2 }};"></div></div>
+                    <div class="text-muted mt-1 text-center" style="font-size:.72rem;">{{ el }} מתוך {{ td }} ימים ({{ p2 }}%)</div>
+                  </div>
+                {% endif %}
+              </form>
+            </div>
+
+            <!-- Mentor notes -->
+            <div class="mt-3">
+              <form method="POST">
+                <input type="hidden" name="action" value="save_profile_settings">
+                <input type="hidden" name="student_status" value="{{ cur_status }}">
+                <input type="hidden" name="process_start_date"
+                       value="{{ profile.process_start_date if profile and profile.process_start_date else '' }}">
+                <input type="hidden" name="target_end_date"
+                       value="{{ profile.target_end_date if profile and profile.target_end_date else '' }}">
+                <label class="form-label fw-semibold" style="font-size:.72rem;">
+                  &#128221; הערות פרטיות (גלוי למנטור בלבד)
+                </label>
+                <div class="d-flex gap-2">
+                  <textarea name="mentor_notes" class="form-control notes-area form-control-sm flex-grow-1"
+                            placeholder="הערות, תובנות, דברים לזכור...">{{ profile.mentor_notes if profile and profile.mentor_notes else '' }}</textarea>
+                  <button type="submit" class="btn btn-crm btn-sm align-self-end px-3">שמור</button>
+                </div>
+              </form>
+            </div>
           {% endif %}
         </div>
 
-        <!-- Section 2: Process timeline -->
-        <div class="section-card">
-          <div class="section-title">&#128197; ציר זמן התהליך</div>
-          <form method="POST">
-            <input type="hidden" name="action" value="save_profile_settings">
-            <div class="row g-3 mb-3">
-              <div class="col-sm-6">
-                <label class="form-label fw-semibold small">תחילת ליווי</label>
-                <input type="date" name="process_start_date" class="form-control form-control-sm"
-                       value="{{ profile.process_start_date if profile and profile.process_start_date else '' }}">
-              </div>
-              <div class="col-sm-6">
-                <label class="form-label fw-semibold small">תאריך יעד</label>
-                <input type="date" name="target_end_date" class="form-control form-control-sm"
-                       value="{{ profile.target_end_date if profile and profile.target_end_date else '' }}">
-              </div>
-            </div>
-            {% if profile and profile.process_start_date %}
-              {% set today = now_date %}
-              {% set start = profile.process_start_date | to_date %}
-              {% if profile.target_end_date %}
-                {% set end_d = profile.target_end_date | to_date %}{% set total_days = ((end_d - start).days) if end_d and start else 0 %}
-                {% set elapsed = ((today - start).days) if start else 0 %}
-                {% set pct = [[(elapsed / total_days * 100)|int, 0]|max, 100]|min if total_days > 0 else 0 %}
-                <div class="mb-2">
-                  <div class="d-flex justify-content-between small text-muted mb-1">
-                    <span>{{ start| dt }}</span>
-                    <span>{{ elapsed }} ימים מתוך {{ total_days }}</span>
-                    <span>{{ profile.target_end_date | dt }}</span>
-                  </div>
-                  <div class="timeline-bar">
-                    <div class="timeline-fill" style="width:{{ pct }}%;"></div>
-                  </div>
-                  <div class="text-muted small mt-1 text-center">{{ pct }}% מהתהליך הושלם</div>
-                </div>
-              {% else %}
-                <div class="text-muted small">בתהליך מ-{{ start| dt }} · אין תאריך יעד</div>
-              {% endif %}
-            {% endif %}
-            <div class="mb-3 mt-3">
-              <label class="form-label fw-semibold small">&#128221; הערות פרטיות (גלוי למנטור בלבד)</label>
-              <textarea name="mentor_notes" class="form-control form-control-sm" rows="3"
-                        placeholder="הערות, תובנות, דברים לזכור...">{{ profile.mentor_notes if profile and profile.mentor_notes else '' }}</textarea>
-            </div>
-            <button type="submit" class="btn btn-primary-crm text-white btn-sm fw-semibold">שמור הגדרות</button>
-          </form>
-        </div>
-
-        <!-- Section 3: AI Strategy -->
+        <!-- AI Strategy -->
         <div class="section-card">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <div class="section-title mb-0">&#129504; אסטרטגיית הדרכה AI</div>
             <div class="d-flex gap-2">
-              <form method="POST"><input type="hidden" name="action" value="regenerate_strategy">
+              <form method="POST">
+                <input type="hidden" name="action" value="regenerate_strategy">
                 <button type="submit" class="btn btn-sm btn-outline-secondary py-1" {{ 'disabled' if not profile }}>&#8635; רענן</button>
               </form>
               <form method="POST" action="{{ url_for('ai_tasks_for_student', sid=student.id) }}">
-                <button type="submit" class="btn btn-sm btn-ai text-white py-1 fw-semibold">&#10024; צור משימות AI</button>
+                <button type="submit" class="btn btn-sm btn-ai py-1 fw-semibold">&#10024; צור משימות AI</button>
               </form>
             </div>
           </div>
@@ -202,9 +349,7 @@
           {% if strategy and not is_error %}
             <div class="strategy-box">{{ strategy }}</div>
           {% elif is_error %}
-            <div class="strategy-box strategy-empty">
-              &#9888;&#65039; מפתח AI לא מוגדר — הגדר <code>AI_API_KEY</code> כ-env var והפעל שרת מחדש, אחר כך לחץ/י "רענן".
-            </div>
+            <div class="strategy-box strategy-empty">&#9888;&#65039; הגדר <code>AI_API_KEY</code> ולחץ "רענן".</div>
           {% elif profile %}
             <div class="strategy-box strategy-empty">לחץ/י "רענן" לייצור אסטרטגיה מותאמת.</div>
           {% else %}
@@ -212,16 +357,16 @@
           {% endif %}
         </div>
 
-        <!-- Section 4: Resume -->
+        <!-- Resume -->
         <div class="section-card">
-          <div class="section-title">&#128196; ניהול קורות חיים (CV)</div>
+          <div class="section-title">&#128196; קורות חיים (CV)</div>
           <form method="POST">
             <input type="hidden" name="action" value="save_resume">
             <textarea name="resume_content" class="form-control resume-area mb-2"
-                      placeholder="הדבק/י קורות חיים, כתוב/י אותם מאפס, או הוסף/י הערות לגרסה...">{{ profile.resume_content if profile else '' }}</textarea>
+                      placeholder="הדבק/י קורות חיים...">{{ profile.resume_content if profile else '' }}</textarea>
             <div class="d-flex justify-content-between align-items-center">
               <span class="text-muted small">&#128274; גלוי למנטור בלבד</span>
-              <button type="submit" class="btn btn-primary-crm text-white btn-sm fw-semibold">שמור CV</button>
+              <button type="submit" class="btn btn-crm btn-sm fw-semibold">שמור CV</button>
             </div>
           </form>
         </div>
@@ -231,31 +376,30 @@
       <!-- ── Right Column ── -->
       <div class="col-lg-5">
 
-        <!-- Upcoming meetings mini widget -->
+        <!-- Meetings widget -->
         {% if student_meetings %}
           <div class="section-card" style="border-right: 3px solid #10b981;">
             <div class="section-title">&#128197; פגישות קרובות</div>
             {% for m in student_meetings %}
               <div class="meeting-mini">
-                <strong>{{ m.scheduled_at | dt('%d/%m/%Y %H:%M') }}</strong>
-                · {{ m.duration_min }} דקות
-                <span class="badge rounded-pill ms-1 {{ 'badge-done' if m.status == 'confirmed' else 'badge-pending' }}" style="font-size:.65rem;">
+                <strong>{{ m.scheduled_at | dt('%d/%m/%Y %H:%M') }}</strong> · {{ m.duration_min }} דק׳
+                <span class="badge rounded-pill ms-1 {{ 'badge-done' if m.status == 'confirmed' else 'badge-pending' }}" style="font-size:.62rem;">
                   {{ 'מאושר' if m.status == 'confirmed' else 'ממתין' }}
                 </span>
-                {% if m.notes %}<div class="text-muted" style="font-size:.78rem;">{{ m.notes }}</div>{% endif %}
+                {% if m.notes %}<div class="text-muted" style="font-size:.75rem;">{{ m.notes }}</div>{% endif %}
               </div>
             {% endfor %}
-            <a href="{{ url_for('admin_schedule') }}" class="text-muted small">ניהול כל הפגישות &#8592;</a>
+            <a href="{{ url_for('admin_schedule') }}" class="text-muted small">כל הפגישות &#8592;</a>
           </div>
         {% endif %}
 
-        <!-- Task management -->
+        <!-- Tasks -->
         <div class="section-card">
           <div class="section-title">&#128203; ניהול משימות</div>
 
           <div class="d-flex justify-content-between align-items-center mb-2">
             <span class="fw-semibold small">פעילות ({{ active|length }})</span>
-            <span class="badge" style="background:#635bff;">{{ active|length }}/{{ (active|length)+(completed|length) }}</span>
+            <span class="badge" style="background:#635bff; font-size:.7rem;">{{ active|length }}/{{ (active|length)+(completed|length) }}</span>
           </div>
 
           {% if not active %}
@@ -267,9 +411,9 @@
                 <span class="cat-pill {{ cat_class.get(t.category,'cat-general') }} flex-shrink-0 mt-1">{{ t.category }}</span>
                 <div class="flex-grow-1">
                   <div class="task-item-title">{{ t.title }}</div>
-                  <div class="task-item-meta">{{ at.assigned_at| dt }}</div>
+                  <div class="task-item-meta">{{ at.assigned_at | dt }}</div>
                 </div>
-                <span class="badge badge-pending rounded-pill flex-shrink-0">ממתין</span>
+                <span class="badge badge-pending rounded-pill flex-shrink-0" style="font-size:.62rem;">ממתין</span>
               </div>
             {% endfor %}
           {% endif %}
@@ -278,55 +422,152 @@
             <div class="fw-semibold small mt-3 mb-2">הושלמו ({{ completed|length }})</div>
             {% for at in completed %}
               {% set t = at.task %}
-              <div class="task-item" style="opacity:.7;">
+              <div class="task-item" style="opacity:.75;">
                 <span class="text-success fw-bold flex-shrink-0 mt-1">&#10003;</span>
                 <div class="flex-grow-1">
                   <div class="task-item-title" style="text-decoration:line-through;">{{ t.title }}</div>
-                  <div class="task-item-meta">{{ at.completed_at| dt if at.completed_at else '' }}</div>
+                  <div class="task-item-meta">{{ at.completed_at | dt if at.completed_at else '' }}</div>
                   {% if at.submission_note %}
-                    <div class="submission-box mt-1">&#128172; {{ at.submission_note | truncate(120) }}</div>
+                    <a class="submission-expand" onclick="toggleSub(this)">&#128172; הצג הגשה</a>
+                    <div class="submission-text">{{ at.submission_note }}</div>
                   {% endif %}
                   {% if at.submission_file %}
-                    <a href="{{ '/files/' + at.submission_file if at.submission_file else '' }}" target="_blank"
-                       class="text-decoration-none small" style="color:#635bff;">&#128206; הצג קובץ מצורף</a>
+                    <a href="{{ '/files/' + at.submission_file }}" target="_blank"
+                       class="text-decoration-none" style="font-size:.75rem;color:#635bff;">&#128206; קובץ מצורף</a>
                   {% endif %}
                 </div>
-                <span class="badge badge-done rounded-pill flex-shrink-0">בוצע</span>
+                <span class="badge badge-done rounded-pill flex-shrink-0" style="font-size:.62rem;">בוצע</span>
               </div>
             {% endfor %}
           {% endif %}
 
           <hr class="my-3">
+
+          <!-- Assign tasks with search -->
           <div class="fw-semibold small mb-2">&#128203; שיוך משימות</div>
-          <form method="POST">
+          <input type="text" class="assign-search" placeholder="&#128269; חיפוש משימה..."
+                 id="assignSearch" oninput="filterAssign(this.value)">
+          <form method="POST" id="assignForm">
             <input type="hidden" name="action" value="assign_tasks">
-            {% for cat in categories %}
-              {% set cat_tasks = taskbank | selectattr('category','equalto',cat) | list %}
-              {% if cat_tasks %}
-                <div class="assign-group">
-                  <div class="assign-group-title">{{ cat }}</div>
-                  {% for t in cat_tasks %}
-                    <div class="form-check mb-1">
-                      <input class="form-check-input" type="checkbox" name="task_ids" value="{{ t.id }}"
-                             id="t{{ t.id }}" {{ 'checked' if t.id in assigned_ids }}>
-                      <label class="form-check-label" style="font-size:.83rem;" for="t{{ t.id }}">
-                        {{ t.title }}
-                        {% if t.resource_file %}<span class="text-muted" style="font-size:.7rem;">📎</span>{% endif %}
-                      </label>
-                    </div>
-                  {% endfor %}
-                </div>
-              {% endif %}
-            {% endfor %}
-            {% if not taskbank %}<p class="text-muted small">אין משימות בבנק.</p>{% endif %}
-            <button type="submit" class="btn btn-primary-crm text-white btn-sm w-100 fw-semibold mt-2">&#10003; עדכן שיוך</button>
+            <div id="assignList">
+              {% for cat in categories %}
+                {% set cat_tasks = taskbank | selectattr('category','equalto',cat) | list %}
+                {% if cat_tasks %}
+                  <div class="assign-cat-group mb-2">
+                    <div style="font-size:.7rem; font-weight:700; color:#9ca3af; text-transform:uppercase; margin-bottom:.25rem;">{{ cat }}</div>
+                    {% for t in cat_tasks %}
+                      <div class="form-check mb-1 assign-item" data-title="{{ t.title | lower }}">
+                        <input class="form-check-input" type="checkbox" name="task_ids" value="{{ t.id }}"
+                               id="t{{ t.id }}" {{ 'checked' if t.id in assigned_ids }}>
+                        <label class="form-check-label" style="font-size:.81rem;" for="t{{ t.id }}">
+                          {{ t.title }}{% if t.resource_file %} <span style="color:#9ca3af;font-size:.68rem;">📎</span>{% endif %}
+                        </label>
+                      </div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              {% endfor %}
+              {% if not taskbank %}<p class="text-muted small">אין משימות בבנק.</p>{% endif %}
+            </div>
+            <button type="submit" class="btn btn-crm btn-sm w-100 fw-semibold mt-1">&#10003; עדכן שיוך</button>
           </form>
         </div>
 
       </div>
-    </div>
+    </div><!-- row -->
   </div>
 
+  <!-- ── Edit Profile Modal ── -->
+  {% if profile %}
+  <div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <form method="POST">
+          <input type="hidden" name="action" value="save_full_profile">
+          <div class="modal-header">
+            <h6 class="modal-title fw-bold">&#9998; עריכת פרופיל — {{ profile.full_name }}</h6>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-3">
+              <div class="col-md-5">
+                <label class="form-label fw-semibold small">שם מלא</label>
+                <input type="text" name="full_name" class="form-control form-control-sm" value="{{ profile.full_name }}">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold small">אימייל</label>
+                <input type="email" name="email" class="form-control form-control-sm" value="{{ profile.email }}">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label fw-semibold small">טלפון (WhatsApp)</label>
+                <input type="tel" name="phone" class="form-control form-control-sm" value="{{ profile.phone }}">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label fw-semibold small">רמת לימוד</label>
+                <select name="education_level" class="form-select form-select-sm">
+                  <option value="highschool" {{ 'selected' if profile.education_level == 'highschool' }}>תיכון</option>
+                  <option value="college"    {{ 'selected' if profile.education_level == 'college'    }}>מכללה/אוניברסיטה</option>
+                </select>
+              </div>
+              <div class="col-md-8">
+                <label class="form-label fw-semibold small">כיתה / תואר</label>
+                <input type="text" name="current_occupation_or_grade" class="form-control form-control-sm"
+                       value="{{ profile.current_occupation_or_grade }}">
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-semibold small">מטרות קריירה</label>
+                <textarea name="career_goals" class="form-control form-control-sm" rows="2">{{ profile.career_goals }}</textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-semibold small">חששות ונקודות חולשה</label>
+                <textarea name="fears_weaknesses" class="form-control form-control-sm" rows="2">{{ profile.fears_weaknesses }}</textarea>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ביטול</button>
+            <button type="submit" class="btn btn-crm btn-sm fw-semibold">שמור שינויים</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Update status select styling dynamically
+    const sel = document.getElementById('statusSelect');
+    if (sel) {
+      sel.addEventListener('change', function() {
+        this.className = 'status-select st-' + this.value;
+      });
+    }
+
+    // Toggle submission text
+    function toggleSub(el) {
+      const box = el.nextElementSibling;
+      if (box.style.display === 'block') {
+        box.style.display = 'none';
+        el.textContent = '💬 הצג הגשה';
+      } else {
+        box.style.display = 'block';
+        el.textContent = '💬 הסתר';
+      }
+    }
+
+    // Filter assign tasks
+    function filterAssign(q) {
+      q = q.toLowerCase();
+      document.querySelectorAll('#assignList .assign-item').forEach(item => {
+        item.style.display = item.dataset.title.includes(q) ? '' : 'none';
+      });
+      // Hide empty category headers
+      document.querySelectorAll('#assignList .assign-cat-group').forEach(grp => {
+        const visible = [...grp.querySelectorAll('.assign-item')].some(i => i.style.display !== 'none');
+        grp.style.display = visible ? '' : 'none';
+      });
+    }
+  </script>
 </body>
 </html>
