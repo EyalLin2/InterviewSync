@@ -2,7 +2,9 @@ import os
 import json
 import hmac
 import hashlib
-from datetime import datetime, date
+import calendar as _cal
+from datetime import datetime, date, timedelta
+from collections import defaultdict
 from functools import wraps
 
 from flask import Flask, render_template, request, redirect, url_for, session, flash, abort
@@ -21,6 +23,19 @@ UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "static", "uploads")
 ALLOWED_EXT   = {"pdf", "doc", "docx", "png", "jpg", "jpeg", "txt"}
 
 db = SQLAlchemy(app)
+
+# ── Rate limiting (in-memory, resets on restart) ──────────────────────────
+_login_attempts: dict = defaultdict(list)
+
+def _check_rate_limit(ip: str) -> bool:
+    """Allow max 5 login attempts per 5 minutes per IP. Returns True if OK."""
+    now    = datetime.utcnow()
+    cutoff = now - timedelta(seconds=300)
+    _login_attempts[ip] = [t for t in _login_attempts[ip] if t > cutoff]
+    if len(_login_attempts[ip]) >= 5:
+        return False
+    _login_attempts[ip].append(now)
+    return True
 
 
 @app.context_processor
@@ -237,22 +252,28 @@ def ai_generate_tasks_for_student(profile: "StudentProfile", count: int = 5) -> 
 # WhatsApp (Twilio)
 # ─────────────────────────────────────────────
 
-def send_whatsapp(phone: str, message: str) -> bool:
+def send_whatsapp(phone: str, message: str) -> tuple[bool, str]:
+    """
+    Send WhatsApp via Twilio. Returns (success, reason_string).
+    reason is empty string on success, or a description of why it failed.
+    """
     sid   = os.environ.get("TWILIO_ACCOUNT_SID")
     token = os.environ.get("TWILIO_AUTH_TOKEN")
     from_ = os.environ.get("TWILIO_WHATSAPP_FROM")
 
-    if not all([sid, token, from_, phone]):
-        return False
+    if not sid or not token or not from_:
+        return False, "no_config"
+    if not phone:
+        return False, "no_phone"
     try:
         from twilio.rest import Client
         client = Client(sid, token)
         to = f"whatsapp:{phone}" if not phone.startswith("whatsapp:") else phone
         client.messages.create(body=message, from_=from_, to=to)
-        return True
+        return True, ""
     except Exception as e:
         app.logger.error("WhatsApp send failed: %s", e)
-        return False
+        return False, str(e)
 
 
 # ─────────────────────────────────────────────
@@ -300,6 +321,11 @@ def login():
         return redirect(url_for("admin_dashboard") if u.role == "admin" else url_for("index"))
 
     if request.method == "POST":
+        ip = request.remote_addr or "unknown"
+        if not _check_rate_limit(ip):
+            flash("יותר מדי ניסיונות כניסה. נסה שוב בעוד 5 דקות.", "danger")
+            return render_template("login.html")
+
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
         user = User.query.filter_by(username=username).first()
@@ -556,8 +582,8 @@ def student_file(student_id):
             if new_ids and profile and profile.phone:
                 name = profile.full_name or student.username
                 msg  = f"שלום {name}! המנטור שלך הוסיף לך {len(new_ids)} משימות חדשות. היכנס/י למערכת לצפייה 📋"
-                sent = send_whatsapp(profile.phone, msg)
-                flash(f"שויכו {len(new_ids)} משימות" + (" ונשלחה הודעת WhatsApp." if sent else ". WhatsApp לא מוגדר."), "success" if sent else "warning")
+                sent, reason = send_whatsapp(profile.phone, msg)
+                flash(f"שויכו {len(new_ids)} משימות" + (" ונשלחה הודעת WhatsApp." if sent else f". WhatsApp: {reason or "לא מוגדר"}."), "success" if sent else "warning")
             else:
                 flash("המשימות עודכנו בהצלחה.", "success")
 
@@ -657,6 +683,7 @@ def ai_tasks_for_student(student_id):
         name = profile.full_name or student.username
         send_whatsapp(profile.phone,
             f"שלום {name}! המנטור שלך יצר עבורך {created} משימות חדשות בעזרת AI 🤖 היכנס/י לצפייה.")
+        # fire-and-forget — result not needed here
 
     flash(f"נוצרו ושויכו {created} משימות AI לסטודנט.", "success")
     return redirect(url_for("student_file", student_id=student_id))
@@ -706,21 +733,26 @@ def admin_schedule():
                 name         = profile.full_name or student.username
                 msg = (f"שלום {name}! נקבעה פגישה ביום {dt_str} (משך: {duration} דקות).\n"
                        f"לאישור הפגישה לחץ/י כאן: {confirm_url}")
-                sent = send_whatsapp(profile.phone, msg)
-                flash("הפגישה נקבעה" + (" ונשלחה הודעת WhatsApp לאישור." if sent else ". WhatsApp לא מוגדר — שלח/י הודעה ידנית."), "success" if sent else "warning")
+                sent, reason = send_whatsapp(profile.phone, msg)
+                if sent:
+                    flash("הפגישה נקבעה ונשלחה הודעת WhatsApp לאישור.", "success")
+                elif reason == "no_config":
+                    flash("הפגישה נקבעה. Twilio לא מוגדר (TWILIO_ACCOUNT_SID/AUTH_TOKEN/WHATSAPP_FROM חסרים) — שלח/י הודעה ידנית.", "warning")
+                else:
+                    flash(f"הפגישה נקבעה. שגיאת WhatsApp: {reason}", "warning")
             else:
-                flash("הפגישה נקבעה. לתלמיד אין מספר WhatsApp — עדכן/י אותו ידנית.", "warning")
+                flash("הפגישה נקבעה. לתלמיד אין מספר טלפון — עדכן/י בפרופיל.", "warning")
 
         elif action == "cancel_meeting":
             meeting_id = request.form.get("meeting_id", type=int)
             meeting    = Meeting.query.get_or_404(meeting_id)
             meeting.status = "cancelled"
             db.session.commit()
-
-            profile = meeting.student.profile if hasattr(meeting, "student") else None
+            student = db.session.get(User, meeting.student_id)
+            profile = student.profile if student else None
             if profile and profile.phone:
                 dt_str = meeting.scheduled_at.strftime("%d/%m/%Y %H:%M")
-                name   = profile.full_name or "שלום"
+                name   = profile.full_name or student.username
                 send_whatsapp(profile.phone, f"שלום {name}! הפגישה בתאריך {dt_str} בוטלה. נדבר בקרוב.")
             flash("הפגישה בוטלה.", "success")
 
@@ -729,31 +761,116 @@ def admin_schedule():
             meeting    = Meeting.query.get_or_404(meeting_id)
             student    = db.session.get(User, meeting.student_id)
             profile    = student.profile if student else None
-            if profile and profile.phone:
+            if not profile or not profile.phone:
+                flash("אין מספר טלפון לתלמיד זה — עדכן/י בפרופיל.", "warning")
+            else:
                 dt_str = meeting.scheduled_at.strftime("%d/%m/%Y בשעה %H:%M")
                 name   = profile.full_name or student.username
-                sent   = send_whatsapp(profile.phone,
-                    f"תזכורת 📅 שלום {name}! מחר יש לנו פגישה ב-{dt_str}. להתראות!")
-                flash("תזכורת נשלחה בהצלחה." if sent else "שליחת תזכורת נכשלה — בדוק הגדרות WhatsApp.", "success" if sent else "danger")
-            else:
-                flash("אין מספר WhatsApp לתלמיד זה.", "warning")
+                sent, reason = send_whatsapp(profile.phone,
+                    f"תזכורת &#128197; שלום {name}! יש לנו פגישה ב-{dt_str}. להתראות!")
+                if sent:
+                    flash("תזכורת WhatsApp נשלחה בהצלחה.", "success")
+                elif reason == "no_config":
+                    flash("Twilio לא מוגדר — הוסף TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_WHATSAPP_FROM כ-env vars.", "danger")
+                else:
+                    flash(f"שגיאת WhatsApp: {reason}", "danger")
 
         return redirect(url_for("admin_schedule"))
+
+    # ── Calendar data ──────────────────────────────────────────────────
+    year  = request.args.get("year",  type=int, default=date.today().year)
+    month = request.args.get("month", type=int, default=date.today().month)
+    year  = max(2020, min(2035, year))
+    month = max(1,    min(12,   month))
+
+    prev_year  = year - 1 if month == 1 else year
+    prev_month = 12        if month == 1 else month - 1
+    next_year  = year + 1  if month == 12 else year
+    next_month = 1         if month == 12 else month + 1
+
+    from_dt = datetime(year, month, 1)
+    to_dt   = datetime(next_year, next_month, 1)
+
+    month_meetings = (Meeting.query
+                      .filter(Meeting.scheduled_at >= from_dt,
+                              Meeting.scheduled_at <  to_dt,
+                              Meeting.status != "cancelled")
+                      .order_by(Meeting.scheduled_at).all())
+
+    meetings_by_day: dict = {}
+    for m in month_meetings:
+        s = db.session.get(User, m.student_id)
+        p = s.profile if s else None
+        name = p.full_name if p and p.full_name else (s.username if s else "?")
+        meetings_by_day.setdefault(m.scheduled_at.day, []).append({
+            "id":       m.id,
+            "name":     name,
+            "time":     m.scheduled_at.strftime("%H:%M"),
+            "duration": m.duration_min,
+            "status":   m.status,
+            "notes":    m.notes or "",
+        })
+
+    # Sunday-first weeks (Israeli calendar)
+    cal_weeks = _cal.Calendar(firstweekday=6).monthdayscalendar(year, month)
+
+    MONTHS_HE = {1:"ינואר",2:"פברואר",3:"מרץ",4:"אפריל",5:"מאי",6:"יוני",
+                 7:"יולי",8:"אוגוסט",9:"ספטמבר",10:"אוקטובר",11:"נובמבר",12:"דצמבר"}
 
     upcoming = (Meeting.query
                 .filter(Meeting.scheduled_at >= datetime.utcnow())
                 .filter(Meeting.status != "cancelled")
-                .order_by(Meeting.scheduled_at).all())
-    past = (Meeting.query
-            .filter(Meeting.scheduled_at < datetime.utcnow())
-            .order_by(Meeting.scheduled_at.desc()).limit(10).all())
+                .order_by(Meeting.scheduled_at).limit(20).all())
 
     return render_template("admin_schedule.html",
         user=current_user(),
         students=students,
         upcoming=upcoming,
-        past=past,
+        cal_weeks=cal_weeks,
+        meetings_by_day=meetings_by_day,
+        year=year, month=month,
+        month_name=MONTHS_HE[month],
+        prev_year=prev_year, prev_month=prev_month,
+        next_year=next_year, next_month=next_month,
     )
+
+
+@app.route("/admin/students", methods=["POST"])
+@login_required
+@admin_required
+def admin_create_student():
+    username  = request.form.get("username", "").strip()
+    password  = request.form.get("password", "").strip()
+    full_name = request.form.get("full_name", "").strip()
+    phone     = request.form.get("phone", "").strip()
+
+    if not username or not password:
+        flash("שם משתמש וסיסמה הם שדות חובה.", "warning")
+        return redirect(url_for("admin_dashboard"))
+    if len(password) < 6:
+        flash("הסיסמה חייבת להכיל לפחות 6 תווים.", "warning")
+        return redirect(url_for("admin_dashboard"))
+    if User.query.filter_by(username=username).first():
+        flash(f"שם המשתמש '{username}' כבר תפוס.", "warning")
+        return redirect(url_for("admin_dashboard"))
+
+    user = User(username=username,
+                password=generate_password_hash(password),
+                role="student")
+    db.session.add(user)
+    db.session.flush()
+
+    if full_name or phone:
+        profile = StudentProfile(
+            user_id=user.id,
+            full_name=full_name,
+            phone=_normalize_phone(phone) if phone else "",
+        )
+        db.session.add(profile)
+
+    db.session.commit()
+    flash(f"✓ סטודנט '{username}' נוצר בהצלחה! ישלח/תשלח לו/ה את פרטי הכניסה.", "success")
+    return redirect(url_for("admin_dashboard"))
 
 
 @app.route("/meeting/<int:meeting_id>/confirm")

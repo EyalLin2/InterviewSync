@@ -162,11 +162,22 @@
 
       <!-- ── Tab 1: Students 360 ── -->
       <div class="tab-pane fade show active" id="tab-students">
+
+        <!-- Toolbar: search + add student -->
+        <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+          <input type="text" id="studentSearch" class="form-control form-control-sm"
+                 style="max-width:260px;" placeholder="&#128269; חיפוש תלמיד...">
+          <button class="btn btn-primary-crm text-white btn-sm fw-semibold ms-auto"
+                  data-bs-toggle="modal" data-bs-target="#addStudentModal">
+            &#10133; הוסף סטודנט
+          </button>
+        </div>
+
         {% if not students %}
-          <div class="alert alert-info">אין תלמידים רשומים עדיין.</div>
+          <div class="alert alert-info">אין תלמידים רשומים עדיין — הוסף סטודנט ראשון.</div>
         {% else %}
           <div class="students-table">
-            <table class="table table-hover mb-0">
+            <table class="table table-hover mb-0" id="studentsTable">
               <thead>
                 <tr>
                   <th>תלמיד</th>
@@ -239,6 +250,13 @@
 
       <!-- ── Tab 2: Task Bank ── -->
       <div class="tab-pane fade" id="tab-taskbank">
+
+        <!-- Task bank search -->
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <input type="text" id="taskSearch" class="form-control form-control-sm"
+                 style="max-width:280px;" placeholder="&#128269; חיפוש בבנק המשימות...">
+          <span class="text-muted small">{{ taskbank|length }} משימות</span>
+        </div>
 
         <!-- Add task form -->
         <div class="card border-0 shadow-sm rounded-3 mb-4" style="background:#fff;">
@@ -392,12 +410,69 @@
     </div><!-- tab-content -->
   </div>
 
+  <!-- ── Add Student Modal ── -->
+  <div class="modal fade" id="addStudentModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="POST" action="{{ url_for('admin_create_student') }}">
+          <div class="modal-header">
+            <h6 class="modal-title fw-bold">&#10133; הוסף סטודנט חדש</h6>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label fw-semibold small">שם משתמש <span class="text-danger">*</span></label>
+                <input type="text" name="username" class="form-control" placeholder="israel123" required>
+                <div class="form-text">הסטודנט ישתמש בזה להתחברות</div>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-semibold small">סיסמה <span class="text-danger">*</span></label>
+                <input type="text" name="password" class="form-control" placeholder="לפחות 6 תווים" required minlength="6">
+                <div class="form-text">שתף את הסיסמה עם הסטודנט ידנית (לא נשלחת אוטומטית)</div>
+              </div>
+              <div class="col-md-7">
+                <label class="form-label fw-semibold small">שם מלא (אופציונלי)</label>
+                <input type="text" name="full_name" class="form-control" placeholder="ישראל ישראלי">
+              </div>
+              <div class="col-md-5">
+                <label class="form-label fw-semibold small">טלפון WhatsApp</label>
+                <input type="tel" name="phone" class="form-control" placeholder="0501234567">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ביטול</button>
+            <button type="submit" class="btn btn-primary-crm text-white btn-sm fw-semibold">צור סטודנט</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     // Auto-open taskbank tab if URL hash matches
     if (window.location.hash === '#tab-taskbank') {
       document.getElementById('taskbank-tab-btn').click();
     }
+
+    // Student search filter
+    document.getElementById('studentSearch')?.addEventListener('input', function() {
+      const q = this.value.toLowerCase();
+      document.querySelectorAll('#studentsTable tbody tr').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    });
+
+    // Task bank search filter
+    document.getElementById('taskSearch')?.addEventListener('input', function() {
+      const q = this.value.toLowerCase();
+      document.querySelectorAll('.task-bank-card').forEach(card => {
+        card.closest('.col-md-6, .col-lg-4').style.display =
+          card.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+    });
   </script>
 </body>
 </html>
