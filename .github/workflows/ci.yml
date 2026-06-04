@@ -12,13 +12,13 @@ on:
       - master
 
 env:
-  AWS_REGION:      ${{ vars.AWS_REGION || 'eu-west-1' }}
-  ECR_REGISTRY:    ${{ secrets.ECR_REGISTRY }}
-  BACKEND_IMAGE:   interviewsync-backend
-  FRONTEND_IMAGE:  interviewsync-frontend
+  AWS_REGION:     eu-west-1
+  ECR_REGISTRY:   ${{ secrets.ECR_REGISTRY }}
+  BACKEND_IMAGE:  interviewsync-backend
+  FRONTEND_IMAGE: interviewsync-frontend
 
 # ──────────────────────────────────────────────
-# JOB 1 — Lint + Test (runs on every push)
+# JOB 1 — Lint + Test (all branches)
 # ──────────────────────────────────────────────
 jobs:
   lint-and-test:
@@ -41,41 +41,38 @@ jobs:
           --health-retries 10
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: pip
 
-      - name: Install backend dependencies
-        run: pip install -r backend/requirements.txt
+      - name: Install dependencies
+        run: |
+          pip install -r backend/requirements.txt
+          pip install -r frontend/requirements.txt
 
-      - name: Install frontend dependencies
-        run: pip install -r frontend/requirements.txt
-
-      - name: Lint — backend (flake8)
+      - name: Lint backend
         run: flake8 backend/ --config=setup.cfg
 
-      - name: Lint — frontend (flake8)
+      - name: Lint frontend
         run: flake8 frontend/ --config=setup.cfg
 
-      - name: Test — backend
+      - name: Test backend
         env:
           DATABASE_URL: postgresql://interviewsync:testpassword@localhost:5432/interviewsync_test
-          SECRET_KEY: ci-test-secret-key
+          SECRET_KEY: ci-test-secret-key-long-enough-for-hs256
         run: pytest backend/tests/ -v --tb=short
 
-      - name: Test — frontend
+      - name: Test frontend
         env:
-          SECRET_KEY:   ci-test-secret-key
-          BACKEND_URL:  http://mock-backend:8000
+          SECRET_KEY:  ci-test-secret-key-long-enough-for-hs256
+          BACKEND_URL: http://mock-backend:8000
         run: pytest frontend/tests/ -v --tb=short
 
   # ──────────────────────────────────────────────
-  # JOB 2 — Build Docker images (feature branch: no push)
+  # JOB 2 — Docker Build (no push, validates Dockerfiles)
   # ──────────────────────────────────────────────
   build:
     name: Docker Build
@@ -83,11 +80,9 @@ jobs:
     needs: lint-and-test
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v3
 
       - name: Build backend image
         uses: docker/build-push-action@v5
@@ -96,7 +91,7 @@ jobs:
           push: false
           tags: ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
           cache-from: type=gha
-          cache-to:   type=gha,mode=max
+          cache-to: type=gha,mode=max
 
       - name: Build frontend image
         uses: docker/build-push-action@v5
@@ -105,10 +100,10 @@ jobs:
           push: false
           tags: ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
           cache-from: type=gha
-          cache-to:   type=gha,mode=max
+          cache-to: type=gha,mode=max
 
   # ──────────────────────────────────────────────
-  # JOB 3 — Push to ECR + deploy to STAGING (master only)
+  # JOB 3 — Push to ECR + deploy STAGING (master only)
   # ──────────────────────────────────────────────
   deploy-staging:
     name: Deploy → Staging
@@ -117,8 +112,7 @@ jobs:
     if: github.ref == 'refs/heads/master' && github.event_name == 'push'
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -128,10 +122,9 @@ jobs:
           aws-region:            ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
-        id: ecr-login
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build & Push backend → ECR (staging)
+      - name: Build & Push backend → ECR
         uses: docker/build-push-action@v5
         with:
           context: ./backend
@@ -140,9 +133,9 @@ jobs:
             ${{ env.ECR_REGISTRY }}/${{ env.BACKEND_IMAGE }}:latest
             ${{ env.ECR_REGISTRY }}/${{ env.BACKEND_IMAGE }}:${{ github.sha }}
           cache-from: type=gha
-          cache-to:   type=gha,mode=max
+          cache-to: type=gha,mode=max
 
-      - name: Build & Push frontend → ECR (staging)
+      - name: Build & Push frontend → ECR
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
@@ -151,32 +144,30 @@ jobs:
             ${{ env.ECR_REGISTRY }}/${{ env.FRONTEND_IMAGE }}:latest
             ${{ env.ECR_REGISTRY }}/${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
           cache-from: type=gha
-          cache-to:   type=gha,mode=max
+          cache-to: type=gha,mode=max
 
       - name: Trigger ArgoCD staging sync
-        if: ${{ secrets.ARGOCD_SERVER != '' }}
+        if: secrets.ARGOCD_SERVER != ''
         run: |
-          curl -s -X POST \
+          curl -sf -X POST \
             -H "Authorization: Bearer ${{ secrets.ARGOCD_AUTH_TOKEN }}" \
             "${{ secrets.ARGOCD_SERVER }}/api/v1/applications/interviewsync-backend-staging/sync" || true
-          curl -s -X POST \
+          curl -sf -X POST \
             -H "Authorization: Bearer ${{ secrets.ARGOCD_AUTH_TOKEN }}" \
             "${{ secrets.ARGOCD_SERVER }}/api/v1/applications/interviewsync-frontend-staging/sync" || true
 
       - name: Notify Slack — staging deployed
-        if: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
-        uses: slackapi/slack-github-action@v1
+        if: secrets.SLACK_WEBHOOK_URL != ''
+        uses: slackapi/slack-github-action@v2.0.0
         with:
           payload: |
-            {
-              "text": "✅ *InterviewSync* deployed to *staging* — commit `${{ github.sha }}` by ${{ github.actor }}"
-            }
+            {"text": "✅ *InterviewSync* deployed to *staging* — `${{ github.sha }}` by ${{ github.actor }}"}
         env:
           SLACK_WEBHOOK_URL:  ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
   # ──────────────────────────────────────────────
-  # JOB 4 — Push versioned tag + deploy to PRODUCTION
+  # JOB 4 — Push versioned tag + deploy PRODUCTION
   # ──────────────────────────────────────────────
   deploy-production:
     name: Deploy → Production
@@ -185,8 +176,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Get version tag
         id: version
@@ -211,7 +201,7 @@ jobs:
             ${{ env.ECR_REGISTRY }}/${{ env.BACKEND_IMAGE }}:${{ steps.version.outputs.tag }}
             ${{ env.ECR_REGISTRY }}/${{ env.BACKEND_IMAGE }}:stable
           cache-from: type=gha
-          cache-to:   type=gha,mode=max
+          cache-to: type=gha,mode=max
 
       - name: Build & Push frontend → ECR (production)
         uses: docker/build-push-action@v5
@@ -222,38 +212,34 @@ jobs:
             ${{ env.ECR_REGISTRY }}/${{ env.FRONTEND_IMAGE }}:${{ steps.version.outputs.tag }}
             ${{ env.ECR_REGISTRY }}/${{ env.FRONTEND_IMAGE }}:stable
           cache-from: type=gha
-          cache-to:   type=gha,mode=max
+          cache-to: type=gha,mode=max
 
       - name: Trigger ArgoCD production sync
-        if: ${{ secrets.ARGOCD_SERVER != '' }}
+        if: secrets.ARGOCD_SERVER != ''
         run: |
-          curl -s -X POST \
+          curl -sf -X POST \
             -H "Authorization: Bearer ${{ secrets.ARGOCD_AUTH_TOKEN }}" \
             "${{ secrets.ARGOCD_SERVER }}/api/v1/applications/interviewsync-backend-prod/sync" || true
-          curl -s -X POST \
+          curl -sf -X POST \
             -H "Authorization: Bearer ${{ secrets.ARGOCD_AUTH_TOKEN }}" \
             "${{ secrets.ARGOCD_SERVER }}/api/v1/applications/interviewsync-frontend-prod/sync" || true
 
       - name: Notify Slack — production deployed
-        if: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
-        uses: slackapi/slack-github-action@v1
+        if: secrets.SLACK_WEBHOOK_URL != ''
+        uses: slackapi/slack-github-action@v2.0.0
         with:
           payload: |
-            {
-              "text": "🚀 *InterviewSync ${{ steps.version.outputs.tag }}* deployed to *production* by ${{ github.actor }}"
-            }
+            {"text": "🚀 *InterviewSync ${{ steps.version.outputs.tag }}* deployed to *production* by ${{ github.actor }}"}
         env:
           SLACK_WEBHOOK_URL:  ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
 
       - name: Notify Slack — build failure
-        if: failure() && ${{ secrets.SLACK_WEBHOOK_URL != '' }}
-        uses: slackapi/slack-github-action@v1
+        if: ${{ failure() && secrets.SLACK_WEBHOOK_URL != '' }}
+        uses: slackapi/slack-github-action@v2.0.0
         with:
           payload: |
-            {
-              "text": "❌ *InterviewSync* CI failed on `${{ github.ref }}` — <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>"
-            }
+            {"text": "❌ *InterviewSync* CI failed on `${{ github.ref }}` — <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>"}
         env:
           SLACK_WEBHOOK_URL:  ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
