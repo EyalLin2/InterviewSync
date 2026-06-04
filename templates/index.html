@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InterviewSync — Student Portal</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <style>
+    body { background: #f4f6f9; }
+    .navbar-brand { font-weight: 700; font-size: 1.3rem; }
+    .sidebar { min-height: calc(100vh - 56px); background: #fff; border-right: 1px solid #dee2e6; }
+    .sidebar .nav-link { color: #495057; border-radius: 8px; padding: 0.5rem 0.75rem; margin-bottom: 2px; }
+    .sidebar .nav-link:hover, .sidebar .nav-link.active { background: #e8f0fe; color: #0d6efd; }
+    .category-badge { font-size: 0.7rem; }
+    .star-card { background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
+    .star-label {
+      display: inline-block;
+      width: 90px;
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: #6c757d;
+    }
+    .ai-feedback-box {
+      background: linear-gradient(135deg, #eef2ff, #f0fdf4);
+      border-left: 4px solid #0d6efd;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.88rem;
+      white-space: pre-wrap;
+    }
+    .mentor-feedback-box {
+      background: #fff8e1;
+      border-left: 4px solid #ffc107;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.88rem;
+    }
+    .answered-icon { color: #198754; }
+    .question-item { cursor: pointer; transition: background 0.15s; }
+    .question-item:hover { background: #f8f9fa; }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid px-4">
+      <span class="navbar-brand">&#127891; InterviewSync</span>
+      <div class="ms-auto d-flex align-items-center gap-3">
+        <span class="text-white-50 small">Signed in as <strong class="text-white">{{ user.username }}</strong></span>
+        <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Sidebar: Question List -->
+      <div class="col-lg-3 col-md-4 sidebar py-3 px-3">
+        <p class="text-muted small fw-semibold mb-2 text-uppercase">Practice Questions</p>
+        <div class="nav flex-column" id="questionList">
+          {% set categories = questions | map(attribute='category') | unique | list %}
+          {% for cat in categories %}
+            <p class="text-muted small mb-1 mt-2 fw-bold">{{ cat }}</p>
+            {% for q in questions if q.category == cat %}
+              <a href="#q{{ q.id }}" class="nav-link question-item d-flex justify-content-between align-items-start"
+                 onclick="scrollToQuestion({{ q.id }})">
+                <span class="small">{{ q.title | truncate(55) }}</span>
+                {% if q.id in my_answers %}
+                  <span class="answered-icon ms-1">&#10003;</span>
+                {% endif %}
+              </a>
+            {% endfor %}
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="col-lg-9 col-md-8 py-4 px-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% endfor %}
+        {% endwith %}
+
+        <div class="d-flex align-items-center mb-4">
+          <div>
+            <h4 class="mb-0 fw-bold">My Practice Board</h4>
+            <p class="text-muted small mb-0">Answer each question using the STAR method — get instant AI feedback.</p>
+          </div>
+          <span class="ms-auto badge bg-success fs-6">
+            {{ my_answers | length }} / {{ questions | length }} answered
+          </span>
+        </div>
+
+        {% if not questions %}
+          <div class="alert alert-info">No questions available yet. Ask your mentor to add some!</div>
+        {% endif %}
+
+        {% for question in questions %}
+          {% set answer = my_answers.get(question.id) %}
+          <div class="star-card p-4 mb-4" id="q{{ question.id }}">
+            <!-- Question Header -->
+            <div class="d-flex align-items-start gap-2 mb-3">
+              <div class="flex-grow-1">
+                <span class="badge bg-secondary category-badge mb-1">{{ question.category }}</span>
+                <span class="badge bg-light text-muted category-badge mb-1 border">{{ question.target_role }}</span>
+                <h6 class="mb-0 fw-semibold">{{ question.title }}</h6>
+              </div>
+              {% if answer %}
+                <span class="badge bg-success">Answered</span>
+              {% else %}
+                <span class="badge bg-warning text-dark">Pending</span>
+              {% endif %}
+            </div>
+
+            <!-- STAR Form -->
+            <form method="POST" action="{{ url_for('index') }}">
+              <input type="hidden" name="question_id" value="{{ question.id }}" />
+              <div class="row g-2 mb-3">
+                {% for field, label, hint in [
+                  ('situation', 'Situation', 'Set the scene and provide context.'),
+                  ('task', 'Task', 'Describe your responsibility or challenge.'),
+                  ('action', 'Action', 'Explain the specific steps you took.'),
+                  ('result', 'Result', 'Share the outcome — use numbers where possible.')
+                ] %}
+                  <div class="col-12">
+                    <label class="form-label d-flex align-items-center gap-2 mb-1">
+                      <span class="star-label">{{ label }}</span>
+                      <span class="text-muted small">{{ hint }}</span>
+                    </label>
+                    <textarea name="{{ field }}" rows="2"
+                      class="form-control form-control-sm"
+                      placeholder="{{ hint }}">{{ answer[field] if answer else '' }}</textarea>
+                  </div>
+                {% endfor %}
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm px-4">
+                {% if answer %}Update & Re-analyze{% else %}Submit & Get AI Feedback{% endif %}
+              </button>
+            </form>
+
+            <!-- Feedback Section -->
+            {% if answer %}
+              <hr class="my-3" />
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <p class="small fw-bold mb-1">&#129504; AI Feedback</p>
+                  <div class="ai-feedback-box p-3">
+                    {{ answer.ai_feedback or 'No AI feedback yet.' }}
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <p class="small fw-bold mb-1">&#128172; Mentor Feedback</p>
+                  <div class="mentor-feedback-box p-3">
+                    {{ answer.mentor_feedback or 'Your mentor has not left feedback yet.' }}
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function scrollToQuestion(id) {
+      const el = document.getElementById('q' + id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  </script>
+</body>
+</html>
