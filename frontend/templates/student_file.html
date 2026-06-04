@@ -9,102 +9,126 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
   <style>
     body { font-family: 'Heebo', sans-serif; background: #f4f5f9; }
+
+    /* ── Navbar (same as admin) ── */
     .navbar-admin { background: #1a1f36; }
     .navbar-brand-text { font-weight: 800; color: #fff; font-size: 1.15rem; }
     .breadcrumb-item a { color: #635bff; text-decoration: none; }
 
-    .section-card { background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,.06); padding: 1.5rem; margin-bottom: 1.5rem; }
-    .section-title { font-size: .72rem; font-weight: 700; text-transform: uppercase; color: #9ca3af; letter-spacing: .5px; margin-bottom: 1rem; }
-    .field-lbl { font-size: .72rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .3px; }
-    .field-val { font-size: .88rem; color: #1a1f36; margin-top: 2px; }
-
-    /* Quick Actions Bar */
-    .quick-bar {
-      display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
-      background: #fff; border-radius: 12px;
+    /* ── Cards (same spec as admin) ── */
+    .card-crm {
+      background: #fff;
+      border-radius: 14px;
       box-shadow: 0 2px 10px rgba(0,0,0,.06);
-      padding: .75rem 1.25rem; margin-bottom: 1.25rem;
+      padding: 1.75rem;
+      margin-bottom: 1.25rem;
     }
-    .qa-btn {
-      display: inline-flex; align-items: center; gap: .35rem;
-      font-size: .82rem; font-weight: 600; padding: .35rem .85rem;
-      border-radius: 8px; text-decoration: none; border: none; cursor: pointer;
-      transition: opacity .15s;
+    .section-title {
+      font-size: .72rem; font-weight: 700; text-transform: uppercase;
+      color: #9ca3af; letter-spacing: .5px; margin-bottom: 1rem;
     }
-    .qa-btn:hover { opacity: .82; }
+
+    /* ── Quick Actions Bar ── */
+    .quick-bar {
+      background: #fff; border-radius: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.06);
+      padding: .75rem 1.5rem; margin-bottom: 1rem;
+      display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
+    }
+    .qa { display: inline-flex; align-items: center; gap: .3rem; font-size: .82rem; font-weight: 600; padding: .3rem .8rem; border-radius: 7px; text-decoration: none; border: none; cursor: pointer; transition: opacity .12s; }
+    .qa:hover { opacity: .8; }
     .qa-wa    { background: #dcfce7; color: #166534; }
     .qa-email { background: #dbeafe; color: #1e40af; }
     .qa-meet  { background: #ede9fe; color: #5b21b6; }
+    .qa-none  { background: #f3f4f6; color: #9ca3af; cursor: default; }
 
-    /* Status selector */
-    .status-select { font-size: .78rem; font-weight: 700; border: none; border-radius: 50px; padding: .3rem .75rem; cursor: pointer; }
+    /* ── Status pill ── */
+    .status-select { font-size: .78rem; font-weight: 700; border: none; border-radius: 50px; padding: .25rem .7rem; cursor: pointer; outline: none; }
     .st-active    { background: #d1fae5; color: #065f46; }
     .st-paused    { background: #fef3c7; color: #92400e; }
     .st-completed { background: #f3f4f6; color: #374151; }
 
-    /* At-a-glance */
-    .glance-bar {
-      display: flex; gap: 1.5rem; flex-wrap: wrap;
-      padding: .9rem 1.25rem; background: #f8f9ff;
-      border-radius: 10px; margin-bottom: 1.25rem;
+    /* ── Stats row (same scale as admin stat-cards) ── */
+    .stats-row { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .stat-box {
+      background: #fff; border-radius: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.06);
+      padding: 1rem 1.25rem; text-align: center; flex: 1; min-width: 120px;
     }
-    .glance-item { text-align: center; }
-    .glance-num  { font-size: 1.3rem; font-weight: 800; color: #1a1f36; line-height: 1; }
-    .glance-lbl  { font-size: .68rem; color: #9ca3af; margin-top: 2px; }
+    .stat-num { font-size: 2rem; font-weight: 800; line-height: 1; color: #1a1f36; }
+    .stat-lbl { font-size: .72rem; color: #9ca3af; margin-top: 4px; }
 
-    /* Strategy */
-    .strategy-box { background: #f8f7ff; border-right: 4px solid #635bff; border-radius: 8px 0 0 8px; padding: 1rem 1.25rem; font-size: .88rem; white-space: pre-wrap; line-height: 1.7; }
+    /* ── Profile header (compact like admin table row) ── */
+    .profile-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1rem; color: #fff; flex-shrink: 0;
+    }
+    .field-lbl { font-size: .72rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .3px; }
+    .field-val { font-size: .88rem; color: #1a1f36; }
+
+    /* ── Tabs (left column) ── */
+    .nav-tabs-crm .nav-link {
+      color: #6b7280; font-size: .85rem; font-weight: 600;
+      border: none; border-radius: 0; padding: .55rem 1rem;
+      border-bottom: 2px solid transparent;
+    }
+    .nav-tabs-crm .nav-link.active {
+      color: #635bff; border-bottom-color: #635bff; background: none;
+    }
+    .nav-tabs-crm { border-bottom: 1px solid #e4e8f0; margin-bottom: 1.25rem; }
+
+    /* ── Strategy box ── */
+    .strategy-box { background: #f8f7ff; border-right: 4px solid #635bff; border-radius: 8px 0 0 8px; padding: .9rem 1.1rem; font-size: .87rem; white-space: pre-wrap; line-height: 1.7; }
     .strategy-empty { color: #9ca3af; font-style: italic; }
 
-    /* Timeline */
+    /* ── Timeline bar ── */
     .timeline-bar  { height: 7px; border-radius: 8px; background: #e9ecef; overflow: hidden; }
     .timeline-fill { height: 100%; background: linear-gradient(90deg, #635bff, #a855f7); border-radius: 8px; }
 
-    /* Avatar */
-    .avatar-lg { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.3rem; color: #fff; flex-shrink: 0; }
+    /* ── Notes log ── */
+    .note-entry { padding: .55rem .8rem; background: #f8f9ff; border-radius: 8px; margin-bottom: .35rem; font-size: .83rem; position: relative; padding-left: 1.8rem; }
+    .note-ts    { font-size: .67rem; color: #9ca3af; margin-top: .15rem; }
+    .note-del   { position: absolute; top: .45rem; left: .5rem; background: none; border: none; color: #d1d5db; font-size: .75rem; cursor: pointer; padding: 0; }
+    .note-del:hover { color: #ef4444; }
 
-    /* Tasks */
-    .task-item { display: flex; align-items: flex-start; gap: .65rem; padding: .6rem 0; border-bottom: 1px solid #f0f1f5; }
-    .task-item:last-child { border-bottom: none; }
-    .task-item-title { font-weight: 600; font-size: .85rem; }
-    .task-item-meta  { font-size: .72rem; color: #9ca3af; }
-    .cat-pill { font-size: .62rem; font-weight: 700; border-radius: 50px; padding: .12rem .5rem; }
+    /* ── Task items ── */
+    .task-row { display: flex; align-items: flex-start; gap: .6rem; padding: .55rem 0; border-bottom: 1px solid #f0f1f5; }
+    .task-row:last-child { border-bottom: none; }
+    .task-title { font-weight: 600; font-size: .85rem; }
+    .task-meta  { font-size: .72rem; color: #9ca3af; }
+    .cat-pill { font-size: .63rem; font-weight: 700; border-radius: 50px; padding: .12rem .5rem; flex-shrink: 0; }
     .cat-resume   { background: #ffecd2; color: #b45309; }
     .cat-linkedin { background: #dbeafe; color: #1d4ed8; }
     .cat-interview{ background: #fce7f3; color: #9d174d; }
     .cat-quiz     { background: #ede9fe; color: #5b21b6; }
     .cat-general  { background: #f3f4f6; color: #374151; }
+    .badge-done    { background: #d1fae5; color: #065f46; font-size: .63rem; }
 
-    /* Submission expand */
-    .submission-expand { font-size: .8rem; color: #635bff; cursor: pointer; text-decoration: none; }
-    .submission-text { background: #f8f9ff; border-right: 3px solid #635bff; border-radius: 8px 0 0 8px; padding: .5rem .75rem; font-size: .81rem; margin-top: .3rem; display: none; }
+    /* ── Submission expander ── */
+    .sub-toggle { font-size: .78rem; color: #635bff; cursor: pointer; }
+    .sub-text   { background: #f8f9ff; border-right: 3px solid #635bff; border-radius: 8px 0 0 8px; padding: .45rem .7rem; font-size: .8rem; margin-top: .25rem; display: none; }
 
-    /* Assign search */
-    .assign-search { width: 100%; font-size: .82rem; padding: .3rem .6rem; border: 1px solid #dee2e6; border-radius: 6px; margin-bottom: .75rem; }
+    /* ── Meetings ── */
+    .meeting-row { background: #f0fdf4; border-right: 3px solid #10b981; border-radius: 8px 0 0 8px; padding: .5rem .8rem; font-size: .82rem; margin-bottom: .35rem; }
 
-    /* Mentor notes log */
-    .note-entry { padding: .5rem .75rem; background: #f8f9ff; border-radius: 8px; margin-bottom: .4rem; font-size: .83rem; position: relative; }
-    .note-ts    { font-size: .68rem; color: #9ca3af; margin-top: .2rem; }
-    .note-del   { position: absolute; top: .4rem; left: .5rem; background: none; border: none; color: #d1d5db; font-size: .8rem; cursor: pointer; padding: 0; }
-    .note-del:hover { color: #ef4444; }
-    .notes-input { font-size: .83rem; min-height: 60px; resize: vertical; }
+    /* ── Assign modal search ── */
+    .assign-search { font-size: .83rem; }
 
-    /* Meetings */
-    .meeting-mini { background: #f0fdf4; border-right: 3px solid #10b981; border-radius: 8px 0 0 8px; padding: .5rem .75rem; font-size: .82rem; margin-bottom: .4rem; }
+    /* ── Buttons ── */
+    .btn-crm { background: #635bff; border-color: #635bff; color: #fff; font-weight: 600; }
+    .btn-crm:hover { background: #4f46e5; border-color: #4f46e5; color: #fff; }
+    .btn-ai  { background: linear-gradient(90deg, #635bff, #a855f7); border: none; color: #fff; font-weight: 600; }
+    .btn-ai:hover { opacity: .88; color: #fff; }
 
-    .badge-done    { background: #d1fae5; color: #065f46; }
-    .badge-pending { background: #fef3c7; color: #92400e; }
     .edu-badge-hs  { background: #fef3c7; color: #92400e; }
     .edu-badge-col { background: #dbeafe; color: #1e40af; }
-
-    .btn-crm { background: #635bff; border-color: #635bff; color: #fff; }
-    .btn-crm:hover { background: #4f46e5; border-color: #4f46e5; color: #fff; }
-    .btn-ai  { background: linear-gradient(90deg, #635bff, #a855f7); border: none; color: #fff; }
-    .resume-area { min-height: 180px; font-size: .84rem; resize: vertical; }
+    .resume-area { min-height: 200px; font-size: .84rem; resize: vertical; }
   </style>
 </head>
 <body>
 
+  <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-admin px-4 py-2">
     <span class="navbar-brand-text">&#127891; InterviewSync</span>
     <div class="ms-auto d-flex align-items-center gap-3">
@@ -117,6 +141,7 @@
 
   <div class="container-fluid py-3 px-4" style="max-width:1100px;">
 
+    <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-2">
       <ol class="breadcrumb small">
         <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">לוח פרטי</a></li>
@@ -135,271 +160,250 @@
     {% set avatar_colors = ['#635bff','#f72585','#4cc9f0','#2d6a4f','#e76f51','#7209b7'] %}
     {% set acolor = avatar_colors[student.id % 6] %}
     {% set cat_class = {'קורות חיים':'cat-resume','LinkedIn':'cat-linkedin','הכנה לראיון':'cat-interview','שאלון':'cat-quiz','כללי':'cat-general'} %}
-    {% set status_lbl = {'active':'פעיל','paused':'מושהה','completed':'הושלם'} %}
     {% set cur_status = profile.student_status if profile else 'active' %}
+    {% set status_lbl = {'active':'פעיל','paused':'מושהה','completed':'הושלם'} %}
 
     <!-- ── Quick Actions Bar ── -->
     <div class="quick-bar">
-      <!-- WhatsApp -->
       {% if profile and profile.phone %}
-        <a href="https://wa.me/{{ profile.phone | replace('+','') }}" target="_blank" class="qa-btn qa-wa">
+        <a href="https://wa.me/{{ profile.phone | replace('+','') }}" target="_blank" class="qa qa-wa">
           &#128242; WhatsApp
         </a>
       {% else %}
-        <span class="qa-btn" style="background:#f3f4f6;color:#9ca3af;cursor:default;">&#128242; אין טלפון</span>
+        <span class="qa qa-none">&#128242; אין טלפון</span>
       {% endif %}
-
-      <!-- Email -->
       {% if profile and profile.email %}
-        <a href="mailto:{{ profile.email }}" class="qa-btn qa-email">&#9993;&#65039; אימייל</a>
+        <a href="mailto:{{ profile.email }}" class="qa qa-email">&#9993;&#65039; אימייל</a>
       {% endif %}
+      <a href="{{ url_for('admin_schedule') }}" class="qa qa-meet">&#128197; קבע פגישה</a>
 
-      <!-- Schedule meeting -->
-      <a href="{{ url_for('admin_schedule') }}" class="qa-btn qa-meet">&#128197; קבע פגישה</a>
-
-      <!-- Spacer -->
       <div class="ms-auto d-flex align-items-center gap-2">
         <span class="text-muted" style="font-size:.75rem;">סטטוס:</span>
-        <!-- Quick status update form -->
         <form method="POST" id="statusForm">
           <input type="hidden" name="action" value="save_profile_settings">
           <input type="hidden" name="process_start_date"
                  value="{{ profile.process_start_date if profile and profile.process_start_date else '' }}">
           <input type="hidden" name="target_end_date"
                  value="{{ profile.target_end_date if profile and profile.target_end_date else '' }}">
-          <input type="hidden" name="mentor_notes"
-                 value="{{ profile.mentor_notes if profile and profile.mentor_notes else '' }}">
+          <input type="hidden" name="mentor_notes" value="">
           <select name="student_status" class="status-select st-{{ cur_status }}"
-                  onchange="this.form.submit()" id="statusSelect">
-            <option value="active"    {{ 'selected' if cur_status == 'active' }}>&#9889; פעיל</option>
-            <option value="paused"    {{ 'selected' if cur_status == 'paused' }}>&#9208;&#65039; מושהה</option>
-            <option value="completed" {{ 'selected' if cur_status == 'completed' }}>&#10003; הושלם</option>
+                  id="statusSel" onchange="this.className='status-select st-'+this.value; this.form.submit()">
+            <option value="active"    {{ 'selected' if cur_status=='active' }}>&#9889; פעיל</option>
+            <option value="paused"    {{ 'selected' if cur_status=='paused' }}>&#9208;&#65039; מושהה</option>
+            <option value="completed" {{ 'selected' if cur_status=='completed' }}>&#10003; הושלם</option>
           </select>
         </form>
-
-        <!-- Edit profile button -->
         {% if profile %}
           <button class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:.78rem;"
-                  data-bs-toggle="modal" data-bs-target="#editProfileModal">
-            &#9998; ערוך פרופיל
-          </button>
+                  data-bs-toggle="modal" data-bs-target="#editModal">&#9998; ערוך</button>
         {% endif %}
       </div>
     </div>
 
-    <!-- ── At-a-glance stats ── -->
+    <!-- ── Stats row ── -->
     {% if profile and profile.full_name %}
-      <div class="glance-bar">
-        {% if profile.process_start_date %}
-          {% set start_d = profile.process_start_date | to_date %}
-          {% set days_in = ((now_date - start_d).days) if start_d else 0 %}
-          <div class="glance-item">
-            <div class="glance-num">{{ days_in }}</div>
-            <div class="glance-lbl">&#9203; ימים בתהליך</div>
+      {% set total_tasks = (active|length) + (completed|length) %}
+      {% set start_d = profile.process_start_date | to_date if profile.process_start_date else none %}
+      {% set days_in = ((now_date - start_d).days) if start_d else none %}
+      <div class="stats-row">
+        {% if days_in is not none %}
+          <div class="stat-box">
+            <div class="stat-num" style="color:#635bff;">{{ days_in }}</div>
+            <div class="stat-lbl">&#9203; ימים בתהליך</div>
           </div>
         {% endif %}
-        <div class="glance-item">
-          <div class="glance-num">{{ completed|length }}/{{ (active|length)+(completed|length) }}</div>
-          <div class="glance-lbl">&#10003; משימות</div>
+        <div class="stat-box">
+          <div class="stat-num">{{ completed|length }}<span style="font-size:1rem; color:#9ca3af;">/{{ total_tasks }}</span></div>
+          <div class="stat-lbl">&#10003; משימות הושלמו</div>
         </div>
         {% if student_meetings %}
-          <div class="glance-item">
-            <div class="glance-num" style="font-size:.95rem;">{{ student_meetings[0].scheduled_at | dt }}</div>
-            <div class="glance-lbl">&#128197; פגישה הבאה</div>
+          <div class="stat-box">
+            <div class="stat-num" style="font-size:1rem; font-weight:700; color:#10b981;">{{ student_meetings[0].scheduled_at | dt }}</div>
+            <div class="stat-lbl">&#128197; פגישה הבאה</div>
           </div>
         {% endif %}
-        {% if profile.process_start_date and profile.target_end_date %}
-          {% set start_d = profile.process_start_date | to_date %}
-          {% set end_d   = profile.target_end_date   | to_date %}
-          {% set total_days = ((end_d - start_d).days) if end_d and start_d else 0 %}
-          {% set elapsed    = ((now_date - start_d).days) if start_d else 0 %}
-          {% set pct = [[(elapsed / total_days * 100)|int, 0]|max, 100]|min if total_days > 0 else 0 %}
-          <div class="glance-item">
-            <div class="glance-num" style="color:#635bff;">{{ pct }}%</div>
-            <div class="glance-lbl">&#128200; מהתהליך</div>
-          </div>
-        {% endif %}
-        <div class="glance-item">
-          <div class="glance-num" style="font-size:.85rem; color:{{ '#065f46' if cur_status=='active' else ('#92400e' if cur_status=='paused' else '#374151') }};">
+        <div class="stat-box">
+          <div class="stat-num" style="font-size:1.1rem; color:{{ '#065f46' if cur_status=='active' else ('#92400e' if cur_status=='paused' else '#374151') }};">
             {{ status_lbl.get(cur_status, cur_status) }}
           </div>
-          <div class="glance-lbl">&#9889; סטטוס</div>
+          <div class="stat-lbl">&#9889; סטטוס</div>
         </div>
       </div>
     {% endif %}
 
+    <!-- ── Main layout ── -->
     <div class="row g-4">
 
-      <!-- ── Left Column ── -->
+      <!-- ── Left column: tabbed ── -->
       <div class="col-lg-7">
+        <div class="card-crm" style="padding-bottom:1.25rem;">
 
-        <!-- Profile + Timeline merged -->
-        <div class="section-card">
+          <!-- Profile header (compact) -->
           <div class="d-flex align-items-center gap-3 mb-3">
-            <div class="avatar-lg" style="background:{{ acolor }};">
+            <div class="profile-avatar" style="background:{{ acolor }};">
               {{ (profile.full_name if profile and profile.full_name else student.username)[0].upper() }}
             </div>
-            <div>
-              <h5 class="mb-0 fw-bold">{{ profile.full_name if profile and profile.full_name else student.username }}</h5>
-              <span class="text-muted small">@{{ student.username }}</span>
-              {% if profile and profile.education_level == 'highschool' %}
-                <span class="badge edu-badge-hs rounded-pill ms-2">תיכון</span>
-              {% elif profile and profile.education_level == 'college' %}
-                <span class="badge edu-badge-col rounded-pill ms-2">מכללה</span>
-              {% endif %}
+            <div class="flex-grow-1">
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="fw-bold">{{ profile.full_name if profile and profile.full_name else student.username }}</span>
+                <span class="text-muted small">@{{ student.username }}</span>
+                {% if profile and profile.education_level == 'highschool' %}
+                  <span class="badge edu-badge-hs rounded-pill" style="font-size:.65rem;">תיכון</span>
+                {% elif profile and profile.education_level == 'college' %}
+                  <span class="badge edu-badge-col rounded-pill" style="font-size:.65rem;">מכללה</span>
+                {% endif %}
+                {% if profile and profile.current_occupation_or_grade %}
+                  <span class="text-muted" style="font-size:.78rem;">· {{ profile.current_occupation_or_grade }}</span>
+                {% endif %}
+              </div>
             </div>
           </div>
 
           {% if not profile or not profile.full_name %}
-            <div class="alert alert-warning py-2 small mb-0">&#9888;&#65039; הסטודנט טרם מילא פרופיל ראשוני.</div>
+            <div class="alert alert-warning py-2 small">&#9888;&#65039; הסטודנט טרם מילא פרופיל ראשוני.</div>
           {% else %}
-            <div class="row g-2 small mb-3">
-              <div class="col-sm-4">
-                <div class="field-lbl">אימייל</div>
-                <div class="field-val">
-                  {% if profile.email %}<a href="mailto:{{ profile.email }}" style="color:#635bff;text-decoration:none;">{{ profile.email }}</a>{% else %}—{% endif %}
-                </div>
-              </div>
-              <div class="col-sm-4">
-                <div class="field-lbl">WhatsApp</div>
-                <div class="field-val">
-                  {% if profile.phone %}<a href="https://wa.me/{{ profile.phone | replace('+','') }}" target="_blank" style="color:#25d366;text-decoration:none;">{{ profile.phone }}</a>{% else %}—{% endif %}
-                </div>
-              </div>
-              <div class="col-sm-4">
-                <div class="field-lbl">כיתה / תואר</div>
-                <div class="field-val">{{ profile.current_occupation_or_grade or '—' }}</div>
-              </div>
-              <div class="col-sm-6">
-                <div class="field-lbl">מטרות קריירה</div>
-                <div class="field-val">{{ profile.career_goals or '—' }}</div>
-              </div>
-              <div class="col-sm-6">
-                <div class="field-lbl">חששות ונקודות חולשה</div>
-                <div class="field-val">{{ profile.fears_weaknesses or '—' }}</div>
-              </div>
-            </div>
 
-            <!-- Timeline (inline, compact) -->
-            <div class="border-top pt-2 mt-1">
-              <form method="POST" class="row g-2 align-items-end">
-                <input type="hidden" name="action" value="save_profile_settings">
-                <input type="hidden" name="student_status" value="{{ cur_status }}">
-                <div class="col-sm-4">
-                  <label class="form-label fw-semibold" style="font-size:.72rem;">תחילת ליווי</label>
-                  <input type="date" name="process_start_date" class="form-control form-control-sm"
-                         value="{{ profile.process_start_date if profile and profile.process_start_date else '' }}">
-                </div>
-                <div class="col-sm-4">
-                  <label class="form-label fw-semibold" style="font-size:.72rem;">תאריך יעד</label>
-                  <input type="date" name="target_end_date" class="form-control form-control-sm"
-                         value="{{ profile.target_end_date if profile and profile.target_end_date else '' }}">
-                </div>
-                <div class="col-sm-4">
-                  <button type="submit" class="btn btn-crm btn-sm w-100">שמור</button>
-                </div>
-                {% if profile and profile.process_start_date and profile.target_end_date %}
-                  {% set s2 = profile.process_start_date | to_date %}
-                  {% set e2 = profile.target_end_date | to_date %}
-                  {% set td = ((e2 - s2).days) if e2 and s2 else 0 %}
-                  {% set el = ((now_date - s2).days) if s2 else 0 %}
-                  {% set p2 = [[(el / td * 100)|int, 0]|max, 100]|min if td > 0 else 0 %}
-                  <div class="col-12 mt-1">
-                    <div class="timeline-bar"><div class="timeline-fill" style="width:{{ p2 }}%;"></div></div>
-                    <div class="text-muted mt-1 text-center" style="font-size:.72rem;">{{ el }} מתוך {{ td }} ימים ({{ p2 }}%)</div>
+            <!-- Tabs -->
+            <ul class="nav nav-tabs-crm nav-tabs" id="fileTabs">
+              <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-profile" type="button">&#128100; פרופיל</button></li>
+              <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-ai" type="button">&#129504; AI</button></li>
+              <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-cv" type="button">&#128196; קו"ח</button></li>
+              <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-notes" type="button">
+                &#128221; הערות
+                {% if notes %}<span class="badge rounded-pill ms-1" style="background:#635bff;font-size:.6rem;">{{ notes|length }}</span>{% endif %}
+              </button></li>
+            </ul>
+
+            <div class="tab-content">
+
+              <!-- Tab: Profile -->
+              <div class="tab-pane fade show active" id="tab-profile">
+                <div class="row g-3 small mb-3">
+                  <div class="col-sm-6">
+                    <div class="field-lbl">מטרות קריירה</div>
+                    <div class="field-val">{{ profile.career_goals or '—' }}</div>
                   </div>
-                {% endif %}
-              </form>
-            </div>
+                  <div class="col-sm-6">
+                    <div class="field-lbl">חששות ונקודות חולשה</div>
+                    <div class="field-val">{{ profile.fears_weaknesses or '—' }}</div>
+                  </div>
+                </div>
 
-            <!-- Mentor notes log -->
-            <div class="mt-3 border-top pt-2">
-              <label class="form-label fw-semibold" style="font-size:.72rem;">
-                &#128221; הערות פרטיות (גלויות למנטור בלבד)
-              </label>
-              <!-- Existing notes -->
-              <div id="notesList">
-                {% for n in notes %}
-                  <div class="note-entry">
-                    {{ n.text }}
-                    <div class="note-ts">{{ n.created_at | dt('%d/%m/%Y %H:%M') }}</div>
-                    <form method="POST" style="display:inline;">
-                      <input type="hidden" name="action" value="delete_note">
-                      <input type="hidden" name="note_id" value="{{ n.id }}">
-                      <button type="submit" class="note-del" onclick="return confirm('מחק הערה?')">✕</button>
+                <!-- Timeline inline -->
+                <div class="border-top pt-3">
+                  <form method="POST" class="row g-2 align-items-end">
+                    <input type="hidden" name="action" value="save_profile_settings">
+                    <input type="hidden" name="student_status" value="{{ cur_status }}">
+                    <input type="hidden" name="mentor_notes" value="">
+                    <div class="col-sm-4">
+                      <label class="form-label fw-semibold" style="font-size:.72rem;">תחילת ליווי</label>
+                      <input type="date" name="process_start_date" class="form-control form-control-sm"
+                             value="{{ profile.process_start_date if profile.process_start_date else '' }}">
+                    </div>
+                    <div class="col-sm-4">
+                      <label class="form-label fw-semibold" style="font-size:.72rem;">תאריך יעד</label>
+                      <input type="date" name="target_end_date" class="form-control form-control-sm"
+                             value="{{ profile.target_end_date if profile.target_end_date else '' }}">
+                    </div>
+                    <div class="col-sm-4">
+                      <button type="submit" class="btn btn-crm btn-sm w-100">שמור</button>
+                    </div>
+                    {% if profile.process_start_date and profile.target_end_date %}
+                      {% set s2 = profile.process_start_date | to_date %}
+                      {% set e2 = profile.target_end_date   | to_date %}
+                      {% set td = ((e2 - s2).days) if e2 and s2 else 0 %}
+                      {% set el = ((now_date - s2).days)   if s2 else 0 %}
+                      {% set p2 = [[(el / td * 100)|int, 0]|max, 100]|min if td > 0 else 0 %}
+                      <div class="col-12 mt-1">
+                        <div class="timeline-bar"><div class="timeline-fill" style="width:{{ p2 }}%;"></div></div>
+                        <div class="text-muted mt-1" style="font-size:.7rem; text-align:center;">{{ el }} מתוך {{ td }} ימים ({{ p2 }}%)</div>
+                      </div>
+                    {% endif %}
+                  </form>
+                </div>
+              </div>
+
+              <!-- Tab: AI Strategy -->
+              <div class="tab-pane fade" id="tab-ai">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <span class="text-muted small">ניתוח AI מותאם אישית למנטור</span>
+                  <div class="d-flex gap-2">
+                    <form method="POST">
+                      <input type="hidden" name="action" value="regenerate_strategy">
+                      <button type="submit" class="btn btn-sm btn-outline-secondary py-1">&#8635; רענן</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('ai_tasks_for_student', sid=student.id) }}">
+                      <button type="submit" class="btn btn-sm btn-ai py-1">&#10024; צור משימות AI</button>
                     </form>
                   </div>
-                {% endfor %}
-                {% if not notes %}
-                  <p class="text-muted small mb-2">אין הערות עדיין.</p>
+                </div>
+                {% set strategy = profile.ai_coaching_strategy if profile else '' %}
+                {% set is_error = strategy and ('AI_API_KEY' in strategy or 'נכשל' in strategy) %}
+                {% if strategy and not is_error %}
+                  <div class="strategy-box">{{ strategy }}</div>
+                {% else %}
+                  <div class="strategy-box strategy-empty">
+                    {% if is_error %}&#9888;&#65039; הגדר <code>AI_API_KEY</code> ולחץ "רענן".
+                    {% else %}לחץ/י "רענן" לייצור אסטרטגיית הדרכה מותאמת.{% endif %}
+                  </div>
                 {% endif %}
               </div>
-              <!-- Add new note -->
-              <form method="POST" class="d-flex gap-2 mt-1">
-                <input type="hidden" name="action" value="add_note">
-                <textarea name="note_text" class="form-control notes-input form-control-sm flex-grow-1"
-                          placeholder="הוסף הערה חדשה..." rows="2"></textarea>
-                <button type="submit" class="btn btn-crm btn-sm align-self-end px-3">הוסף</button>
-              </form>
-            </div>
+
+              <!-- Tab: CV -->
+              <div class="tab-pane fade" id="tab-cv">
+                <form method="POST">
+                  <input type="hidden" name="action" value="save_resume">
+                  <textarea name="resume_content" class="form-control resume-area mb-2"
+                            placeholder="הדבק/י קורות חיים או כתוב/י מאפס...">{{ profile.resume_content if profile else '' }}</textarea>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted small">&#128274; גלוי למנטור בלבד</span>
+                    <button type="submit" class="btn btn-crm btn-sm fw-semibold">שמור CV</button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Tab: Notes -->
+              <div class="tab-pane fade" id="tab-notes">
+                <div id="notesList" class="mb-3">
+                  {% for n in notes %}
+                    <div class="note-entry">
+                      {{ n.text }}
+                      <div class="note-ts">{{ n.created_at | dt('%d/%m/%Y %H:%M') }}</div>
+                      <form method="POST" style="display:inline;">
+                        <input type="hidden" name="action" value="delete_note">
+                        <input type="hidden" name="note_id" value="{{ n.id }}">
+                        <button type="submit" class="note-del" onclick="return confirm('מחק?')">✕</button>
+                      </form>
+                    </div>
+                  {% endfor %}
+                  {% if not notes %}<p class="text-muted small">אין הערות עדיין.</p>{% endif %}
+                </div>
+                <form method="POST" class="d-flex gap-2">
+                  <input type="hidden" name="action" value="add_note">
+                  <textarea name="note_text" class="form-control form-control-sm flex-grow-1"
+                            rows="2" placeholder="הוסף הערה חדשה..."></textarea>
+                  <button type="submit" class="btn btn-crm btn-sm align-self-end px-3">הוסף</button>
+                </form>
+              </div>
+
+            </div><!-- tab-content -->
           {% endif %}
-        </div>
-
-        <!-- AI Strategy -->
-        <div class="section-card">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="section-title mb-0">&#129504; אסטרטגיית הדרכה AI</div>
-            <div class="d-flex gap-2">
-              <form method="POST">
-                <input type="hidden" name="action" value="regenerate_strategy">
-                <button type="submit" class="btn btn-sm btn-outline-secondary py-1" {{ 'disabled' if not profile }}>&#8635; רענן</button>
-              </form>
-              <form method="POST" action="{{ url_for('ai_tasks_for_student', sid=student.id) }}">
-                <button type="submit" class="btn btn-sm btn-ai py-1 fw-semibold">&#10024; צור משימות AI</button>
-              </form>
-            </div>
-          </div>
-          {% set strategy = profile.ai_coaching_strategy if profile else '' %}
-          {% set is_error = strategy and ('AI_API_KEY' in strategy or 'נכשל' in strategy) %}
-          {% if strategy and not is_error %}
-            <div class="strategy-box">{{ strategy }}</div>
-          {% elif is_error %}
-            <div class="strategy-box strategy-empty">&#9888;&#65039; הגדר <code>AI_API_KEY</code> ולחץ "רענן".</div>
-          {% elif profile %}
-            <div class="strategy-box strategy-empty">לחץ/י "רענן" לייצור אסטרטגיה מותאמת.</div>
-          {% else %}
-            <div class="strategy-box strategy-empty">הסטודנט צריך למלא פרופיל ראשית.</div>
-          {% endif %}
-        </div>
-
-        <!-- Resume -->
-        <div class="section-card">
-          <div class="section-title">&#128196; קורות חיים (CV)</div>
-          <form method="POST">
-            <input type="hidden" name="action" value="save_resume">
-            <textarea name="resume_content" class="form-control resume-area mb-2"
-                      placeholder="הדבק/י קורות חיים...">{{ profile.resume_content if profile else '' }}</textarea>
-            <div class="d-flex justify-content-between align-items-center">
-              <span class="text-muted small">&#128274; גלוי למנטור בלבד</span>
-              <button type="submit" class="btn btn-crm btn-sm fw-semibold">שמור CV</button>
-            </div>
-          </form>
-        </div>
-
+        </div><!-- card-crm left -->
       </div>
 
-      <!-- ── Right Column ── -->
+      <!-- ── Right column ── -->
       <div class="col-lg-5">
 
-        <!-- Meetings widget -->
+        <!-- Meetings -->
         {% if student_meetings %}
-          <div class="section-card" style="border-right: 3px solid #10b981;">
-            <div class="section-title">&#128197; פגישות קרובות</div>
+          <div class="card-crm" style="border-right: 3px solid #10b981; padding: 1.25rem 1.5rem;">
+            <div class="section-title mb-2">&#128197; פגישות קרובות</div>
             {% for m in student_meetings %}
-              <div class="meeting-mini">
+              <div class="meeting-row">
                 <strong>{{ m.scheduled_at | dt('%d/%m/%Y %H:%M') }}</strong> · {{ m.duration_min }} דק׳
-                <span class="badge rounded-pill ms-1 {{ 'badge-done' if m.status == 'confirmed' else 'badge-pending' }}" style="font-size:.62rem;">
-                  {{ 'מאושר' if m.status == 'confirmed' else 'ממתין' }}
+                <span class="badge rounded-pill ms-1 {{ 'badge-done' if m.status=='confirmed' else '' }}"
+                      style="font-size:.62rem; background:{% if m.status=='confirmed' %}#d1fae5; color:#065f46{% else %}#fef3c7; color:#92400e{% endif %};">
+                  {{ 'מאושר' if m.status=='confirmed' else 'ממתין' }}
                 </span>
                 {% if m.notes %}<div class="text-muted" style="font-size:.75rem;">{{ m.notes }}</div>{% endif %}
               </div>
@@ -409,12 +413,11 @@
         {% endif %}
 
         <!-- Tasks -->
-        <div class="section-card">
-          <div class="section-title">&#128203; ניהול משימות</div>
-
+        <div class="card-crm">
+          <!-- Active tasks -->
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="fw-semibold small">פעילות ({{ active|length }})</span>
-            <span class="badge" style="background:#635bff; font-size:.7rem;">{{ active|length }}/{{ (active|length)+(completed|length) }}</span>
+            <div class="section-title mb-0">&#9889; משימות פעילות ({{ active|length }})</div>
+            <span class="badge" style="background:#635bff;font-size:.68rem;">{{ active|length }}/{{ (active|length)+(completed|length) }}</span>
           </div>
 
           {% if not active %}
@@ -422,120 +425,104 @@
           {% else %}
             {% for at in active %}
               {% set t = at.task %}
-              <div class="task-item">
-                <span class="cat-pill {{ cat_class.get(t.category,'cat-general') }} flex-shrink-0 mt-1">{{ t.category }}</span>
+              <div class="task-row">
+                <span class="cat-pill {{ cat_class.get(t.category,'cat-general') }}">{{ t.category }}</span>
                 <div class="flex-grow-1">
-                  <div class="task-item-title">{{ t.title }}</div>
-                  <div class="task-item-meta">{{ at.assigned_at | dt }}</div>
+                  <div class="task-title">{{ t.title }}</div>
+                  <div class="task-meta">{{ at.assigned_at | dt }}</div>
                 </div>
-                <span class="badge badge-pending rounded-pill flex-shrink-0" style="font-size:.62rem;">ממתין</span>
               </div>
             {% endfor %}
           {% endif %}
 
+          <!-- Completed tasks (collapsed) -->
           {% if completed %}
-            <div class="fw-semibold small mt-3 mb-2">הושלמו ({{ completed|length }})</div>
-            {% for at in completed %}
-              {% set t = at.task %}
-              <div class="task-item" style="opacity:.75;">
-                <span class="text-success fw-bold flex-shrink-0 mt-1">&#10003;</span>
-                <div class="flex-grow-1">
-                  <div class="task-item-title" style="text-decoration:line-through;">{{ t.title }}</div>
-                  <div class="task-item-meta">{{ at.completed_at | dt if at.completed_at else '' }}</div>
-                  {% if at.submission_note %}
-                    <a class="submission-expand" onclick="toggleSub(this)">&#128172; הצג הגשה</a>
-                    <div class="submission-text">{{ at.submission_note }}</div>
-                  {% endif %}
-                  {% if at.submission_file %}
-                    <a href="{{ '/files/' + at.submission_file }}" target="_blank"
-                       class="text-decoration-none" style="font-size:.75rem;color:#635bff;">&#128206; קובץ מצורף</a>
-                  {% endif %}
-                </div>
-                <span class="badge badge-done rounded-pill flex-shrink-0" style="font-size:.62rem;">בוצע</span>
+            <div class="border-top mt-2 pt-2">
+              <button class="btn btn-link btn-sm p-0 text-muted fw-semibold"
+                      style="font-size:.82rem;"
+                      type="button" data-bs-toggle="collapse" data-bs-target="#completedTasks">
+                &#10003; הושלמו ({{ completed|length }}) &#9660;
+              </button>
+              <div class="collapse" id="completedTasks">
+                {% for at in completed %}
+                  {% set t = at.task %}
+                  <div class="task-row" style="opacity:.7;">
+                    <span class="text-success fw-bold flex-shrink-0">&#10003;</span>
+                    <div class="flex-grow-1">
+                      <div class="task-title" style="text-decoration:line-through;">{{ t.title }}</div>
+                      <div class="task-meta">{{ at.completed_at | dt if at.completed_at else '' }}</div>
+                      {% if at.submission_note %}
+                        <a class="sub-toggle" onclick="toggleSub(this)">&#128172; הגשה</a>
+                        <div class="sub-text">{{ at.submission_note }}</div>
+                      {% endif %}
+                      {% if at.submission_file %}
+                        <a href="{{ '/files/' + at.submission_file }}" target="_blank"
+                           style="font-size:.75rem;color:#635bff;text-decoration:none;">&#128206; קובץ</a>
+                      {% endif %}
+                    </div>
+                  </div>
+                {% endfor %}
               </div>
-            {% endfor %}
+            </div>
           {% endif %}
 
-          <hr class="my-3">
-
-          <!-- Assign tasks with search -->
-          <div class="fw-semibold small mb-2">&#128203; שיוך משימות</div>
-          <input type="text" class="assign-search" placeholder="&#128269; חיפוש משימה..."
-                 id="assignSearch" oninput="filterAssign(this.value)">
-          <form method="POST" id="assignForm">
-            <input type="hidden" name="action" value="assign_tasks">
-            <div id="assignList">
-              {% for cat in categories %}
-                {% set cat_tasks = taskbank | selectattr('category','equalto',cat) | list %}
-                {% if cat_tasks %}
-                  <div class="assign-cat-group mb-2">
-                    <div style="font-size:.7rem; font-weight:700; color:#9ca3af; text-transform:uppercase; margin-bottom:.25rem;">{{ cat }}</div>
-                    {% for t in cat_tasks %}
-                      <div class="form-check mb-1 assign-item" data-title="{{ t.title | lower }}">
-                        <input class="form-check-input" type="checkbox" name="task_ids" value="{{ t.id }}"
-                               id="t{{ t.id }}" {{ 'checked' if t.id in assigned_ids }}>
-                        <label class="form-check-label" style="font-size:.81rem;" for="t{{ t.id }}">
-                          {{ t.title }}{% if t.resource_file %} <span style="color:#9ca3af;font-size:.68rem;">📎</span>{% endif %}
-                        </label>
-                      </div>
-                    {% endfor %}
-                  </div>
-                {% endif %}
-              {% endfor %}
-              {% if not taskbank %}<p class="text-muted small">אין משימות בבנק.</p>{% endif %}
-            </div>
-            <button type="submit" class="btn btn-crm btn-sm w-100 fw-semibold mt-1">&#10003; עדכן שיוך</button>
-          </form>
+          <!-- Assign button -->
+          <div class="border-top mt-3 pt-3">
+            <button class="btn btn-crm btn-sm w-100 fw-semibold"
+                    data-bs-toggle="modal" data-bs-target="#assignModal">
+              &#128203; ניהול שיוך משימות
+            </button>
+          </div>
         </div>
 
       </div>
     </div><!-- row -->
   </div>
 
-  <!-- ── Edit Profile Modal ── -->
+  <!-- ── Modal: Edit Profile ── -->
   {% if profile %}
-  <div class="modal fade" id="editProfileModal" tabindex="-1">
+  <div class="modal fade" id="editModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <form method="POST">
           <input type="hidden" name="action" value="save_full_profile">
           <div class="modal-header">
-            <h6 class="modal-title fw-bold">&#9998; עריכת פרופיל — {{ profile.full_name }}</h6>
+            <h6 class="modal-title fw-bold">&#9998; עריכת פרופיל</h6>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
             <div class="row g-3">
               <div class="col-md-5">
                 <label class="form-label fw-semibold small">שם מלא</label>
-                <input type="text" name="full_name" class="form-control form-control-sm" value="{{ profile.full_name }}">
+                <input type="text" name="full_name" class="form-control" value="{{ profile.full_name }}">
               </div>
               <div class="col-md-4">
                 <label class="form-label fw-semibold small">אימייל</label>
-                <input type="email" name="email" class="form-control form-control-sm" value="{{ profile.email }}">
+                <input type="email" name="email" class="form-control" value="{{ profile.email }}">
               </div>
               <div class="col-md-3">
                 <label class="form-label fw-semibold small">טלפון (WhatsApp)</label>
-                <input type="tel" name="phone" class="form-control form-control-sm" value="{{ profile.phone }}">
+                <input type="tel" name="phone" class="form-control" value="{{ profile.phone }}">
               </div>
               <div class="col-md-4">
                 <label class="form-label fw-semibold small">רמת לימוד</label>
-                <select name="education_level" class="form-select form-select-sm">
-                  <option value="highschool" {{ 'selected' if profile.education_level == 'highschool' }}>תיכון</option>
-                  <option value="college"    {{ 'selected' if profile.education_level == 'college'    }}>מכללה/אוניברסיטה</option>
+                <select name="education_level" class="form-select">
+                  <option value="highschool" {{ 'selected' if profile.education_level=='highschool' }}>תיכון</option>
+                  <option value="college"    {{ 'selected' if profile.education_level=='college'    }}>מכללה/אוניברסיטה</option>
                 </select>
               </div>
               <div class="col-md-8">
                 <label class="form-label fw-semibold small">כיתה / תואר</label>
-                <input type="text" name="current_occupation_or_grade" class="form-control form-control-sm"
+                <input type="text" name="current_occupation_or_grade" class="form-control"
                        value="{{ profile.current_occupation_or_grade }}">
               </div>
               <div class="col-12">
                 <label class="form-label fw-semibold small">מטרות קריירה</label>
-                <textarea name="career_goals" class="form-control form-control-sm" rows="2">{{ profile.career_goals }}</textarea>
+                <textarea name="career_goals" class="form-control" rows="2">{{ profile.career_goals }}</textarea>
               </div>
               <div class="col-12">
                 <label class="form-label fw-semibold small">חששות ונקודות חולשה</label>
-                <textarea name="fears_weaknesses" class="form-control form-control-sm" rows="2">{{ profile.fears_weaknesses }}</textarea>
+                <textarea name="fears_weaknesses" class="form-control" rows="2">{{ profile.fears_weaknesses }}</textarea>
               </div>
             </div>
           </div>
@@ -549,38 +536,67 @@
   </div>
   {% endif %}
 
+  <!-- ── Modal: Assign Tasks ── -->
+  <div class="modal fade" id="assignModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <form method="POST">
+          <input type="hidden" name="action" value="assign_tasks">
+          <div class="modal-header">
+            <h6 class="modal-title fw-bold">&#128203; שיוך משימות</h6>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body" style="max-height:60vh; overflow-y:auto;">
+            <input type="text" class="form-control form-control-sm assign-search mb-3"
+                   placeholder="&#128269; חיפוש משימה..." id="assignSearch"
+                   oninput="filterAssign(this.value)">
+            <div id="assignList">
+              {% for cat in categories %}
+                {% set cat_tasks = taskbank | selectattr('category','equalto',cat) | list %}
+                {% if cat_tasks %}
+                  <div class="assign-cat mb-3">
+                    <div class="section-title mb-1">{{ cat }}</div>
+                    {% for t in cat_tasks %}
+                      <div class="form-check assign-item mb-1" data-title="{{ t.title | lower }}">
+                        <input class="form-check-input" type="checkbox" name="task_ids" value="{{ t.id }}"
+                               id="mt{{ t.id }}" {{ 'checked' if t.id in assigned_ids }}>
+                        <label class="form-check-label" style="font-size:.84rem;" for="mt{{ t.id }}">
+                          {{ t.title }}
+                          {% if t.resource_file %}<span style="color:#9ca3af;font-size:.7rem;"> 📎</span>{% endif %}
+                        </label>
+                      </div>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              {% endfor %}
+              {% if not taskbank %}<p class="text-muted small">אין משימות בבנק.</p>{% endif %}
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ביטול</button>
+            <button type="submit" class="btn btn-crm btn-sm fw-semibold">&#10003; עדכן שיוך</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // Update status select styling dynamically
-    const sel = document.getElementById('statusSelect');
-    if (sel) {
-      sel.addEventListener('change', function() {
-        this.className = 'status-select st-' + this.value;
-      });
-    }
-
-    // Toggle submission text
     function toggleSub(el) {
-      const box = el.nextElementSibling;
-      if (box.style.display === 'block') {
-        box.style.display = 'none';
-        el.textContent = '💬 הצג הגשה';
-      } else {
-        box.style.display = 'block';
-        el.textContent = '💬 הסתר';
-      }
+      const b = el.nextElementSibling;
+      b.style.display = b.style.display === 'block' ? 'none' : 'block';
+      el.textContent = b.style.display === 'block' ? '💬 הסתר' : '💬 הגשה';
     }
 
-    // Filter assign tasks
     function filterAssign(q) {
       q = q.toLowerCase();
-      document.querySelectorAll('#assignList .assign-item').forEach(item => {
-        item.style.display = item.dataset.title.includes(q) ? '' : 'none';
+      document.querySelectorAll('#assignList .assign-item').forEach(i => {
+        i.style.display = i.dataset.title.includes(q) ? '' : 'none';
       });
-      // Hide empty category headers
-      document.querySelectorAll('#assignList .assign-cat-group').forEach(grp => {
-        const visible = [...grp.querySelectorAll('.assign-item')].some(i => i.style.display !== 'none');
-        grp.style.display = visible ? '' : 'none';
+      document.querySelectorAll('#assignList .assign-cat').forEach(g => {
+        const vis = [...g.querySelectorAll('.assign-item')].some(i => i.style.display !== 'none');
+        g.style.display = vis ? '' : 'none';
       });
     }
   </script>
