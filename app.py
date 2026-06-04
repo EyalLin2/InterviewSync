@@ -735,13 +735,13 @@ def admin_schedule():
                        f"לאישור הפגישה לחץ/י כאן: {confirm_url}")
                 sent, reason = send_whatsapp(profile.phone, msg)
                 if sent:
-                    flash("הפגישה נקבעה ונשלחה הודעת WhatsApp לאישור.", "success")
+                    flash("הפגישה נקבעה ונשלחה הודעת WhatsApp לאישור. ✓", "success")
                 elif reason == "no_config":
-                    flash("הפגישה נקבעה. Twilio לא מוגדר (TWILIO_ACCOUNT_SID/AUTH_TOKEN/WHATSAPP_FROM חסרים) — שלח/י הודעה ידנית.", "warning")
+                    flash("הפגישה נקבעה בהצלחה. WhatsApp לא מוגדר — עדכן/י את הסטודנט ידנית על מועד הפגישה.", "info")
                 else:
                     flash(f"הפגישה נקבעה. שגיאת WhatsApp: {reason}", "warning")
             else:
-                flash("הפגישה נקבעה. לתלמיד אין מספר טלפון — עדכן/י בפרופיל.", "warning")
+                flash("הפגישה נקבעה בהצלחה. לתלמיד אין מספר טלפון — עדכן/י אותו ידנית.", "info")
 
         elif action == "cancel_meeting":
             meeting_id = request.form.get("meeting_id", type=int)

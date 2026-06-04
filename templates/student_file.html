@@ -196,10 +196,18 @@
               </form>
             </div>
           </div>
-          {% if profile and profile.ai_coaching_strategy %}
-            <div class="strategy-box">{{ profile.ai_coaching_strategy }}</div>
+          {% set strategy = profile.ai_coaching_strategy if profile else '' %}
+          {% set is_error = strategy and ('AI_API_KEY' in strategy or 'נכשל' in strategy) %}
+          {% if strategy and not is_error %}
+            <div class="strategy-box">{{ strategy }}</div>
+          {% elif is_error %}
+            <div class="strategy-box strategy-empty">
+              &#9888;&#65039; מפתח AI לא מוגדר — הגדר <code>AI_API_KEY</code> כ-env var והפעל שרת מחדש, אחר כך לחץ/י "רענן".
+            </div>
+          {% elif profile %}
+            <div class="strategy-box strategy-empty">לחץ/י "רענן" לייצור אסטרטגיה מותאמת.</div>
           {% else %}
-            <div class="strategy-box strategy-empty">{{ 'לחץ/י "רענן" לייצור אסטרטגיה.' if profile else 'הסטודנט צריך למלא פרופיל ראשית.' }}</div>
+            <div class="strategy-box strategy-empty">הסטודנט צריך למלא פרופיל ראשית.</div>
           {% endif %}
         </div>
 
