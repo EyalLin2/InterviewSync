@@ -15,6 +15,7 @@ from openai import OpenAI
 
 from models import (db, get_database_url,
                     User, StudentProfile, TaskBank, AssignedTask, Meeting,
+                    MentorNote,
                     Workshop, Inquiry, ActivityLog, TOPIC_CATEGORIES)
 
 app = Flask(__name__)
@@ -446,6 +447,41 @@ def update_resume(sid):
     if not p:
         return jsonify({"error": "No profile"}), 404
     p.resume_content = (request.get_json() or {}).get("resume_content", "")
+    db.session.commit()
+    return jsonify({"ok": True})
+
+
+@app.route("/api/students/<int:sid>/notes", methods=["GET"])
+@require_admin
+def list_notes(sid):
+    User.query.filter_by(id=sid, role="student").first_or_404()
+    notes = (MentorNote.query.filter_by(student_id=sid)
+             .order_by(MentorNote.created_at.desc()).all())
+    return jsonify([{
+        "id": n.id, "text": n.text,
+        "created_at": n.created_at.isoformat(),
+    } for n in notes])
+
+
+@app.route("/api/students/<int:sid>/notes", methods=["POST"])
+@require_admin
+def add_note(sid):
+    User.query.filter_by(id=sid, role="student").first_or_404()
+    text = (request.get_json() or {}).get("text", "").strip()
+    if not text:
+        return jsonify({"error": "text required"}), 400
+    n = MentorNote(student_id=sid, text=text)
+    db.session.add(n)
+    db.session.commit()
+    return jsonify({"id": n.id, "text": n.text,
+                    "created_at": n.created_at.isoformat()}), 201
+
+
+@app.route("/api/notes/<int:nid>", methods=["DELETE"])
+@require_admin
+def delete_note(nid):
+    n = MentorNote.query.get_or_404(nid)
+    db.session.delete(n)
     db.session.commit()
     return jsonify({"ok": True})
 

@@ -82,8 +82,12 @@
     /* Assign search */
     .assign-search { width: 100%; font-size: .82rem; padding: .3rem .6rem; border: 1px solid #dee2e6; border-radius: 6px; margin-bottom: .75rem; }
 
-    /* Mentor notes */
-    .notes-area { font-size: .85rem; min-height: 80px; resize: vertical; }
+    /* Mentor notes log */
+    .note-entry { padding: .5rem .75rem; background: #f8f9ff; border-radius: 8px; margin-bottom: .4rem; font-size: .83rem; position: relative; }
+    .note-ts    { font-size: .68rem; color: #9ca3af; margin-top: .2rem; }
+    .note-del   { position: absolute; top: .4rem; left: .5rem; background: none; border: none; color: #d1d5db; font-size: .8rem; cursor: pointer; padding: 0; }
+    .note-del:hover { color: #ef4444; }
+    .notes-input { font-size: .83rem; min-height: 60px; resize: vertical; }
 
     /* Meetings */
     .meeting-mini { background: #f0fdf4; border-right: 3px solid #10b981; border-radius: 8px 0 0 8px; padding: .5rem .75rem; font-size: .82rem; margin-bottom: .4rem; }
@@ -301,30 +305,41 @@
                   {% set el = ((now_date - s2).days) if s2 else 0 %}
                   {% set p2 = [[(el / td * 100)|int, 0]|max, 100]|min if td > 0 else 0 %}
                   <div class="col-12 mt-1">
-                    <div class="timeline-bar"><div class="timeline-fill" style="width:{{ p2 }};"></div></div>
+                    <div class="timeline-bar"><div class="timeline-fill" style="width:{{ p2 }}%;"></div></div>
                     <div class="text-muted mt-1 text-center" style="font-size:.72rem;">{{ el }} מתוך {{ td }} ימים ({{ p2 }}%)</div>
                   </div>
                 {% endif %}
               </form>
             </div>
 
-            <!-- Mentor notes -->
-            <div class="mt-3">
-              <form method="POST">
-                <input type="hidden" name="action" value="save_profile_settings">
-                <input type="hidden" name="student_status" value="{{ cur_status }}">
-                <input type="hidden" name="process_start_date"
-                       value="{{ profile.process_start_date if profile and profile.process_start_date else '' }}">
-                <input type="hidden" name="target_end_date"
-                       value="{{ profile.target_end_date if profile and profile.target_end_date else '' }}">
-                <label class="form-label fw-semibold" style="font-size:.72rem;">
-                  &#128221; הערות פרטיות (גלוי למנטור בלבד)
-                </label>
-                <div class="d-flex gap-2">
-                  <textarea name="mentor_notes" class="form-control notes-area form-control-sm flex-grow-1"
-                            placeholder="הערות, תובנות, דברים לזכור...">{{ profile.mentor_notes if profile and profile.mentor_notes else '' }}</textarea>
-                  <button type="submit" class="btn btn-crm btn-sm align-self-end px-3">שמור</button>
-                </div>
+            <!-- Mentor notes log -->
+            <div class="mt-3 border-top pt-2">
+              <label class="form-label fw-semibold" style="font-size:.72rem;">
+                &#128221; הערות פרטיות (גלויות למנטור בלבד)
+              </label>
+              <!-- Existing notes -->
+              <div id="notesList">
+                {% for n in notes %}
+                  <div class="note-entry">
+                    {{ n.text }}
+                    <div class="note-ts">{{ n.created_at | dt('%d/%m/%Y %H:%M') }}</div>
+                    <form method="POST" style="display:inline;">
+                      <input type="hidden" name="action" value="delete_note">
+                      <input type="hidden" name="note_id" value="{{ n.id }}">
+                      <button type="submit" class="note-del" onclick="return confirm('מחק הערה?')">✕</button>
+                    </form>
+                  </div>
+                {% endfor %}
+                {% if not notes %}
+                  <p class="text-muted small mb-2">אין הערות עדיין.</p>
+                {% endif %}
+              </div>
+              <!-- Add new note -->
+              <form method="POST" class="d-flex gap-2 mt-1">
+                <input type="hidden" name="action" value="add_note">
+                <textarea name="note_text" class="form-control notes-input form-control-sm flex-grow-1"
+                          placeholder="הוסף הערה חדשה..." rows="2"></textarea>
+                <button type="submit" class="btn btn-crm btn-sm align-self-end px-3">הוסף</button>
               </form>
             </div>
           {% endif %}

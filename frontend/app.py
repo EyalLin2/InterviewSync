@@ -413,17 +413,30 @@ def student_file(sid):
             r = api_post(f"/api/ai/coaching-strategy/{sid}")
             _flash_from_response(r, "אסטרטגיית ההדרכה עודכנה.")
 
+        elif action == "add_note":
+            text = request.form.get("note_text", "").strip()
+            if text:
+                r = api_post(f"/api/students/{sid}/notes", json={"text": text})
+                _flash_from_response(r, "ההערה נוספה.")
+
+        elif action == "delete_note":
+            nid = request.form.get("note_id", type=int)
+            r   = api_delete(f"/api/notes/{nid}")
+            _flash_from_response(r, "ההערה נמחקה.")
+
         return redirect(url_for("student_file", sid=sid))
 
     # GET
     r_student = api_get(f"/api/students/{sid}")
     r_tasks   = api_get("/api/tasks")
+    r_notes   = api_get(f"/api/students/{sid}/notes")
     if r_student.status_code != 200:
         flash("סטודנט לא נמצא.", "danger")
         return redirect(url_for("admin_dashboard"))
 
     student    = r_student.json()
-    taskbank   = r_tasks.json() if r_tasks.status_code == 200 else []
+    taskbank   = r_tasks.json()  if r_tasks.status_code  == 200 else []
+    notes      = r_notes.json()  if r_notes.status_code  == 200 else []
     categories = sorted({t["category"] for t in taskbank})
 
     return render_template("student_file.html",
@@ -436,6 +449,7 @@ def student_file(sid):
         completed=student.get("completed", []),
         categories=categories,
         student_meetings=student.get("meetings", []),
+        notes=notes,
     )
 
 

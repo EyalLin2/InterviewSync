@@ -89,6 +89,15 @@ class Meeting(db.Model):
     created_at   = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+class MentorNote(db.Model):
+    """Timestamped mentor notes — replaces the overwriting textarea."""
+    __tablename__ = "mentor_notes_log"
+    id         = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    text       = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 # ── Business-side models ───────────────────────────────────────────────────
 
 TOPIC_CATEGORIES = [

@@ -22,6 +22,7 @@ services:
   backend:
     build: ./backend
     restart: unless-stopped
+    mem_limit: 512m
     ports:
       - "8000:8000"
     environment:
@@ -47,6 +48,7 @@ services:
   frontend:
     build: ./frontend
     restart: unless-stopped
+    mem_limit: 256m
     ports:
       - "5001:5000"
     environment:
