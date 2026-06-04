@@ -8,58 +8,89 @@
 ## Architecture
 
 ```
-Browser
-  │ HTTP (Hebrew RTL UI)
-  ▼
-┌─────────────────────────┐
-│   Frontend  :5000       │  Flask BFF — renders Jinja2 templates
-│   (frontend/)           │  No DB access. JWT stored in session.
-└────────────┬────────────┘
-             │ REST API  Authorization: Bearer <jwt>
-             ▼
-┌─────────────────────────┐
-│   Backend   :8000       │  Flask REST API — stateless business logic
-│   (backend/)            │  AI (OpenAI), WhatsApp (Twilio), JWT auth
-└────────────┬────────────┘
-             │ SQL (psycopg2)
-             ▼
-┌─────────────────────────┐
-│   PostgreSQL  :5432     │  External DB — configured via env vars
-└─────────────────────────┘
+Browser  →  Frontend Flask :5001  →  Backend REST API :8000  →  PostgreSQL :5432
+              (BFF, JWT session)       (stateless, JWT auth)      (external DB)
 ```
-
----
-
-## Features
-
-| Feature | Description |
-|---------|-------------|
-| 👤 Student Management | Admin creates students, views full profiles, tracks progress |
-| 📋 Task Bank | Global task pool (Resume, LinkedIn, Interview Prep) — assign to specific students |
-| 🤖 AI Coaching | GPT-4o-mini generates personalized coaching strategies and task suggestions |
-| 📅 Meeting Scheduler | Monthly Hebrew calendar, WhatsApp confirmation flow, reminders |
-| 📁 File Uploads | Admin attaches resources to tasks; students submit files as proof |
-| 📄 CV Management | Mentor pastes/edits student CV directly in student file |
-| 🔔 WhatsApp Notifications | Via Twilio — task assignments, meeting confirmations, reminders |
-| 🌐 Hebrew RTL | Full right-to-left layout, Heebo font, professional Hebrew UI |
-
----
 
 ## Quick Start (Local)
 
-### Prerequisites
-- Docker and Docker Compose
-
-### Run
 ```bash
-git clone <repo>
+git clone https://github.com/EyalLin2/InterviewSync
 cd InterviewSync
 docker-compose up --build
 ```
 
-- **Frontend**: http://localhost:5000
-- **Backend API**: http://localhost:8000/health
-- **Default login**: admin / admin123 or student1 / student123
+- **App**: http://localhost:5001 — login: `admin / admin123` or `student1 / student123`
+- **API health**: http://localhost:8000/health
+
+---
+
+## Application Structure
+
+```
+InterviewSync/
+├── frontend/              # Flask BFF — serves Hebrew RTL UI, JWT session
+│   ├── app.py             # All page routes + backend API proxy
+│   ├── templates/         # 9 Jinja2 templates
+│   │   ├── base.html, login.html, onboarding.html
+│   │   ├── admin_hub.html          ← Dual-mode landing (Private / Business)
+│   │   ├── admin.html              ← Private: student CRM
+│   │   ├── student_file.html       ← Student detail (tabs: profile/AI/CV/notes)
+│   │   ├── admin_business.html     ← Business: workshops/inquiries/activities
+│   │   ├── admin_schedule.html     ← Meeting calendar
+│   │   └── index.html, student_schedule.html, meeting_confirm.html
+│   ├── Dockerfile, requirements.txt
+│   └── charts/            ← Helm chart (Deployment, Service, Ingress)
+│
+├── backend/               # Flask REST API — stateless business logic
+│   ├── app.py             # 40+ REST endpoints
+│   ├── models.py          # 8 SQLAlchemy models
+│   ├── Dockerfile, requirements.txt
+│   └── charts/            ← Helm chart (Deployment, Service)
+│
+├── docker-compose.yml     # Local dev: postgres + backend + frontend
+├── .github/workflows/ci.yml  ← GitHub Actions CI/CD pipeline
+├── Makefile               # make test / make lint / make build
+└── setup.cfg              # flake8 config
+```
+
+---
+
+## Admin Modes
+
+### 👤 Private (`/admin/private`) — Student CRM
+- **360 student table** with progress bars, WhatsApp status
+- **Student file** (tabs: Profile · AI Coaching · CV · Mentor Notes)
+  - Quick Actions Bar: WhatsApp, email, schedule meeting, status badge
+  - At-a-glance stats: days in process, task completion, next meeting
+  - Edit profile modal, AI coaching strategy, CV editor
+  - Task assignment modal with live search
+- **Task Bank** — CRUD with file attachments (resource files for students)
+- **Meeting Scheduler** — Hebrew calendar, WhatsApp confirmation flow
+
+### 💼 Business (`/admin/business`) — Workshops & Inquiries
+- **Overview dashboard** — stats + upcoming workshops + recent inquiries
+- **Workshops** — one-time / recurring / custom, status lifecycle
+- **Individual Inquiries** — track people who reach out, assign to workshops
+- **Activity Log** — timeline of all professional activities
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend BFF | Python 3.11, Flask 3.0, Jinja2, Heebo font |
+| Backend API | Python 3.11, Flask 3.0, Flask-CORS, PyJWT |
+| Database | PostgreSQL 15 (SQLAlchemy 2.0) |
+| Auth | JWT (7-day tokens, PyJWT) |
+| AI | OpenAI GPT-4o-mini (optional) |
+| Notifications | Twilio WhatsApp (optional) |
+| UI | Bootstrap 5.3.3 RTL, Hebrew RTL layout |
+| Containers | Docker, Docker Compose |
+| Kubernetes | Helm charts (2 services), AWS ECR, ArgoCD-ready |
+| CI/CD | GitHub Actions (lint → test → build → ECR push → ArgoCD sync) |
+| Tests | pytest (10 backend + 8 frontend) |
 
 ---
 
@@ -68,93 +99,13 @@ docker-compose up --build
 ### Backend
 | Variable | Required | Description |
 |----------|----------|-------------|
-| DB_HOST | yes | PostgreSQL host |
-| DB_PORT | yes | PostgreSQL port (default 5432) |
-| DB_NAME | yes | Database name |
-| DB_USER | yes | Database user |
-| DB_PASSWORD | yes | Database password |
-| SECRET_KEY | yes | JWT signing key |
-| AI_API_KEY | no | OpenAI key (AI features disabled if missing) |
-| TWILIO_ACCOUNT_SID | no | Twilio SID (WhatsApp disabled if missing) |
-| TWILIO_AUTH_TOKEN | no | Twilio auth token |
-| TWILIO_WHATSAPP_FROM | no | e.g. whatsapp:+14155238886 |
-| FRONTEND_URL | no | For WhatsApp confirmation links |
+| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | ✅ | PostgreSQL connection |
+| `SECRET_KEY` | ✅ | JWT signing key |
+| `AI_API_KEY` | ⬜ | OpenAI (AI features disabled if missing) |
+| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM` | ⬜ | WhatsApp notifications |
 
 ### Frontend
 | Variable | Required | Description |
 |----------|----------|-------------|
-| BACKEND_URL | yes | Backend service URL (e.g. http://backend:8000) |
-| SECRET_KEY | yes | Flask session key (must match backend) |
-
----
-
-## Kubernetes / Helm Deployment
-
-### Build and Push to AWS ECR
-```bash
-docker build -t interviewsync-backend ./backend
-docker tag interviewsync-backend <ACCOUNT>.dkr.ecr.<REGION>.amazonaws.com/interviewsync-backend:latest
-docker push <ACCOUNT>.dkr.ecr.<REGION>.amazonaws.com/interviewsync-backend:latest
-
-docker build -t interviewsync-frontend ./frontend
-docker tag interviewsync-frontend <ACCOUNT>.dkr.ecr.<REGION>.amazonaws.com/interviewsync-frontend:latest
-docker push <ACCOUNT>.dkr.ecr.<REGION>.amazonaws.com/interviewsync-frontend:latest
-```
-
-### Create ECR Pull Secret
-```bash
-kubectl create secret docker-registry ecr-registry-secret \
-  --docker-server=<ACCOUNT>.dkr.ecr.<REGION>.amazonaws.com \
-  --docker-username=AWS \
-  --docker-password=$(aws ecr get-login-password --region <REGION>)
-```
-
-### Deploy with Helm
-```bash
-helm upgrade --install interviewsync-backend ./backend/charts \
-  --set image.repository=<ACCOUNT>.dkr.ecr.<REGION>.amazonaws.com/interviewsync-backend \
-  --set env.DB_HOST=<YOUR_PG_HOST> \
-  --set env.DB_PASSWORD=<YOUR_PG_PASSWORD> \
-  --set env.SECRET_KEY=<YOUR_SECRET>
-
-helm upgrade --install interviewsync-frontend ./frontend/charts \
-  --set image.repository=<ACCOUNT>.dkr.ecr.<REGION>.amazonaws.com/interviewsync-frontend \
-  --set env.SECRET_KEY=<YOUR_SECRET> \
-  --set ingress.hosts[0].host=<YOUR_DOMAIN>
-```
-
-### Validate charts
-```bash
-helm template interviewsync-backend ./backend/charts --debug
-helm template interviewsync-frontend ./frontend/charts --debug
-```
-
----
-
-## Project Structure
-
-```
-InterviewSync/
-├── frontend/              # Flask BFF — serves Hebrew RTL UI
-│   ├── app.py             # Routes + backend API proxy
-│   ├── templates/         # 9 Jinja2 templates (base + 8 pages)
-│   ├── static/
-│   ├── requirements.txt
-│   ├── Dockerfile
-│   └── charts/            # Helm chart (Deployment, Service, Ingress)
-│       ├── Chart.yaml
-│       ├── values.yaml
-│       └── templates/
-├── backend/               # Flask REST API — stateless business logic
-│   ├── app.py             # All REST endpoints + JWT auth
-│   ├── models.py          # SQLAlchemy models (PostgreSQL)
-│   ├── requirements.txt
-│   ├── Dockerfile
-│   └── charts/            # Helm chart (Deployment, Service)
-│       ├── Chart.yaml
-│       ├── values.yaml
-│       └── templates/
-├── docker-compose.yml     # Local dev (postgres + backend + frontend)
-├── .gitignore
-└── README.md
-```
+| `BACKEND_URL` | ✅ | Backend URL (e.g., `http://backend:8000`) |
+| `SECRET_KEY` | ✅ | Flask session key (must match backend) |
