@@ -90,6 +90,12 @@
       <span class="badge" style="background:#635bff; font-size:.65rem;">מנהל</span>
     </div>
     <div class="ms-auto d-flex align-items-center gap-3">
+      <a href="{{ url_for('admin_schedule') }}" class="btn btn-outline-light btn-sm position-relative">
+        &#128197; לוז
+        {% if upcoming_count > 0 %}
+          <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-warning text-dark" style="font-size:.58rem;">{{ upcoming_count }}</span>
+        {% endif %}
+      </a>
       <span class="text-white-50 small">{{ user.username }}</span>
       <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">התנתקות</a>
     </div>
@@ -238,7 +244,7 @@
         <div class="card border-0 shadow-sm rounded-3 mb-4" style="background:#fff;">
           <div class="card-body p-4">
             <h6 class="fw-bold mb-3">&#10133; הוסף משימה לבנק</h6>
-            <form method="POST" action="{{ url_for('admin_taskbank') }}">
+            <form method="POST" action="{{ url_for('admin_taskbank') }}" enctype="multipart/form-data">
               <input type="hidden" name="action" value="add">
               <div class="row g-3">
                 <div class="col-md-5">
@@ -265,6 +271,11 @@
                 </div>
                 <div class="col-md-4">
                   <button type="submit" class="btn btn-primary-crm text-white w-100 fw-semibold">הוסף למאגר</button>
+                </div>
+                <div class="col-12">
+                  <label class="form-label small fw-semibold">&#128206; קובץ עזר (PDF, DOC, תמונה — אופציונלי)</label>
+                  <input type="file" name="resource_file" class="form-control form-control-sm"
+                         accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.txt">
                 </div>
               </div>
             </form>
@@ -314,7 +325,7 @@
                 <div class="modal fade" id="editModal{{ t.id }}" tabindex="-1">
                   <div class="modal-dialog">
                     <div class="modal-content">
-                      <form method="POST" action="{{ url_for('admin_taskbank') }}">
+                      <form method="POST" action="{{ url_for('admin_taskbank') }}" enctype="multipart/form-data">
                         <input type="hidden" name="action" value="edit">
                         <input type="hidden" name="task_id" value="{{ t.id }}">
                         <div class="modal-header">
@@ -330,7 +341,7 @@
                             <label class="form-label fw-semibold small">תיאור</label>
                             <textarea name="description" class="form-control" rows="2">{{ t.description }}</textarea>
                           </div>
-                          <div class="row g-2">
+                          <div class="row g-2 mb-2">
                             <div class="col-6">
                               <label class="form-label fw-semibold small">קטגוריה</label>
                               <select name="category" class="form-select form-select-sm">
@@ -347,6 +358,17 @@
                                 <option value="reflection" {{ 'selected' if t.task_type == 'reflection' }}>שאלון עצמי</option>
                               </select>
                             </div>
+                          </div>
+                          <div class="mb-1">
+                            <label class="form-label fw-semibold small">&#128206; קובץ עזר</label>
+                            {% if t.resource_file %}
+                              <div class="small text-muted mb-1">
+                                <a href="{{ url_for('static', filename=t.resource_file) }}" target="_blank">קובץ קיים &#8592;</a>
+                                <label class="ms-2"><input type="checkbox" name="clear_resource" value="1"> מחק קובץ</label>
+                              </div>
+                            {% endif %}
+                            <input type="file" name="resource_file" class="form-control form-control-sm"
+                                   accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.txt">
                           </div>
                         </div>
                         <div class="modal-footer">

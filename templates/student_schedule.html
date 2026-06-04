@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InterviewSync — הפגישות שלי</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
+  <style>
+    body { font-family: 'Heebo', sans-serif; background: #f0f4ff; }
+    .navbar-student { background: #4361ee; }
+    .navbar-brand-text { font-weight: 800; color: #fff; font-size: 1.2rem; }
+
+    .meeting-card {
+      background: #fff; border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(67,97,238,.08);
+      padding: 1.25rem 1.5rem; margin-bottom: .75rem;
+    }
+    .meeting-card.confirmed { border-right: 4px solid #10b981; }
+    .meeting-card.pending   { border-right: 4px solid #f59e0b; }
+
+    .date-block {
+      background: #eef0ff; border-radius: 10px;
+      padding: .5rem .75rem; text-align: center; min-width: 60px;
+    }
+    .date-day  { font-size: 1.5rem; font-weight: 800; color: #4361ee; line-height: 1; }
+    .date-mon  { font-size: .72rem; color: #6b7280; }
+    .badge-conf { background: #d1fae5; color: #065f46; }
+    .badge-pend { background: #fef3c7; color: #92400e; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-student px-4 py-2">
+    <span class="navbar-brand-text">&#127891; InterviewSync</span>
+    <div class="ms-auto d-flex align-items-center gap-3">
+      <a href="{{ url_for('index') }}" class="btn btn-outline-light btn-sm">&#8592; משימות</a>
+      <span class="text-white-50 small">{{ profile.full_name if profile else user.username }}</span>
+      <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">התנתקות</a>
+    </div>
+  </nav>
+
+  <div class="container py-4" style="max-width:680px;">
+
+    <h4 class="fw-bold mb-4">&#128197; הפגישות שלי</h4>
+
+    {% if not meetings %}
+      <div class="text-center text-muted py-5">
+        <div style="font-size:3rem;">&#128197;</div>
+        <div class="fw-semibold mt-2">אין פגישות מתוכננות</div>
+        <div class="small">המנטור שלך יקבע פגישה ותקבל/י הודעה</div>
+      </div>
+    {% else %}
+      {% set MONTHS_HE = ['','ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'] %}
+      {% for m in meetings %}
+        <div class="meeting-card {{ m.status }}">
+          <div class="d-flex align-items-center gap-3">
+            <div class="date-block">
+              <div class="date-day">{{ m.scheduled_at.strftime('%d') }}</div>
+              <div class="date-mon">{{ MONTHS_HE[m.scheduled_at.month] }}</div>
+            </div>
+            <div class="flex-grow-1">
+              <div class="fw-bold">
+                פגישה עם המנטור
+                <span class="badge {{ 'badge-conf' if m.status == 'confirmed' else 'badge-pend' }} rounded-pill ms-2" style="font-size:.7rem;">
+                  {{ 'מאושר ✓' if m.status == 'confirmed' else 'ממתין לאישורך' }}
+                </span>
+              </div>
+              <div class="text-muted small mt-1">
+                &#9202; {{ m.scheduled_at.strftime('%H:%M') }} &nbsp;·&nbsp; {{ m.duration_min }} דקות
+              </div>
+              {% if m.notes %}
+                <div class="text-muted small mt-1">{{ m.notes }}</div>
+              {% endif %}
+              {% if m.status == 'pending' %}
+                <div class="mt-2">
+                  <a href="{{ url_for('meeting_confirm', meeting_id=m.id, token=m.id | string) }}"
+                     class="btn btn-sm btn-success py-0 px-3 fw-semibold" style="font-size:.8rem;">
+                    אשר/י פגישה ✓
+                  </a>
+                  <span class="text-muted small me-2">או לחץ/י על הקישור שנשלח ב-WhatsApp</span>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

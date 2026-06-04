@@ -9,69 +9,40 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
   <style>
     body { font-family: 'Heebo', sans-serif; background: #f0f4ff; }
-
-    /* Navbar */
     .navbar-student { background: #4361ee; }
     .navbar-brand-text { font-weight: 800; font-size: 1.2rem; color: #fff; }
 
-    /* Hero */
-    .hero-card {
-      background: linear-gradient(135deg, #4361ee, #7209b7);
-      color: #fff; border-radius: 16px;
-      padding: 1.5rem 2rem; margin-bottom: 2rem;
-    }
+    .hero-card { background: linear-gradient(135deg, #4361ee, #7209b7); color: #fff; border-radius: 16px; padding: 1.5rem 2rem; margin-bottom: 2rem; }
     .hero-greeting { font-size: 1.5rem; font-weight: 700; }
-    .hero-sub { opacity: .85; font-size: 0.9rem; }
     .progress { height: 10px; border-radius: 10px; background: rgba(255,255,255,.3); }
     .progress-bar { background: #fff; border-radius: 10px; }
-    .progress-label { font-size: 0.82rem; opacity: .85; }
 
-    /* Task cards */
-    .task-card {
-      background: #fff; border-radius: 14px;
-      box-shadow: 0 2px 12px rgba(67,97,238,.08);
-      padding: 1.1rem 1.25rem; margin-bottom: 0.75rem;
-      transition: transform .15s, box-shadow .15s;
-    }
-    .task-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(67,97,238,.13); }
+    .task-card { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(67,97,238,.08); padding: 1.1rem 1.25rem; margin-bottom: .75rem; }
     .task-title { font-weight: 700; font-size: 1rem; }
-    .task-desc  { font-size: 0.85rem; color: #6c757d; margin-top: 0.2rem; }
-    .task-done  {
-      background: #f0fff4; border-radius: 14px;
-      padding: 0.8rem 1.25rem; margin-bottom: 0.5rem;
-      border: 1px solid #c3e6cb;
-    }
+    .task-desc  { font-size: .85rem; color: #6c757d; }
+    .task-done  { background: #f0fff4; border-radius: 14px; padding: .8rem 1.25rem; margin-bottom: .5rem; border: 1px solid #c3e6cb; }
     .task-done .task-title { color: #6c757d; text-decoration: line-through; font-weight: 500; }
 
-    /* Category badge colors */
     .cat-resume   { background: #ffecd2; color: #b45309; }
     .cat-linkedin { background: #dbeafe; color: #1d4ed8; }
     .cat-interview{ background: #fce7f3; color: #9d174d; }
     .cat-quiz     { background: #ede9fe; color: #5b21b6; }
     .cat-general  { background: #f3f4f6; color: #374151; }
-
-    /* Type badge */
     .type-reflection{ background: #ede9fe; color: #5b21b6; font-size:.7rem; }
     .type-exercise  { background: #d1fae5; color: #065f46; font-size:.7rem; }
     .type-task      { background: #dbeafe; color: #1e40af; font-size:.7rem; }
 
-    /* Empty state */
-    .empty-state { text-align: center; padding: 3rem 1rem; color: #adb5bd; }
-    .empty-state .empty-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+    .section-hdr { font-size: .72rem; font-weight: 700; text-transform: uppercase; color: #adb5bd; letter-spacing: .5px; margin-bottom: .75rem; margin-top: 1.5rem; }
 
-    /* Section header */
-    .section-hdr {
-      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
-      color: #adb5bd; letter-spacing: 0.5px; margin-bottom: 0.75rem; margin-top: 1.5rem;
-    }
-
-    /* Complete button */
-    .btn-complete {
-      background: #4361ee; color: #fff; border: none;
-      border-radius: 8px; font-size: 0.82rem; font-weight: 600;
-      padding: 0.3rem 0.9rem; transition: background .15s;
-    }
+    .btn-complete { background: #4361ee; color: #fff; border: none; border-radius: 8px; font-size: .82rem; font-weight: 600; padding: .3rem .9rem; }
     .btn-complete:hover { background: #3451cc; }
+
+    .resource-link { background: #f0f4ff; border-radius: 8px; padding: .4rem .75rem; font-size: .8rem; color: #4361ee; text-decoration: none; display: inline-block; }
+    .resource-link:hover { background: #e0e8ff; }
+
+    .submit-collapse { background: #f8f9ff; border-radius: 10px; padding: 1rem; margin-top: .75rem; border: 1px solid #e0e8ff; }
+
+    .meeting-banner { background: #f0fdf4; border: 1px solid #6ee7b7; border-radius: 12px; padding: .75rem 1rem; margin-bottom: 1rem; font-size: .88rem; }
   </style>
 </head>
 <body>
@@ -79,9 +50,8 @@
   <nav class="navbar navbar-expand-lg navbar-student px-4 py-2">
     <span class="navbar-brand-text">&#127891; InterviewSync</span>
     <div class="ms-auto d-flex align-items-center gap-3">
-      <span class="text-white-50 small">
-        שלום, <strong class="text-white">{{ profile.full_name if profile else user.username }}</strong>
-      </span>
+      <a href="{{ url_for('student_schedule') }}" class="btn btn-outline-light btn-sm">&#128197; פגישות</a>
+      <span class="text-white-50 small">שלום, <strong class="text-white">{{ profile.full_name.split()[0] if profile and profile.full_name else user.username }}</strong></span>
       <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">התנתקות</a>
     </div>
   </nav>
@@ -96,73 +66,103 @@
       {% endfor %}
     {% endwith %}
 
+    <!-- Upcoming meetings banner -->
+    {% for m in upcoming_meetings %}
+      {% if loop.first %}
+        <div class="meeting-banner">
+          &#128197; <strong>פגישה קרובה:</strong>
+          {{ m.scheduled_at.strftime('%d/%m/%Y בשעה %H:%M') }}
+          {% if m.status == 'pending' %}
+            — <a href="{{ url_for('student_schedule') }}" style="color:#065f46;">אשר/י &#8592;</a>
+          {% else %}
+            <span class="badge rounded-pill ms-1" style="background:#d1fae5; color:#065f46; font-size:.7rem;">מאושר ✓</span>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endfor %}
+
     <!-- Hero / Progress -->
     <div class="hero-card">
-      <div class="hero-greeting">
-        שלום{% if profile and profile.full_name %}, {{ profile.full_name.split()[0] }}{% endif %} 👋
-      </div>
-      <div class="hero-sub mb-3">
-        {% if total == 0 %}
-          ממתין/ה למשימות מהמנטור שלך
-        {% else %}
-          השלמת {{ completed|length }} מתוך {{ total }} משימות
-        {% endif %}
+      <div class="hero-greeting">שלום{% if profile and profile.full_name %}, {{ profile.full_name.split()[0] }}{% endif %} 👋</div>
+      <div class="mb-3" style="opacity:.85; font-size:.9rem;">
+        {% if total == 0 %}ממתין/ה למשימות מהמנטור שלך
+        {% else %}השלמת {{ completed|length }} מתוך {{ total }} משימות{% endif %}
       </div>
       {% if total > 0 %}
         {% set pct = ((completed|length) / total * 100)|int %}
-        <div class="progress mb-1">
-          <div class="progress-bar" style="width:{{ pct }}%"></div>
-        </div>
-        <div class="progress-label">{{ pct }}% הושלם</div>
+        <div class="progress mb-1"><div class="progress-bar" style="width:{{ pct }}%"></div></div>
+        <div style="font-size:.82rem; opacity:.85;">{{ pct }}% הושלם</div>
       {% endif %}
     </div>
+
+    {% set cat_class = {'קורות חיים':'cat-resume','LinkedIn':'cat-linkedin','הכנה לראיון':'cat-interview','שאלון':'cat-quiz','כללי':'cat-general'} %}
+    {% set type_class = {'reflection':'type-reflection','exercise':'type-exercise','task':'type-task'} %}
+    {% set type_label = {'reflection':'שאלון עצמי','exercise':'תרגיל','task':'משימה'} %}
 
     <!-- Active Tasks -->
     <div class="section-hdr">&#9889; משימות פעילות ({{ active|length }})</div>
 
     {% if not active %}
-      <div class="empty-state">
-        <div class="empty-icon">&#127881;</div>
-        {% if total == 0 %}
-          <div class="fw-semibold">אין משימות עדיין</div>
-          <div class="small">המנטור שלך יוסיף בקרוב משימות מותאמות עבורך</div>
-        {% else %}
-          <div class="fw-semibold">כל המשימות הושלמו!</div>
-          <div class="small">עבודה מצוינת &#127775;</div>
-        {% endif %}
+      <div class="text-center text-muted py-4">
+        <div style="font-size:3rem;">{% if total == 0 %}&#128274;{% else %}&#127881;{% endif %}</div>
+        <div class="fw-semibold mt-1">{% if total == 0 %}אין משימות עדיין{% else %}כל המשימות הושלמו!{% endif %}</div>
+        <div class="small">{% if total == 0 %}המנטור שלך יוסיף בקרוב משימות{% else %}עבודה מצוינת &#127775;{% endif %}</div>
       </div>
     {% else %}
-      {% set cat_class = {
-        'קורות חיים': 'cat-resume',
-        'LinkedIn': 'cat-linkedin',
-        'הכנה לראיון': 'cat-interview',
-        'שאלון': 'cat-quiz',
-        'כללי': 'cat-general'
-      } %}
-      {% set type_class = {'reflection':'type-reflection','exercise':'type-exercise','task':'type-task'} %}
-      {% set type_label = {'reflection':'שאלון עצמי','exercise':'תרגיל','task':'משימה'} %}
-
       {% for at in active %}
         {% set t = at.task %}
-        <div class="task-card d-flex align-items-start gap-3">
-          <div class="flex-grow-1">
-            <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
-              <span class="badge {{ cat_class.get(t.category, 'cat-general') }} rounded-pill">{{ t.category }}</span>
-              <span class="badge {{ type_class.get(t.task_type, 'type-task') }} rounded-pill">{{ type_label.get(t.task_type, t.task_type) }}</span>
+        <div class="task-card">
+          <div class="d-flex align-items-start gap-3">
+            <div class="flex-grow-1">
+              <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                <span class="badge {{ cat_class.get(t.category,'cat-general') }} rounded-pill">{{ t.category }}</span>
+                <span class="badge {{ type_class.get(t.task_type,'type-task') }} rounded-pill">{{ type_label.get(t.task_type,t.task_type) }}</span>
+              </div>
+              <div class="task-title">{{ t.title }}</div>
+              {% if t.description %}<div class="task-desc mt-1">{{ t.description }}</div>{% endif %}
+              {% if t.resource_file %}
+                <div class="mt-2">
+                  <a href="{{ url_for('static', filename=t.resource_file) }}" target="_blank" class="resource-link">
+                    &#128206; פתח חומר עזר מהמנטור
+                  </a>
+                </div>
+              {% endif %}
+              <div class="text-muted mt-1" style="font-size:.75rem;">שויך {{ at.assigned_at.strftime('%d/%m/%Y') }}</div>
             </div>
-            <div class="task-title">{{ t.title }}</div>
-            {% if t.description %}
-              <div class="task-desc">{{ t.description }}</div>
-            {% endif %}
-            <div class="text-muted" style="font-size:.75rem; margin-top:.4rem;">
-              שויך {{ at.assigned_at.strftime('%d/%m/%Y') }}
+            <div class="flex-shrink-0">
+              <button class="btn-complete"
+                      data-bs-toggle="collapse"
+                      data-bs-target="#submit-{{ at.task_id }}">
+                סיימתי ✓
+              </button>
             </div>
           </div>
-          <div class="flex-shrink-0">
-            <form method="POST" action="{{ url_for('index') }}" onsubmit="return confirm('לסמן כהושלמה?')">
-              <input type="hidden" name="task_id" value="{{ at.task_id }}">
-              <button type="submit" class="btn-complete">סיימתי ✓</button>
-            </form>
+
+          <!-- Expandable submission form -->
+          <div class="collapse" id="submit-{{ at.task_id }}">
+            <div class="submit-collapse">
+              <form method="POST" action="{{ url_for('index') }}" enctype="multipart/form-data">
+                <input type="hidden" name="task_id" value="{{ at.task_id }}">
+                <div class="mb-2">
+                  <label class="form-label fw-semibold small">
+                    {% if t.task_type == 'reflection' %}כתוב/י את תשובתך (שאלון עצמי)
+                    {% elif t.task_type == 'exercise' %}הוסף/י הערות על התרגיל
+                    {% else %}הוסף/י הערת השלמה (אופציונלי){% endif %}
+                  </label>
+                  <textarea name="submission_note" class="form-control form-control-sm"
+                            rows="{{ 4 if t.task_type == 'reflection' else 2 }}"
+                            placeholder="{{ 'שתף/י את מחשבותיך, תובנות, ומה למדת...' if t.task_type == 'reflection' else 'מה עשית? מה למדת?' }}"></textarea>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label fw-semibold small">&#128206; צרף/י קובץ (PDF, DOC, תמונה — עד 5MB)</label>
+                  <input type="file" name="submission_file" class="form-control form-control-sm"
+                         accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.txt">
+                </div>
+                <button type="submit" class="btn btn-success btn-sm fw-semibold px-4">&#10003; אשר/י הגשה</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm ms-2"
+                        data-bs-toggle="collapse" data-bs-target="#submit-{{ at.task_id }}">ביטול</button>
+              </form>
+            </div>
           </div>
         </div>
       {% endfor %}
@@ -173,13 +173,15 @@
       <div class="section-hdr">&#10003; משימות שהושלמו ({{ completed|length }})</div>
       {% for at in completed %}
         {% set t = at.task %}
-        <div class="task-done d-flex align-items-center gap-3">
-          <span class="text-success fw-bold fs-5">&#10003;</span>
-          <div>
+        <div class="task-done d-flex align-items-start gap-3">
+          <span class="text-success fw-bold fs-5 flex-shrink-0">&#10003;</span>
+          <div class="flex-grow-1">
             <div class="task-title">{{ t.title }}</div>
-            <div class="text-muted" style="font-size:.75rem;">
-              הושלם {{ at.completed_at.strftime('%d/%m/%Y') if at.completed_at else '' }}
-            </div>
+            <div class="text-muted" style="font-size:.75rem;">הושלם {{ at.completed_at.strftime('%d/%m/%Y') if at.completed_at else '' }}</div>
+            {% if at.submission_file %}
+              <a href="{{ url_for('static', filename=at.submission_file) }}" target="_blank"
+                 class="resource-link mt-1" style="font-size:.75rem;">&#128206; קובץ שהגשת</a>
+            {% endif %}
           </div>
         </div>
       {% endfor %}
