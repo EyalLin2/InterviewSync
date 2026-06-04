@@ -31,8 +31,9 @@ services:
       DB_NAME:     interviewsync
       DB_USER:     interviewsync
       DB_PASSWORD: devpassword
-      SECRET_KEY:  dev-secret-key-change-in-prod
-      UPLOAD_FOLDER: /app/uploads
+      SECRET_KEY:       dev-secret-key-change-in-prod
+      UPLOAD_FOLDER:    /app/uploads
+      INACTIVITY_DAYS:  7
       # Optional — set these to enable AI and WhatsApp:
       # AI_API_KEY:             your_openai_key
       # TWILIO_ACCOUNT_SID:     your_sid

@@ -105,9 +105,28 @@
     .cat-general  { background: #f3f4f6; color: #374151; }
     .badge-done    { background: #d1fae5; color: #065f46; font-size: .63rem; }
 
-    /* ── Submission expander ── */
-    .sub-toggle { font-size: .78rem; color: #635bff; cursor: pointer; }
-    .sub-text   { background: #f8f9ff; border-right: 3px solid #635bff; border-radius: 8px 0 0 8px; padding: .45rem .7rem; font-size: .8rem; margin-top: .25rem; display: none; }
+    /* ── Submission (always visible preview) ── */
+    .sub-preview { background: #f8f9ff; border-right: 3px solid #635bff; border-radius: 8px 0 0 8px; padding: .4rem .7rem; font-size: .8rem; margin-top: .3rem; color: #374151; }
+    .sub-more    { font-size: .75rem; color: #635bff; cursor: pointer; text-decoration: none; }
+    .sub-full    { display: none; }
+    .task-row.has-submission { border-right: 3px solid #635bff; padding-right: .5rem; margin-right: -1px; }
+
+    /* ── Task description ── */
+    .task-desc { font-size: .75rem; color: #6b7280; margin-top: .1rem; }
+
+    /* ── Print styles ── */
+    @media print {
+      .navbar-admin, .quick-bar, .btn, button,
+      .nav-tabs-crm, .modal, .no-print { display: none !important; }
+      body { background: #fff; font-size: 11pt; }
+      .card-crm { box-shadow: none; border: 1px solid #e5e7eb; page-break-inside: avoid; }
+      /* Show all tabs in print */
+      .tab-pane { display: block !important; opacity: 1 !important; }
+      .tab-pane + .tab-pane { border-top: 1px dashed #e5e7eb; padding-top: 1rem; margin-top: 1rem; }
+      .stats-row .stat-box { box-shadow: none; border: 1px solid #e5e7eb; }
+      .strategy-box { border: 1px solid #635bff; }
+      a[href]::after { content: none; }
+    }
 
     /* ── Meetings ── */
     .meeting-row { background: #f0fdf4; border-right: 3px solid #10b981; border-radius: 8px 0 0 8px; padding: .5rem .8rem; font-size: .82rem; margin-bottom: .35rem; }
@@ -141,13 +160,18 @@
 
   <div class="container-fluid py-3 px-4" style="max-width:1100px;">
 
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-2">
-      <ol class="breadcrumb small">
-        <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">לוח פרטי</a></li>
-        <li class="breadcrumb-item active">{{ profile.full_name if profile else student.username }}</li>
-      </ol>
-    </nav>
+    <!-- Breadcrumb + Print button -->
+    <div class="d-flex align-items-center justify-content-between mb-2">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb small mb-0">
+          <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">לוח פרטי</a></li>
+          <li class="breadcrumb-item active">{{ profile.full_name if profile else student.username }}</li>
+        </ol>
+      </nav>
+      <button onclick="window.print()" class="btn btn-sm btn-outline-secondary no-print" style="font-size:.78rem;">
+        &#128424;&#65039; הדפס / PDF
+      </button>
+    </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% for cat, msg in messages %}
@@ -205,6 +229,16 @@
       {% set total_tasks = (active|length) + (completed|length) %}
       {% set start_d = profile.process_start_date | to_date if profile.process_start_date else none %}
       {% set days_in = ((now_date - start_d).days) if start_d else none %}
+
+      {# Last contact = most recent of: last completed task OR last confirmed meeting in the past #}
+      {% set last_task_dt = completed[0].completed_at if completed else none %}
+      {% set last_meeting_dt = none %}
+      {% for m in student_meetings %}{% endfor %}{# meetings are upcoming only — no past data here #}
+      {% set last_contact_days = none %}
+      {% if last_task_dt %}
+        {% set last_contact_days = (now_date - (last_task_dt | to_date)).days %}
+      {% endif %}
+
       <div class="stats-row">
         {% if days_in is not none %}
           <div class="stat-box">
@@ -216,6 +250,13 @@
           <div class="stat-num">{{ completed|length }}<span style="font-size:1rem; color:#9ca3af;">/{{ total_tasks }}</span></div>
           <div class="stat-lbl">&#10003; משימות הושלמו</div>
         </div>
+        {% if last_contact_days is not none %}
+          {% set contact_color = '#ef4444' if last_contact_days > 7 else '#10b981' %}
+          <div class="stat-box">
+            <div class="stat-num" style="color:{{ contact_color }};">{{ last_contact_days }}</div>
+            <div class="stat-lbl">&#128336; ימים מאז הגשה</div>
+          </div>
+        {% endif %}
         {% if student_meetings %}
           <div class="stat-box">
             <div class="stat-num" style="font-size:1rem; font-weight:700; color:#10b981;">{{ student_meetings[0].scheduled_at | dt }}</div>
@@ -429,7 +470,10 @@
                 <span class="cat-pill {{ cat_class.get(t.category,'cat-general') }}">{{ t.category }}</span>
                 <div class="flex-grow-1">
                   <div class="task-title">{{ t.title }}</div>
-                  <div class="task-meta">{{ at.assigned_at | dt }}</div>
+                  {% if t.description %}
+                    <div class="task-desc">{{ t.description | truncate(90) }}</div>
+                  {% endif %}
+                  <div class="task-meta">שויך {{ at.assigned_at | dt }}</div>
                 </div>
               </div>
             {% endfor %}
@@ -438,7 +482,7 @@
           <!-- Completed tasks (collapsed) -->
           {% if completed %}
             <div class="border-top mt-2 pt-2">
-              <button class="btn btn-link btn-sm p-0 text-muted fw-semibold"
+              <button class="btn btn-link btn-sm p-0 text-muted fw-semibold no-print"
                       style="font-size:.82rem;"
                       type="button" data-bs-toggle="collapse" data-bs-target="#completedTasks">
                 &#10003; הושלמו ({{ completed|length }}) &#9660;
@@ -446,18 +490,28 @@
               <div class="collapse" id="completedTasks">
                 {% for at in completed %}
                   {% set t = at.task %}
-                  <div class="task-row" style="opacity:.7;">
+                  {% set has_sub = at.submission_note or at.submission_file %}
+                  <div class="task-row {{ 'has-submission' if has_sub }}" style="opacity:.8;">
                     <span class="text-success fw-bold flex-shrink-0">&#10003;</span>
                     <div class="flex-grow-1">
                       <div class="task-title" style="text-decoration:line-through;">{{ t.title }}</div>
                       <div class="task-meta">{{ at.completed_at | dt if at.completed_at else '' }}</div>
+                      {# Show submission preview inline — no click needed #}
                       {% if at.submission_note %}
-                        <a class="sub-toggle" onclick="toggleSub(this)">&#128172; הגשה</a>
-                        <div class="sub-text">{{ at.submission_note }}</div>
+                        <div class="sub-preview">
+                          {{ at.submission_note[:150] }}
+                          {% if at.submission_note|length > 150 %}
+                            <span class="sub-full">{{ at.submission_note[150:] }}</span>
+                            <a class="sub-more ms-1" onclick="this.previousElementSibling.style.display='inline'; this.style.display='none';">...הצג הכל</a>
+                          {% endif %}
+                        </div>
                       {% endif %}
                       {% if at.submission_file %}
                         <a href="{{ '/files/' + at.submission_file }}" target="_blank"
-                           style="font-size:.75rem;color:#635bff;text-decoration:none;">&#128206; קובץ</a>
+                           class="d-inline-flex align-items-center gap-1 mt-1"
+                           style="font-size:.75rem;color:#635bff;text-decoration:none;">
+                          &#128206; קובץ מצורף
+                        </a>
                       {% endif %}
                     </div>
                   </div>
@@ -583,12 +637,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    function toggleSub(el) {
-      const b = el.nextElementSibling;
-      b.style.display = b.style.display === 'block' ? 'none' : 'block';
-      el.textContent = b.style.display === 'block' ? '💬 הסתר' : '💬 הגשה';
-    }
-
     function filterAssign(q) {
       q = q.toLowerCase();
       document.querySelectorAll('#assignList .assign-item').forEach(i => {

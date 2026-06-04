@@ -11,6 +11,7 @@ TEST_SECRET = "test-secret-key-long-enough-for-hs256-algorithm-32bytes"
 os.environ["DATABASE_URL"]  = "sqlite:///:memory:"
 os.environ["SECRET_KEY"]    = TEST_SECRET
 os.environ["UPLOAD_FOLDER"] = "/tmp/interviewsync_test_uploads"
+os.environ["TESTING"]       = "true"   # prevents APScheduler from starting in tests
 
 import sys  # noqa: E402
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))

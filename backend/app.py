@@ -9,6 +9,7 @@ from functools import wraps
 import jwt
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
+from apscheduler.schedulers.background import BackgroundScheduler
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from openai import OpenAI
@@ -525,9 +526,15 @@ def regen_strategy(sid):
     p = student.profile
     if not p:
         return jsonify({"error": "No profile"}), 404
-    p.ai_coaching_strategy = ai_coaching_strategy(p)
-    db.session.commit()
-    return jsonify({"strategy": p.ai_coaching_strategy})
+    if not _ai_client():
+        return jsonify({"error": "no_api_key",
+                        "message": "AI_API_KEY לא מוגדר — הוסף אותו ל-docker-compose.yml",
+                        "strategy": p.ai_coaching_strategy or ""}), 503
+    result = ai_coaching_strategy(p)
+    if result:
+        p.ai_coaching_strategy = result
+        db.session.commit()
+    return jsonify({"strategy": p.ai_coaching_strategy or ""})
 
 
 @app.route("/api/ai/tasks/<int:sid>", methods=["POST"])
@@ -1114,6 +1121,68 @@ def delete_activity(aid):
     db.session.delete(a)
     db.session.commit()
     return jsonify({"ok": True})
+
+
+# ─────────────────────────────────────────────
+# Inactivity reminder (APScheduler daily job)
+# ─────────────────────────────────────────────
+
+# In-memory set to avoid duplicate sends on the same calendar day
+_notified_today: set = set()
+
+
+def check_inactive_students():
+    """Daily: send WhatsApp to students who haven't been active in X days."""
+    threshold = int(os.environ.get("INACTIVITY_DAYS", 7))
+    cutoff    = datetime.utcnow() - timedelta(days=threshold)
+    today_key = datetime.utcnow().strftime("%Y-%m-%d")
+
+    with app.app_context():
+        students = User.query.filter_by(role="student").all()
+        for s in students:
+            if f"{today_key}:{s.id}" in _notified_today:
+                continue  # already notified today
+
+            last_task = (AssignedTask.query
+                         .filter_by(user_id=s.id, status="completed")
+                         .order_by(AssignedTask.completed_at.desc()).first())
+            last_meeting = (Meeting.query
+                            .filter_by(student_id=s.id)
+                            .filter(Meeting.scheduled_at <= datetime.utcnow())
+                            .filter(Meeting.status != "cancelled")
+                            .order_by(Meeting.scheduled_at.desc()).first())
+
+            dates = [d for d in [
+                last_task.completed_at    if last_task    else None,
+                last_meeting.scheduled_at if last_meeting else None,
+            ] if d]
+            last_activity = max(dates) if dates else None
+
+            if last_activity and last_activity > cutoff:
+                continue  # active
+
+            p = s.profile
+            if not p or not p.phone:
+                continue
+
+            pending = AssignedTask.query.filter_by(user_id=s.id, status="pending").count()
+            if pending == 0:
+                continue
+
+            name = p.full_name or s.username
+            ok, _ = send_whatsapp(p.phone,
+                f"שלום {name}! לא ראינו אותך פעיל/ה בתוכנית לאחרונה. "
+                f"יש לך {pending} משימות ממתינות — היכנס/י ותמשיך/י 💪")
+            if ok:
+                _notified_today.add(f"{today_key}:{s.id}")
+                app.logger.info("Inactivity reminder sent to student %s", s.username)
+
+
+# Start scheduler (only in production/gunicorn, not in pytest)
+if os.environ.get("TESTING") != "true":
+    _scheduler = BackgroundScheduler(timezone="UTC", daemon=True)
+    _scheduler.add_job(check_inactive_students, "cron", hour=9, minute=0)
+    _scheduler.start()
 
 
 # ─────────────────────────────────────────────
