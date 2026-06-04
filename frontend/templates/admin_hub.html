@@ -3,182 +3,250 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>InterviewSync — לוח בחירה</title>
+  <title>InterviewSync</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
       font-family: 'Heebo', sans-serif;
+      background: #0a0e1a;
+      color: #fff;
       min-height: 100vh;
-      background: #0f1628;
-      display: flex; flex-direction: column;
+      display: flex;
+      flex-direction: column;
     }
 
-    .top-bar {
+    /* ── Top bar ── */
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .logo { font-size: 1rem; font-weight: 700; color: rgba(255,255,255,.7); letter-spacing: -.2px; }
+    .logo span { color: #fff; }
+    .top-right { display: flex; align-items: center; gap: 1.5rem; font-size: .82rem; color: rgba(255,255,255,.4); }
+    .top-right a { color: rgba(255,255,255,.35); text-decoration: none; }
+    .top-right a:hover { color: rgba(255,255,255,.7); }
+
+    /* ── Main ── */
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.5rem;
+    }
+
+    .hub {
+      width: 100%;
+      max-width: 760px;
+    }
+
+    .hub-greeting {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .hub-greeting h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: rgba(255,255,255,.85);
+      margin-bottom: .35rem;
+    }
+    .hub-greeting p {
+      font-size: .88rem;
+      color: rgba(255,255,255,.35);
+    }
+
+    /* ── Cards ── */
+    .cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .card {
+      display: block;
+      text-decoration: none;
+      border-radius: 16px;
+      padding: 2rem 1.75rem;
+      border: 1px solid rgba(255,255,255,.08);
+      transition: border-color .15s, transform .12s, box-shadow .15s;
+      position: relative;
+      overflow: hidden;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(0,0,0,.4);
+    }
+    .card-private {
+      background: linear-gradient(145deg, #12173a 0%, #181e45 100%);
+    }
+    .card-private:hover { border-color: rgba(99,91,255,.4); }
+
+    .card-business {
+      background: linear-gradient(145deg, #0c1f18 0%, #0f2820 100%);
+    }
+    .card-business:hover { border-color: rgba(16,185,129,.4); }
+
+    .card-accent {
+      position: absolute;
+      top: 0; right: 0;
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      opacity: .06;
+      filter: blur(30px);
+    }
+    .card-private .card-accent  { background: #635bff; }
+    .card-business .card-accent { background: #10b981; }
+
+    .card-icon {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: .4rem;
+    }
+    .card-desc {
+      font-size: .82rem;
+      color: rgba(255,255,255,.4);
+      line-height: 1.6;
+      margin-bottom: 1.25rem;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem;
+      margin-bottom: 1.5rem;
+    }
+    .tag {
+      font-size: .72rem;
+      color: rgba(255,255,255,.4);
       background: rgba(255,255,255,.05);
-      border-bottom: 1px solid rgba(255,255,255,.08);
-      padding: .6rem 2rem;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .top-brand { font-size: 1.1rem; font-weight: 800; color: #fff; }
-    .top-user  { font-size: .82rem; color: rgba(255,255,255,.5); }
-
-    .hub-grid {
-      flex: 1; display: flex; align-items: stretch;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 50px;
+      padding: .2rem .65rem;
     }
 
-    .hub-card {
-      flex: 1; display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      padding: 3rem 2.5rem; cursor: pointer; text-decoration: none;
-      transition: background .2s, transform .15s;
-      position: relative; overflow: hidden;
+    .card-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      font-size: .82rem;
+      font-weight: 600;
+      padding: .5rem 1.1rem;
+      border-radius: 8px;
     }
-    .hub-card::before {
-      content: ''; position: absolute; inset: 0;
-      opacity: 0; transition: opacity .2s;
-    }
-    .hub-card:hover { transform: scale(1.01); }
-    .hub-card:hover::before { opacity: 1; }
+    .card-private  .card-cta { background: rgba(99,91,255,.2);  color: #a78bfa; }
+    .card-business .card-cta { background: rgba(16,185,129,.18); color: #34d399; }
+    .card:hover .card-cta { opacity: .85; }
 
-    .hub-card-private {
-      background: linear-gradient(160deg, #1a1f36 0%, #1e2547 100%);
-      border-left: 1px solid rgba(99,91,255,.2);
-    }
-    .hub-card-private::before {
-      background: linear-gradient(160deg, #1e2547 0%, #252d5a 100%);
-    }
-
-    .hub-card-business {
-      background: linear-gradient(160deg, #0d1f1a 0%, #0f2820 100%);
-    }
-    .hub-card-business::before {
-      background: linear-gradient(160deg, #0f2820 0%, #133526 100%);
+    /* badge */
+    .badge-new {
+      display: inline-block;
+      background: #f59e0b;
+      color: #000;
+      font-size: .62rem;
+      font-weight: 700;
+      border-radius: 50px;
+      padding: .1rem .5rem;
+      margin-right: .3rem;
+      vertical-align: middle;
     }
 
-    .hub-divider {
-      width: 1px;
-      background: linear-gradient(to bottom,
-        transparent 0%, rgba(255,255,255,.15) 30%,
-        rgba(255,255,255,.15) 70%, transparent 100%);
+    /* flash */
+    .flash-wrap { padding: .75rem 2rem 0; }
+    .flash {
+      padding: .5rem 1rem;
+      border-radius: 8px;
+      font-size: .82rem;
+      margin-bottom: .5rem;
     }
+    .flash-success { background: rgba(16,185,129,.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,.2); }
+    .flash-danger  { background: rgba(239,68,68,.15);  color: #fca5a5; border: 1px solid rgba(239,68,68,.2); }
+    .flash-info    { background: rgba(59,130,246,.15); color: #93c5fd; border: 1px solid rgba(59,130,246,.2); }
+    .flash-warning { background: rgba(245,158,11,.15); color: #fcd34d; border: 1px solid rgba(245,158,11,.2); }
 
-    .hub-icon {
-      font-size: 4rem; margin-bottom: 1.5rem;
-      filter: drop-shadow(0 0 24px currentColor);
-    }
-    .hub-card-private .hub-icon { color: #a78bfa; }
-    .hub-card-business .hub-icon { color: #34d399; }
-
-    .hub-title {
-      font-size: 2rem; font-weight: 800; color: #fff;
-      margin-bottom: .5rem; letter-spacing: -.5px;
-    }
-    .hub-subtitle {
-      font-size: .95rem; color: rgba(255,255,255,.45);
-      text-align: center; line-height: 1.8; margin-bottom: 2rem;
-    }
-
-    .hub-badge {
-      display: inline-flex; align-items: center; gap: .4rem;
-      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
-      border-radius: 50px; padding: .3rem .9rem; font-size: .8rem;
-      color: rgba(255,255,255,.6); margin: .25rem;
-    }
-
-    .hub-cta {
-      margin-top: 2.5rem;
-      padding: .75rem 2.5rem; border-radius: 50px;
-      font-size: 1rem; font-weight: 700; text-decoration: none;
-      transition: opacity .15s;
-    }
-    .hub-cta:hover { opacity: .85; }
-    .hub-card-private .hub-cta { background: #635bff; color: #fff; }
-    .hub-card-business .hub-cta { background: #10b981; color: #fff; }
-
-    .alert-strip { background: rgba(255,255,255,.04); padding: .35rem .9rem; border-radius: 50px; font-size: .78rem; color: rgba(255,255,255,.5); }
-    .dot-new { width: 8px; height: 8px; border-radius: 50%; background: #f59e0b; display: inline-block; }
-
-    @media (max-width: 768px) {
-      .hub-grid { flex-direction: column; }
-      .hub-divider { width: 100%; height: 1px; }
-      .hub-card { padding: 2.5rem 1.5rem; }
-      .hub-title { font-size: 1.5rem; }
+    @media (max-width: 600px) {
+      .cards { grid-template-columns: 1fr; }
+      .hub-greeting h1 { font-size: 1.3rem; }
     }
   </style>
 </head>
 <body>
 
-  <div class="top-bar">
-    <span class="top-brand">&#127891; InterviewSync</span>
-    <div class="d-flex align-items-center gap-3">
-      <span class="top-user">{{ user.name or 'מנהל' }}</span>
-      <a href="{{ url_for('logout') }}" style="color:rgba(255,255,255,.4); font-size:.78rem; text-decoration:none;">
-        התנתקות
-      </a>
+  <div class="top">
+    <div class="logo">&#127891; <span>InterviewSync</span></div>
+    <div class="top-right">
+      <span>{{ user.name or 'מנהל' }}</span>
+      <a href="{{ url_for('logout') }}">התנתקות</a>
     </div>
   </div>
 
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-      <div class="px-4 pt-2">
+      <div class="flash-wrap">
         {% for cat, msg in messages %}
-          <div class="alert alert-{{ cat }} alert-dismissible fade show py-2 small" role="alert">
-            {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-          </div>
+          <div class="flash flash-{{ cat }}">{{ msg }}</div>
         {% endfor %}
       </div>
     {% endif %}
   {% endwith %}
 
-  <div class="hub-grid">
+  <main>
+    <div class="hub">
 
-    <!-- Private CRM -->
-    <a href="{{ url_for('admin_dashboard') }}" class="hub-card hub-card-private">
-      <div class="hub-icon">&#128100;</div>
-      <h1 class="hub-title">פרטי</h1>
-      <p class="hub-subtitle">
-        ניהול תלמידים ותהליכי הכנה אישיים<br>
-        פגישות, משימות ומעקב התקדמות
-      </p>
-      <div class="d-flex flex-wrap justify-content-center">
-        <span class="hub-badge">&#128100; {{ students_count }} תלמידים</span>
-        <span class="hub-badge">&#128203; משימות</span>
-        <span class="hub-badge">&#128197; לוח פגישות</span>
-        <span class="hub-badge">&#129504; AI Coaching</span>
+      <div class="hub-greeting">
+        <h1>שלום, {{ (user.name or 'מנהל').split()[0] }} — לאיזה לוח תרצה להיכנס?</h1>
+        <p>בחר את המצב הרצוי כדי להתחיל</p>
       </div>
-      <span class="hub-cta">כניסה לפרטי &#8594;</span>
-    </a>
 
-    <div class="hub-divider d-none d-md-block"></div>
+      <div class="cards">
 
-    <!-- Business -->
-    <a href="{{ url_for('admin_business') }}" class="hub-card hub-card-business">
-      <div class="hub-icon">&#128188;</div>
-      <h1 class="hub-title">עסקי</h1>
-      <p class="hub-subtitle">
-        ניהול הרצאות וסדנאות קבוצתיות<br>
-        פניות יזומות, תכנון ותיעוד פעילות
-      </p>
-      <div class="d-flex flex-wrap justify-content-center">
-        <span class="hub-badge">&#127979; הרצאות וסדנאות</span>
-        {% if inquiries_new > 0 %}
-          <span class="hub-badge">
-            <span class="dot-new"></span>
-            {{ inquiries_new }} פניות חדשות
-          </span>
-        {% else %}
-          <span class="hub-badge">&#128172; פניות יזומות</span>
-        {% endif %}
-        <span class="hub-badge">&#128203; תיעוד פעילות</span>
-        <span class="hub-badge">&#128218; ניהול תוכן</span>
+        <!-- Private -->
+        <a href="{{ url_for('admin_dashboard') }}" class="card card-private">
+          <div class="card-accent"></div>
+          <span class="card-icon">&#128100;</span>
+          <div class="card-title">פרטי — ניהול תלמידים</div>
+          <div class="card-desc">ניהול תיקי תלמידים, שיוך משימות, פגישות ומעקב התקדמות אישי.</div>
+          <div class="card-tags">
+            <span class="tag">{{ students_count }} תלמידים</span>
+            <span class="tag">משימות</span>
+            <span class="tag">לוח פגישות</span>
+            <span class="tag">AI Coaching</span>
+          </div>
+          <span class="card-cta">כניסה &#8592;</span>
+        </a>
+
+        <!-- Business -->
+        <a href="{{ url_for('admin_business') }}" class="card card-business">
+          <div class="card-accent"></div>
+          <span class="card-icon">&#128188;</span>
+          <div class="card-title">עסקי — סדנאות ופניות</div>
+          <div class="card-desc">ניהול הרצאות, סדנאות קבוצתיות, פניות יזומות ותיעוד פעילות.</div>
+          <div class="card-tags">
+            <span class="tag">הרצאות וסדנאות</span>
+            {% if inquiries_new > 0 %}
+              <span class="tag"><span class="badge-new">{{ inquiries_new }}</span>פניות חדשות</span>
+            {% else %}
+              <span class="tag">פניות יזומות</span>
+            {% endif %}
+            <span class="tag">תיעוד פעילות</span>
+          </div>
+          <span class="card-cta">כניסה &#8592;</span>
+        </a>
+
       </div>
-      <span class="hub-cta">כניסה לעסקי &#8594;</span>
-    </a>
+    </div>
+  </main>
 
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
