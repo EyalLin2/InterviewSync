@@ -3,556 +3,379 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>InterviewSync — לוח המנטור</title>
+  <title>InterviewSync — לוח ניהול</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
   <style>
-    body { font-family: 'Heebo', sans-serif; background: #f0f2f8; }
-    .navbar-brand { font-weight: 800; font-size: 1.25rem; }
+    body { font-family: 'Heebo', sans-serif; background: #f4f5f9; }
 
-    .stat-card {
-      background: #fff; border-radius: 14px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-      padding: 1.1rem 1rem; text-align: center;
+    /* Navbar */
+    .navbar-admin { background: #1a1f36; }
+    .navbar-brand-text { font-weight: 800; color: #fff; font-size: 1.15rem; }
+
+    /* Sidebar nav pills */
+    .nav-admin .nav-link { color: #6b7280; border-radius: 8px; font-weight: 500; padding: .5rem .85rem; }
+    .nav-admin .nav-link.active, .nav-admin .nav-link:hover { background: #eef0ff; color: #635bff; }
+
+    /* Stat cards */
+    .stat-card { background:#fff; border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,.06); padding:1.2rem 1.4rem; }
+    .stat-num  { font-size:2.2rem; font-weight:800; line-height:1; }
+    .stat-lbl  { font-size:.8rem; color:#6b7280; margin-top:4px; }
+
+    /* Student table */
+    .students-table { background:#fff; border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,.06); overflow:hidden; }
+    .students-table table { margin-bottom:0; }
+    .students-table thead th {
+      background: #1a1f36; color: #9ca3af;
+      font-size:.72rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:.5px; border:none; padding:.85rem 1rem;
     }
-    .stat-card .stat-num   { font-size: 2rem; font-weight: 800; line-height: 1; }
-    .stat-card .stat-label { font-size: 0.78rem; color: #6c757d; margin-top: 4px; }
+    .students-table tbody td { padding:.85rem 1rem; border-bottom:1px solid #f0f1f5; vertical-align:middle; }
+    .students-table tbody tr:last-child td { border-bottom:none; }
+    .students-table tbody tr:hover { background:#fafbff; }
 
-    .tool-card {
-      background: #fff; border-radius: 14px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    .avatar {
+      width:36px; height:36px; border-radius:50%;
+      display:inline-flex; align-items:center; justify-content:center;
+      font-weight:700; font-size:.95rem; color:#fff;
+      flex-shrink:0;
+    }
+    .edu-badge-hs  { background:#fef3c7; color:#92400e; font-size:.7rem; }
+    .edu-badge-col { background:#dbeafe; color:#1e40af; font-size:.7rem; }
+    .wa-dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
+    .wa-dot-on  { background:#25d366; }
+    .wa-dot-off { background:#d1d5db; }
+
+    /* Task bank cards */
+    .task-bank-card {
+      background:#fff; border-radius:12px;
+      box-shadow:0 1px 6px rgba(0,0,0,.06);
+      padding:.85rem 1rem; height:100%;
+    }
+    .task-bank-card .task-title { font-weight:700; font-size:.9rem; }
+    .task-bank-card .task-desc  { font-size:.8rem; color:#6b7280; }
+
+    /* Category label */
+    .cat-pill {
+      font-size:.65rem; font-weight:700; border-radius:50px;
+      padding:.2rem .6rem; display:inline-block;
+    }
+    .cat-resume   { background:#ffecd2; color:#b45309; }
+    .cat-linkedin { background:#dbeafe; color:#1d4ed8; }
+    .cat-interview{ background:#fce7f3; color:#9d174d; }
+    .cat-quiz     { background:#ede9fe; color:#5b21b6; }
+    .cat-general  { background:#f3f4f6; color:#374151; }
+    .type-pill { font-size:.65rem; border-radius:50px; padding:.15rem .55rem; }
+    .type-reflection{ background:#ede9fe; color:#5b21b6; }
+    .type-exercise  { background:#d1fae5; color:#065f46; }
+    .type-task      { background:#dbeafe; color:#1e40af; }
+
+    .section-hdr {
+      font-size:.72rem; font-weight:700; text-transform:uppercase;
+      color:#9ca3af; letter-spacing:.5px; margin:.75rem 0 .5rem;
     }
 
-    /* Student accordion */
-    .student-accordion-item {
-      background: #fff; border-radius: 14px !important; overflow: hidden;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-      border: 1px solid #e4e8f0 !important; margin-bottom: 1rem;
-    }
-    .student-accordion-item .accordion-button {
-      background: #fff; border-radius: 14px !important; padding: 1rem 1.25rem;
-      font-family: 'Heebo', sans-serif;
-    }
-    .student-accordion-item .accordion-button:not(.collapsed) {
-      background: #f7f9ff; border-radius: 14px 14px 0 0 !important;
-      border-bottom: 1px solid #e4e8f0;
-    }
-    .student-avatar {
-      width: 44px; height: 44px; min-width: 44px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 1.15rem; color: #fff;
-    }
-
-    /* Profile section */
-    .profile-section { background: #f8f9ff; border-bottom: 1px solid #e4e8f0; padding: 1rem 1.25rem; }
-    .profile-field-label { font-size: 0.75rem; font-weight: 700; color: #6c757d; text-transform: uppercase; letter-spacing: 0.3px; }
-    .profile-field-value { font-size: 0.88rem; color: #212529; }
-    .ai-analysis-box {
-      background: #f0f0ff; border-right: 3px solid #667eea;
-      border-radius: 8px 0 0 8px; padding: 0.7rem 0.9rem;
-      font-size: 0.83rem; white-space: pre-wrap; line-height: 1.65;
-    }
-
-    /* Assignment panels */
-    .panel-star       { background: #f8fff8; border-bottom: 1px solid #e4e8f0; }
-    .panel-gtasks     { background: #f8f0ff; border-bottom: 1px solid #e4e8f0; }
-    .panel-status     { background: #fff;    border-bottom: 1px solid #e4e8f0; }
-
-    /* Task/answer content */
-    .answer-block  { background: #f8f9fa; border-radius: 8px; font-size: 0.875rem; }
-    .star-pill     { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-    .ai-chip       { background: linear-gradient(90deg, #667eea, #764ba2); color: #fff; border-radius: 20px; font-size: 0.72rem; padding: 2px 9px; }
-    .role-tag      { font-size: 0.7rem; }
-    textarea.mentor-input { resize: vertical; min-height: 70px; font-family: 'Heebo', sans-serif; }
-
-    .task-status-row { font-size: 0.82rem; padding: 4px 0; border-bottom: 1px solid #f5f5f5; }
-    .task-status-row:last-child { border-bottom: none; }
-    .task-done    { color: #198754; font-weight: 700; }
-    .task-pending { color: #adb5bd; }
-    .task-completed { color: #198754; }
-
-    .qbank-item { font-size: 0.81rem; padding: 3px 0; border-bottom: 1px solid #f5f5f5; }
-    .qbank-item:last-child { border-bottom: none; }
-
-    .progress-pill {
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: #fff; border-radius: 20px; padding: 3px 12px;
-      font-size: 0.78rem; font-weight: 700;
-    }
+    .btn-primary-crm { background:#635bff; border-color:#635bff; }
+    .btn-primary-crm:hover { background:#4f46e5; border-color:#4f46e5; }
+    .progress { height:7px; }
   </style>
 </head>
 <body>
 
   <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container-fluid px-4">
-      <span class="navbar-brand">
-        &#127891; InterviewSync
-        <span class="badge bg-warning text-dark ms-1" style="font-size:0.62rem;">מנטור</span>
-      </span>
-      <div class="ms-auto d-flex align-items-center gap-3">
-        <span class="text-white-50 small">מחובר/ת כ-<strong class="text-white">{{ user.username }}</strong></span>
-        <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">התנתקות</a>
-      </div>
+  <nav class="navbar navbar-expand-lg navbar-admin px-4 py-2">
+    <span class="navbar-brand-text">&#127891; InterviewSync</span>
+    <div class="ms-3">
+      <span class="badge" style="background:#635bff; font-size:.65rem;">מנהל</span>
+    </div>
+    <div class="ms-auto d-flex align-items-center gap-3">
+      <span class="text-white-50 small">{{ user.username }}</span>
+      <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">התנתקות</a>
     </div>
   </nav>
 
   <div class="container-fluid py-4 px-4">
 
     {% with messages = get_flashed_messages(with_categories=true) %}
-      {% for category, message in messages %}
-        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-          {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      {% for cat, msg in messages %}
+        <div class="alert alert-{{ cat }} alert-dismissible fade show py-2 small" role="alert">
+          {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
       {% endfor %}
     {% endwith %}
 
-    <!-- Stats Row -->
+    <!-- Stat row -->
     <div class="row g-3 mb-4">
       <div class="col-6 col-sm-3">
         <div class="stat-card">
-          <div class="stat-num text-primary">{{ students | length }}</div>
-          <div class="stat-label">&#128100; סטודנטים</div>
+          <div class="stat-num text-primary">{{ students|length }}</div>
+          <div class="stat-lbl">&#128100; תלמידים</div>
         </div>
       </div>
       <div class="col-6 col-sm-3">
         <div class="stat-card">
-          <div class="stat-num text-success">{{ questions | length }}</div>
-          <div class="stat-label">&#127775; שאלות STAR</div>
+          <div class="stat-num" style="color:#635bff;">{{ taskbank|length }}</div>
+          <div class="stat-lbl">&#128203; משימות בבנק</div>
         </div>
       </div>
       <div class="col-6 col-sm-3">
         <div class="stat-card">
-          <div class="stat-num text-info">{{ all_general_tasks | length }}</div>
-          <div class="stat-label">&#128203; משימות כלליות</div>
+          {% set total_active = students|map(attribute='id')|map('string')|list %}
+          {% set act = namespace(n=0) %}
+          {% for s in students %}{% set act.n = act.n + (progress[s.id].total - progress[s.id].done) %}{% endfor %}
+          <div class="stat-num text-warning">{{ act.n }}</div>
+          <div class="stat-lbl">&#9889; משימות פעילות</div>
         </div>
       </div>
       <div class="col-6 col-sm-3">
         <div class="stat-card">
-          <div class="stat-num" style="color:#667eea;">{{ completion_pct }}%</div>
-          <div class="stat-label">&#9989; אחוז השלמת STAR</div>
+          {% set done = namespace(n=0) %}
+          {% for s in students %}{% set done.n = done.n + progress[s.id].done %}{% endfor %}
+          <div class="stat-num text-success">{{ done.n }}</div>
+          <div class="stat-lbl">&#10003; משימות הושלמו</div>
         </div>
       </div>
     </div>
 
-    <div class="row g-4">
+    <!-- Tabs -->
+    <ul class="nav nav-pills mb-4 gap-2" id="adminTabs" role="tablist">
+      <li class="nav-item">
+        <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-students" type="button">
+          &#128100; תלמידים
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-taskbank" type="button" id="taskbank-tab-btn">
+          &#128203; בנק משימות
+        </button>
+      </li>
+    </ul>
 
-      <!-- ── Left: Tools ── -->
-      <div class="col-lg-4">
+    <div class="tab-content">
 
-        <!-- AI Question Generator -->
-        <div class="tool-card p-4 mb-4">
-          <h6 class="fw-bold mb-1">&#129504; יוצר שאלות STAR — AI</h6>
-          <p class="text-muted small mb-3">מייצר 3 שאלות התנהגותיות + הנחיות לסטודנט.</p>
-          <form method="POST" action="{{ url_for('admin') }}">
-            <input type="hidden" name="action" value="generate_questions" />
-            <div class="mb-3">
-              <label class="form-label small fw-semibold">תפקיד יעד</label>
-              <input type="text" name="target_role" class="form-control form-control-sm"
-                     placeholder="לדוגמה: מהנדס תוכנה, מנהל מוצר" required />
-            </div>
-            <button type="submit" class="btn btn-primary w-100 btn-sm">&#9889; צור 3 שאלות STAR</button>
-          </form>
-        </div>
-
-        <!-- Manual Question Add -->
-        <div class="tool-card p-4 mb-4">
-          <h6 class="fw-bold mb-3">&#10133; הוסף שאלת STAR ידנית</h6>
-          <form method="POST" action="{{ url_for('admin') }}">
-            <input type="hidden" name="action" value="add_question" />
-            <div class="mb-2">
-              <input type="text" name="title" class="form-control form-control-sm" placeholder="טקסט השאלה" required />
-            </div>
-            <div class="mb-2">
-              <input type="text" name="category" class="form-control form-control-sm" placeholder="קטגוריה (מנהיגות, תקשורת...)" required />
-            </div>
-            <div class="mb-3">
-              <input type="text" name="target_role_manual" class="form-control form-control-sm" placeholder="תפקיד יעד" required />
-            </div>
-            <button type="submit" class="btn btn-outline-primary btn-sm w-100">הוסף שאלה</button>
-          </form>
-        </div>
-
-        <!-- Add General Task -->
-        <div class="tool-card p-4 mb-4">
-          <h6 class="fw-bold mb-1">&#128203; הוסף משימה כללית</h6>
-          <p class="text-muted small mb-3">קריאה, תרגיל, וידאו, או מטלה חופשית — AI יוסיף הנחיה אינטראקטיבית.</p>
-          <form method="POST" action="{{ url_for('admin') }}">
-            <input type="hidden" name="action" value="add_general_task" />
-            <div class="mb-2">
-              <input type="text" name="gt_title" class="form-control form-control-sm" placeholder="כותרת המשימה" required />
-            </div>
-            <div class="mb-2">
-              <textarea name="gt_description" class="form-control form-control-sm" rows="2"
-                        placeholder="תיאור מה לעשות (אופציונלי)..."></textarea>
-            </div>
-            <div class="mb-3">
-              <select name="gt_type" class="form-select form-select-sm">
-                <option value="reading">&#128214; קריאת מאמר</option>
-                <option value="video">&#127916; צפייה בוידאו</option>
-                <option value="exercise">&#129302; תרגיל מעשי</option>
-                <option value="custom" selected>&#128203; מטלה חופשית</option>
-              </select>
-            </div>
-            <button type="submit" class="btn btn-outline-success btn-sm w-100">הוסף משימה</button>
-          </form>
-        </div>
-
-        <!-- Question Bank -->
-        <div class="tool-card p-4 mb-4">
-          <h6 class="fw-bold mb-3">&#127775; בנק שאלות STAR</h6>
-          {% if questions %}
-            {% set roles = questions | map(attribute='target_role') | unique | list %}
-            {% for role in roles %}
-              <p class="small fw-semibold text-muted mb-1 mt-2">{{ role }}</p>
-              {% for q in questions if q.target_role == role %}
-                <div class="qbank-item d-flex justify-content-between align-items-start">
-                  <span class="text-truncate" style="max-width:78%;" title="{{ q.title }}">{{ q.title }}</span>
-                  <span class="badge bg-light text-muted border ms-1" style="font-size:0.62rem;">{{ q.category }}</span>
-                </div>
-              {% endfor %}
-            {% endfor %}
-          {% else %}
-            <p class="text-muted small">אין שאלות עדיין.</p>
-          {% endif %}
-        </div>
-
-        <!-- General Tasks Bank -->
-        <div class="tool-card p-4">
-          <h6 class="fw-bold mb-3">&#128203; בנק משימות כלליות</h6>
-          {% if all_general_tasks %}
-            {% set type_icons = {'reading':'📖','video':'🎬','exercise':'🤖','custom':'📋','ai_generated':'🤖'} %}
-            {% for t in all_general_tasks %}
-              <div class="qbank-item">
-                <span class="text-truncate d-block" title="{{ t.title }}">
-                  {{ type_icons.get(t.task_type, '📋') }} {{ t.title | truncate(55) }}
-                </span>
-                <span class="badge bg-light text-muted border" style="font-size:0.6rem;">{{ t.task_type }}</span>
-              </div>
-            {% endfor %}
-          {% else %}
-            <p class="text-muted small">אין משימות כלליות עדיין.</p>
-          {% endif %}
-        </div>
-
-      </div>
-
-      <!-- ── Right: Student Management ── -->
-      <div class="col-lg-8">
-        <h5 class="fw-bold mb-3">&#128105;&#8205;&#127979; ניהול סטודנטים</h5>
-
+      <!-- ── Tab 1: Students 360 ── -->
+      <div class="tab-pane fade show active" id="tab-students">
         {% if not students %}
-          <div class="alert alert-info">אין סטודנטים רשומים עדיין.</div>
+          <div class="alert alert-info">אין תלמידים רשומים עדיין.</div>
         {% else %}
-          <div class="accordion accordion-flush" id="studentsAccordion">
-            {% for student in students %}
-              {% set s_data  = student_assignments[student.id] %}
-              {% set sg_data = student_gtask_assignments[student.id] %}
-              {% set star_assigned = s_data.assigned | length %}
-              {% set star_answered = s_data.answered | length %}
-              {% set gt_assigned   = sg_data.assigned | length %}
-              {% set gt_completed  = sg_data.completed | length %}
-              {% set star_pct = ((star_answered / star_assigned * 100) | int) if star_assigned > 0 else 0 %}
-              {% set gt_pct   = ((gt_completed  / gt_assigned   * 100) | int) if gt_assigned   > 0 else 0 %}
-              {% set student_answers = all_answers | selectattr('0.user_id', 'equalto', student.id) | list %}
-              {% set avatar_colors = ['#4361ee','#7209b7','#f72585','#0096c7','#2d6a4f','#e76f51'] %}
-              {% set acolor = avatar_colors[loop.index0 % 6] %}
-
-              <div class="accordion-item student-accordion-item">
-
-                <!-- Header -->
-                <h2 class="accordion-header">
-                  <button class="accordion-button {% if not loop.first %}collapsed{% endif %}"
-                          type="button" data-bs-toggle="collapse"
-                          data-bs-target="#sb-{{ student.id }}">
-                    <div class="d-flex align-items-center gap-3 w-100 me-3">
-                      <div class="student-avatar" style="background:{{ acolor }};">
-                        {{ (student.full_name or student.username)[0].upper() }}
-                      </div>
-                      <div class="flex-grow-1 overflow-hidden">
-                        <div class="fw-bold">{{ student.full_name or student.username }}</div>
-                        <div class="text-muted text-truncate" style="font-size:0.76rem; max-width:200px;">
-                          {% if student.degree_field %}{{ student.degree_field }}
-                          {% else %}<span class="text-warning">⚠ טרם מילא טופס הכנה</span>{% endif %}
+          <div class="students-table">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>תלמיד</th>
+                  <th>סוג</th>
+                  <th>כיתה / תואר</th>
+                  <th>מטרות (תקציר)</th>
+                  <th>התקדמות</th>
+                  <th>WA</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% set avatar_colors = ['#635bff','#f72585','#4cc9f0','#2d6a4f','#e76f51','#7209b7'] %}
+                {% for s in students %}
+                  {% set p = s.profile %}
+                  {% set prog = progress[s.id] %}
+                  {% set acolor = avatar_colors[loop.index0 % 6] %}
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="avatar" style="background:{{ acolor }};">
+                          {{ (p.full_name if p and p.full_name else s.username)[0].upper() }}
+                        </div>
+                        <div>
+                          <div class="fw-semibold">{{ p.full_name if p and p.full_name else s.username }}</div>
+                          <div class="text-muted" style="font-size:.75rem;">{{ s.username }}</div>
                         </div>
                       </div>
-                      <!-- Dual progress -->
-                      <div style="min-width:190px;">
-                        <div class="d-flex align-items-center gap-2 mb-1">
-                          <span style="font-size:0.7rem;color:#6c757d;min-width:30px;">STAR</span>
-                          <div class="progress flex-grow-1" style="height:6px;">
-                            <div class="progress-bar bg-primary" style="width:{{ star_pct }}%;"></div>
-                          </div>
-                          <span class="badge bg-primary" style="font-size:0.65rem;">{{ star_answered }}/{{ star_assigned }}</span>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                          <span style="font-size:0.7rem;color:#6c757d;min-width:30px;">משימות</span>
-                          <div class="progress flex-grow-1" style="height:6px;">
-                            <div class="progress-bar bg-success" style="width:{{ gt_pct }}%;"></div>
-                          </div>
-                          <span class="badge bg-success" style="font-size:0.65rem;">{{ gt_completed }}/{{ gt_assigned }}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-                </h2>
-
-                <!-- Body -->
-                <div id="sb-{{ student.id }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}">
-                  <div class="accordion-body p-0">
-
-                    <!-- Profile -->
-                    <div class="profile-section">
-                      {% if not student.full_name %}
-                        <div class="alert alert-warning py-2 mb-2 small mb-0">
-                          &#9888;&#65039; הסטודנט טרם השלים את טופס ההכנה הראשוני.
-                        </div>
+                    </td>
+                    <td>
+                      {% if p and p.education_level == 'highschool' %}
+                        <span class="badge edu-badge-hs rounded-pill">תיכון</span>
+                      {% elif p and p.education_level == 'college' %}
+                        <span class="badge edu-badge-col rounded-pill">מכללה</span>
                       {% else %}
-                        <div class="row g-2 small mb-2">
-                          <div class="col-md-3">
-                            <div class="profile-field-label">&#128100; שם מלא</div>
-                            <div class="profile-field-value fw-medium">{{ student.full_name }}</div>
-                          </div>
-                          <div class="col-md-4">
-                            <div class="profile-field-label">&#9993;&#65039; אימייל</div>
-                            <div class="profile-field-value">
-                              {% if student.email %}
-                                <a href="mailto:{{ student.email }}" class="text-decoration-none">{{ student.email }}</a>
-                              {% else %}—{% endif %}
-                            </div>
-                          </div>
-                          <div class="col-md-2">
-                            <div class="profile-field-label">&#127874; גיל</div>
-                            <div class="profile-field-value">{{ student.age or '—' }}</div>
-                          </div>
-                          <div class="col-md-3">
-                            <div class="profile-field-label">&#127919; תחום לימודים</div>
-                            <div class="profile-field-value">{{ student.degree_field or '—' }}</div>
-                          </div>
-                          <div class="col-md-5">
-                            <div class="profile-field-label">&#128161; תחומי עניין</div>
-                            <div class="profile-field-value">{{ student.interests or '—' }}</div>
-                          </div>
-                          <div class="col-md-7">
-                            <div class="profile-field-label">&#127775; מטרות קריירה</div>
-                            <div class="profile-field-value">{{ student.career_goals or '—' }}</div>
-                          </div>
-                          {% if student.previous_experience %}
-                          <div class="col-md-6">
-                            <div class="profile-field-label">&#128188; ניסיון קודם</div>
-                            <div class="profile-field-value">{{ student.previous_experience }}</div>
-                          </div>
-                          {% endif %}
-                          {% if student.main_challenges %}
-                          <div class="col-md-6">
-                            <div class="profile-field-label">&#128161; אתגרים עיקריים</div>
-                            <div class="profile-field-value">{{ student.main_challenges }}</div>
-                          </div>
-                          {% endif %}
-                        </div>
-                        {% if student.ai_onboarding_analysis %}
-                          <div class="mt-2">
-                            <div class="profile-field-label mb-1">&#129504; ניתוח AI — המלצות אימון אישיות</div>
-                            <div class="ai-analysis-box">{{ student.ai_onboarding_analysis }}</div>
-                          </div>
-                        {% endif %}
+                        <span class="text-muted small">לא מולא</span>
                       {% endif %}
-                    </div>
-
-                    <!-- Assignment + Status Row -->
-                    <div class="row g-0">
-
-                      <!-- STAR Assignment -->
-                      <div class="col-md-4 panel-star p-3">
-                        <p class="small fw-bold mb-2">&#127775; שאלות STAR</p>
-                        {% if questions %}
-                          <form method="POST" action="{{ url_for('admin') }}">
-                            <input type="hidden" name="action" value="update_assignments" />
-                            <input type="hidden" name="student_id" value="{{ student.id }}" />
-                            {% set roles = questions | map(attribute='target_role') | unique | list %}
-                            {% for role in roles %}
-                              <p class="text-muted fw-semibold mb-1 mt-2" style="font-size:0.73rem;">{{ role }}</p>
-                              {% for q in questions if q.target_role == role %}
-                                <div class="form-check mb-1">
-                                  <input class="form-check-input" type="checkbox"
-                                         name="assigned_questions" value="{{ q.id }}"
-                                         id="sq_{{ student.id }}_{{ q.id }}"
-                                         {% if q.id in s_data.assigned %}checked{% endif %} />
-                                  <label class="form-check-label" style="font-size:0.78rem;"
-                                         for="sq_{{ student.id }}_{{ q.id }}">{{ q.title | truncate(52) }}</label>
-                                </div>
-                              {% endfor %}
-                            {% endfor %}
-                            <button type="submit" class="btn btn-primary btn-sm mt-2 w-100">&#10003; עדכן STAR</button>
-                          </form>
-                        {% else %}
-                          <p class="text-muted small">אין שאלות בבנק.</p>
-                        {% endif %}
-                      </div>
-
-                      <!-- General Tasks Assignment -->
-                      <div class="col-md-4 panel-gtasks p-3">
-                        <p class="small fw-bold mb-2">&#128203; משימות כלליות</p>
-
-                        <!-- AI Suggest Button -->
-                        <form method="POST" action="{{ url_for('admin') }}" class="mb-2">
-                          <input type="hidden" name="action" value="ai_suggest_tasks" />
-                          <input type="hidden" name="student_id" value="{{ student.id }}" />
-                          <button type="submit" class="btn btn-outline-primary btn-sm w-100" style="font-size:0.78rem;">
-                            &#129504; צור משימות AI מותאמות אישית
-                          </button>
-                        </form>
-
-                        {% if all_general_tasks %}
-                          <form method="POST" action="{{ url_for('admin') }}">
-                            <input type="hidden" name="action" value="assign_general_tasks" />
-                            <input type="hidden" name="student_id" value="{{ student.id }}" />
-                            {% for t in all_general_tasks %}
-                              <div class="form-check mb-1">
-                                <input class="form-check-input" type="checkbox"
-                                       name="assigned_gtasks" value="{{ t.id }}"
-                                       id="gt_{{ student.id }}_{{ t.id }}"
-                                       {% if t.id in sg_data.assigned %}checked{% endif %} />
-                                <label class="form-check-label" style="font-size:0.78rem;"
-                                       for="gt_{{ student.id }}_{{ t.id }}">
-                                  {% if t.id in sg_data.completed %}
-                                    <span class="task-completed">&#10003;</span>
-                                  {% endif %}
-                                  {{ t.title | truncate(48) }}
-                                </label>
-                              </div>
-                            {% endfor %}
-                            <button type="submit" class="btn btn-success btn-sm mt-2 w-100">&#10003; עדכן משימות</button>
-                          </form>
-                        {% else %}
-                          <p class="text-muted small mt-1">אין משימות כלליות עדיין — צור/י בפאנל השמאלי.</p>
-                        {% endif %}
-                      </div>
-
-                      <!-- Task Status -->
-                      <div class="col-md-4 panel-status p-3">
-                        <p class="small fw-bold mb-2">&#128202; סטטוס</p>
-
-                        {% if star_assigned > 0 %}
-                          <div class="mb-2">
-                            <div class="text-muted" style="font-size:0.72rem; font-weight:700;">STAR</div>
-                            {% for q in questions if q.id in s_data.assigned %}
-                              <div class="task-status-row d-flex align-items-start gap-1">
-                                <span class="{% if q.id in s_data.answered %}task-done{% else %}task-pending{% endif %} flex-shrink-0">
-                                  {% if q.id in s_data.answered %}✓{% else %}○{% endif %}
-                                </span>
-                                <span class="text-truncate small" style="max-width:170px;" title="{{ q.title }}">{{ q.title | truncate(40) }}</span>
-                              </div>
-                            {% endfor %}
-                          </div>
-                        {% endif %}
-
-                        {% if gt_assigned > 0 %}
-                          <div>
-                            <div class="text-muted" style="font-size:0.72rem; font-weight:700;">משימות</div>
-                            {% for t in all_general_tasks if t.id in sg_data.assigned %}
-                              <div class="task-status-row d-flex align-items-start gap-1">
-                                <span class="{% if t.id in sg_data.completed %}task-done{% else %}task-pending{% endif %} flex-shrink-0">
-                                  {% if t.id in sg_data.completed %}✓{% else %}○{% endif %}
-                                </span>
-                                <span class="text-truncate small" style="max-width:170px;" title="{{ t.title }}">{{ t.title | truncate(40) }}</span>
-                              </div>
-                            {% endfor %}
-                          </div>
-                        {% endif %}
-
-                        {% if star_assigned == 0 and gt_assigned == 0 %}
-                          <p class="text-muted small">לא שויכו משימות עדיין.</p>
-                        {% endif %}
-
-                        {% if student_answers %}
-                          <div class="mt-3 pt-2 border-top">
-                            <button class="btn btn-outline-secondary btn-sm w-100" style="font-size:0.78rem;"
-                                    type="button" data-bs-toggle="collapse"
-                                    data-bs-target="#fa-{{ student.id }}">
-                              &#128172; תשובות ומשוב ({{ student_answers | length }})
-                            </button>
-                          </div>
-                        {% endif %}
-                      </div>
-
-                    </div>
-
-                    <!-- Full Answers (collapsible) -->
-                    {% if student_answers %}
-                      <div class="collapse border-top" id="fa-{{ student.id }}">
-                        <div class="p-3" style="background:#fafafa;">
-                          <p class="small fw-bold mb-2 text-muted text-uppercase">תשובות מלאות ומשוב מנטור</p>
-                          <div class="accordion" id="aa-{{ student.id }}">
-                            {% for answer, ans_user, question in student_answers %}
-                              <div class="accordion-item mb-2 border rounded">
-                                <h2 class="accordion-header">
-                                  <button class="accordion-button collapsed rounded" type="button"
-                                          data-bs-toggle="collapse"
-                                          data-bs-target="#ac-{{ answer.id }}">
-                                    <div class="d-flex flex-column flex-md-row align-items-md-center gap-2 w-100 me-3">
-                                      <span class="fw-semibold small flex-grow-1">{{ question.title | truncate(65) }}</span>
-                                      <div class="d-flex gap-1 flex-shrink-0">
-                                        <span class="badge bg-secondary role-tag">{{ question.category }}</span>
-                                        {% if answer.mentor_feedback %}<span class="badge bg-warning text-dark role-tag">ניתן משוב</span>{% endif %}
-                                        {% if answer.ai_feedback %}<span class="ai-chip">AI</span>{% endif %}
-                                      </div>
-                                    </div>
-                                  </button>
-                                </h2>
-                                <div id="ac-{{ answer.id }}" class="accordion-collapse collapse"
-                                     data-bs-parent="#aa-{{ student.id }}">
-                                  <div class="accordion-body">
-                                    <div class="answer-block p-3 mb-3">
-                                      {% for field, label in [('situation','ס'),('task','מ'),('action','פ'),('result','ת')] %}
-                                        <div class="d-flex gap-2 mb-2">
-                                          <span class="badge bg-dark star-pill">{{ label }}</span>
-                                          <span class="small">{{ answer[field] }}</span>
-                                        </div>
-                                      {% endfor %}
-                                    </div>
-                                    {% if answer.ai_feedback %}
-                                      <div class="mb-3">
-                                        <p class="small fw-bold mb-1">&#129504; משוב AI</p>
-                                        <div class="p-3 rounded small"
-                                             style="background:#f0f0ff; border-right:3px solid #667eea; border-radius:8px 0 0 8px; white-space:pre-wrap;">
-                                          {{ answer.ai_feedback }}
-                                        </div>
-                                      </div>
-                                    {% endif %}
-                                    <form method="POST" action="{{ url_for('admin') }}">
-                                      <input type="hidden" name="action" value="add_feedback" />
-                                      <input type="hidden" name="answer_id" value="{{ answer.id }}" />
-                                      <div class="mb-2">
-                                        <label class="form-label small fw-bold mb-1">&#128172; משוב המנטור שלך</label>
-                                        <textarea name="mentor_feedback" class="form-control form-control-sm mentor-input"
-                                                  placeholder="כתוב/י את המשוב שלך לתשובת הסטודנט...">{{ answer.mentor_feedback or '' }}</textarea>
-                                      </div>
-                                      <button type="submit" class="btn btn-warning btn-sm">שמור משוב</button>
-                                    </form>
-                                  </div>
-                                </div>
-                              </div>
-                            {% endfor %}
-                          </div>
+                    </td>
+                    <td class="text-muted small">
+                      {{ (p.current_occupation_or_grade[:30] + '…') if p and p.current_occupation_or_grade and p.current_occupation_or_grade|length > 30 else (p.current_occupation_or_grade if p and p.current_occupation_or_grade else '—') }}
+                    </td>
+                    <td class="text-muted small" style="max-width:180px;">
+                      {{ (p.career_goals[:60] + '…') if p and p.career_goals and p.career_goals|length > 60 else (p.career_goals if p and p.career_goals else '—') }}
+                    </td>
+                    <td style="min-width:120px;">
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="progress flex-grow-1">
+                          <div class="progress-bar" style="background:#635bff; width:{{ prog.pct }}%;"></div>
                         </div>
+                        <span class="text-muted" style="font-size:.75rem; white-space:nowrap;">{{ prog.done }}/{{ prog.total }}</span>
                       </div>
-                    {% endif %}
-
-                  </div>
-                </div>
-              </div>
-
-            {% endfor %}
+                    </td>
+                    <td>
+                      <span class="wa-dot {{ 'wa-dot-on' if p and p.phone else 'wa-dot-off' }}"
+                            title="{{ p.phone if p and p.phone else 'אין מספר' }}"></span>
+                    </td>
+                    <td>
+                      <a href="{{ url_for('student_file', student_id=s.id) }}"
+                         class="btn btn-sm btn-primary-crm text-white fw-semibold">
+                        תיק תלמיד &#8592;
+                      </a>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
           </div>
         {% endif %}
       </div>
 
-    </div>
+      <!-- ── Tab 2: Task Bank ── -->
+      <div class="tab-pane fade" id="tab-taskbank">
+
+        <!-- Add task form -->
+        <div class="card border-0 shadow-sm rounded-3 mb-4" style="background:#fff;">
+          <div class="card-body p-4">
+            <h6 class="fw-bold mb-3">&#10133; הוסף משימה לבנק</h6>
+            <form method="POST" action="{{ url_for('admin_taskbank') }}">
+              <input type="hidden" name="action" value="add">
+              <div class="row g-3">
+                <div class="col-md-5">
+                  <input type="text" name="title" class="form-control" placeholder="כותרת המשימה *" required>
+                </div>
+                <div class="col-md-7">
+                  <input type="text" name="description" class="form-control" placeholder="תיאור קצר (אופציונלי)">
+                </div>
+                <div class="col-md-4">
+                  <select name="category" class="form-select">
+                    <option value="קורות חיים">קורות חיים</option>
+                    <option value="LinkedIn">LinkedIn</option>
+                    <option value="הכנה לראיון">הכנה לראיון</option>
+                    <option value="שאלון">שאלון</option>
+                    <option value="כללי" selected>כללי</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <select name="task_type" class="form-select">
+                    <option value="task" selected>משימה רגילה</option>
+                    <option value="exercise">תרגיל</option>
+                    <option value="reflection">שאלון עצמי</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <button type="submit" class="btn btn-primary-crm text-white w-100 fw-semibold">הוסף למאגר</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Tasks grouped by category -->
+        {% set cat_class = {'קורות חיים':'cat-resume','LinkedIn':'cat-linkedin','הכנה לראיון':'cat-interview','שאלון':'cat-quiz','כללי':'cat-general'} %}
+        {% set type_class = {'reflection':'type-reflection','exercise':'type-exercise','task':'type-task'} %}
+        {% set type_label = {'reflection':'שאלון עצמי','exercise':'תרגיל','task':'משימה'} %}
+
+        {% for cat in categories %}
+          {% set cat_tasks = taskbank | selectattr('category','equalto',cat) | list %}
+          {% if cat_tasks %}
+            <div class="section-hdr">{{ cat }} ({{ cat_tasks|length }})</div>
+            <div class="row g-3 mb-2">
+              {% for t in cat_tasks %}
+                <div class="col-md-6 col-lg-4">
+                  <div class="task-bank-card">
+                    <div class="d-flex align-items-start justify-content-between gap-2 mb-1">
+                      <div>
+                        <span class="cat-pill {{ cat_class.get(t.category,'cat-general') }}">{{ t.category }}</span>
+                        <span class="type-pill {{ type_class.get(t.task_type,'type-task') }} ms-1">{{ type_label.get(t.task_type,t.task_type) }}</span>
+                      </div>
+                      <div class="d-flex gap-1 flex-shrink-0">
+                        <button class="btn btn-sm btn-outline-secondary py-0 px-2"
+                                data-bs-toggle="modal" data-bs-target="#editModal{{ t.id }}">&#9998;</button>
+                        <form method="POST" action="{{ url_for('admin_taskbank') }}"
+                              onsubmit="return confirm('למחוק משימה זו?')">
+                          <input type="hidden" name="action" value="delete">
+                          <input type="hidden" name="task_id" value="{{ t.id }}">
+                          <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2">&#10005;</button>
+                        </form>
+                      </div>
+                    </div>
+                    <div class="task-title">{{ t.title }}</div>
+                    {% if t.description %}
+                      <div class="task-desc mt-1">{{ t.description }}</div>
+                    {% endif %}
+                    <div class="text-muted mt-1" style="font-size:.7rem;">
+                      שויך {{ t.assignments|length }} פעמים
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Edit Modal -->
+                <div class="modal fade" id="editModal{{ t.id }}" tabindex="-1">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <form method="POST" action="{{ url_for('admin_taskbank') }}">
+                        <input type="hidden" name="action" value="edit">
+                        <input type="hidden" name="task_id" value="{{ t.id }}">
+                        <div class="modal-header">
+                          <h6 class="modal-title fw-bold">עריכת משימה</h6>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                          <div class="mb-3">
+                            <label class="form-label fw-semibold small">כותרת</label>
+                            <input type="text" name="title" class="form-control" value="{{ t.title }}" required>
+                          </div>
+                          <div class="mb-3">
+                            <label class="form-label fw-semibold small">תיאור</label>
+                            <textarea name="description" class="form-control" rows="2">{{ t.description }}</textarea>
+                          </div>
+                          <div class="row g-2">
+                            <div class="col-6">
+                              <label class="form-label fw-semibold small">קטגוריה</label>
+                              <select name="category" class="form-select form-select-sm">
+                                {% for c in ['קורות חיים','LinkedIn','הכנה לראיון','שאלון','כללי'] %}
+                                  <option value="{{ c }}" {{ 'selected' if t.category == c }}>{{ c }}</option>
+                                {% endfor %}
+                              </select>
+                            </div>
+                            <div class="col-6">
+                              <label class="form-label fw-semibold small">סוג</label>
+                              <select name="task_type" class="form-select form-select-sm">
+                                <option value="task" {{ 'selected' if t.task_type == 'task' }}>משימה</option>
+                                <option value="exercise" {{ 'selected' if t.task_type == 'exercise' }}>תרגיל</option>
+                                <option value="reflection" {{ 'selected' if t.task_type == 'reflection' }}>שאלון עצמי</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ביטול</button>
+                          <button type="submit" class="btn btn-primary-crm text-white btn-sm fw-semibold">שמור שינויים</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endfor %}
+
+        {% if not taskbank %}
+          <div class="text-center text-muted py-4">אין משימות בבנק עדיין — הוסף משימה ראשונה למעלה.</div>
+        {% endif %}
+      </div>
+
+    </div><!-- tab-content -->
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Auto-open taskbank tab if URL hash matches
+    if (window.location.hash === '#tab-taskbank') {
+      document.getElementById('taskbank-tab-btn').click();
+    }
+  </script>
 </body>
 </html>

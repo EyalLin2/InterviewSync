@@ -3,149 +3,200 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>InterviewSync — הכנה ראשונית</title>
+  <title>InterviewSync — פרופיל ראשוני</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
   <style>
     body {
       font-family: 'Heebo', sans-serif;
+      background: #f0f4ff;
       min-height: 100vh;
-      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       padding: 2rem 1rem;
     }
-    .onboarding-card {
-      background: #fff;
-      border-radius: 20px;
-      box-shadow: 0 24px 64px rgba(0,0,0,0.4);
-      padding: 2.5rem 2rem;
-      width: 100%;
-      max-width: 620px;
+    .card-main {
+      background: #fff; border-radius: 20px;
+      box-shadow: 0 8px 40px rgba(67,97,238,.12);
+      padding: 2.5rem 2rem; width: 100%; max-width: 580px;
     }
-    .brand-title { font-size: 1.9rem; font-weight: 800; color: #0d6efd; letter-spacing: -0.5px; }
-    .brand-sub   { color: #6c757d; font-size: 0.9rem; margin-bottom: 0.5rem; }
-    .step-badge  {
-      display: inline-block;
-      background: #e8f0fe; border-radius: 50px;
-      padding: 0.3rem 1rem; font-size: 0.82rem;
-      color: #0d6efd; font-weight: 600; margin-bottom: 1.5rem;
+    .brand { font-size: 1.5rem; font-weight: 800; color: #4361ee; }
+    .step-badge {
+      display: inline-block; background: #eef0ff; color: #4361ee;
+      border-radius: 50px; padding: 0.25rem 0.9rem;
+      font-size: 0.8rem; font-weight: 600; margin-bottom: 1.5rem;
     }
-    .section-divider {
-      border-top: 2px dashed #e9ecef;
-      margin: 1.5rem 0 1rem;
+    .section-title {
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+      color: #adb5bd; letter-spacing: 0.5px; margin-bottom: 0.75rem;
     }
-    .section-label {
-      font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
-      color: #6c757d; letter-spacing: 0.5px; margin-bottom: 0.75rem;
+    .divider { border-top: 2px dashed #e9ecef; margin: 1.5rem 0; }
+    .info-banner {
+      background: #f0f4ff; border-right: 3px solid #4361ee;
+      border-radius: 8px 0 0 8px; padding: 0.7rem 1rem;
+      font-size: 0.83rem; color: #4361ee; margin-bottom: 1.5rem;
     }
-    .required-star { color: #dc3545; }
-    .info-box {
-      background: #f8f9ff;
-      border-right: 3px solid #0d6efd;
-      border-radius: 8px 0 0 8px;
-      padding: 0.75rem 1rem;
-      font-size: 0.84rem; color: #495057; margin-bottom: 1.5rem;
+    .form-control:focus, .form-select:focus {
+      border-color: #4361ee; box-shadow: 0 0 0 .2rem rgba(67,97,238,.15);
     }
-    .form-label { font-weight: 600; font-size: 0.88rem; }
-    .form-text  { font-size: 0.78rem; }
+    .edu-option { cursor: pointer; }
+    .edu-option input[type=radio]:checked + .edu-card {
+      border-color: #4361ee; background: #eef0ff;
+    }
+    .edu-card {
+      border: 2px solid #dee2e6; border-radius: 12px;
+      padding: 0.75rem 1rem; transition: all .2s;
+      font-weight: 600;
+    }
+    .edu-card:hover { border-color: #4361ee; }
+    #section-highschool, #section-college { display: none; }
   </style>
 </head>
 <body>
-  <div class="onboarding-card">
+  <div class="card-main">
     <div class="text-center mb-3">
-      <div class="brand-title">&#127891; InterviewSync</div>
-      <div class="brand-sub">הכנה לראיונות עם בינה מלאכותית</div>
-      <span class="step-badge">&#128203; טופס הכנה ראשוני</span>
+      <div class="brand">&#127891; InterviewSync</div>
+      <div class="text-muted small mb-2">בוא/י נכיר אותך כדי שנוכל לעזור לך בצורה הטובה ביותר</div>
+      <span class="step-badge">&#128203; מילוי פרופיל ראשוני</span>
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
-      {% for category, message in messages %}
-        <div class="alert alert-{{ category }} alert-dismissible fade show py-2" role="alert">
-          {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      {% for cat, msg in messages %}
+        <div class="alert alert-{{ cat }} alert-dismissible fade show py-2 small" role="alert">
+          {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
       {% endfor %}
     {% endwith %}
 
-    <div class="info-box">
-      &#128161; המידע שתמלא/י יעזור למנטור/ית שלך לבנות עבורך תוכנית הכנה מותאמת אישית
-      ולקבל ניתוח AI מפורט על נקודות החוזק ואתגרים שכדאי לעבוד עליהם.
-      שדות המסומנים ב-<span class="required-star">*</span> הם חובה.
+    <div class="info-banner">
+      &#128161; המידע שתמלא/י יעזור למנטור שלך לבנות עבורך תוכנית אישית מותאמת.
+      <strong>לא תצטרך/י למלא זאת שוב.</strong>
     </div>
 
-    <form method="POST" action="{{ url_for('onboarding') }}">
+    <form method="POST" action="{{ url_for('onboarding') }}" id="onboardingForm">
 
-      <!-- ── Section 1: Basic Info ── -->
-      <div class="section-label">&#128100; פרטים אישיים</div>
+      <!-- Section 1: Personal -->
+      <div class="section-title">&#128100; פרטים אישיים</div>
       <div class="row g-3 mb-1">
         <div class="col-md-6">
-          <label for="full_name" class="form-label">שם מלא <span class="required-star">*</span></label>
-          <input type="text" id="full_name" name="full_name" class="form-control"
-                 placeholder="ישראל ישראלי" required autofocus />
-        </div>
-        <div class="col-md-4">
-          <label for="email" class="form-label">אימייל <span class="required-star">*</span></label>
-          <input type="email" id="email" name="email" class="form-control"
-                 placeholder="israel@example.com" required />
-        </div>
-        <div class="col-md-2">
-          <label for="age" class="form-label">גיל</label>
-          <input type="number" id="age" name="age" class="form-control"
-                 placeholder="24" min="16" max="99" />
-        </div>
-      </div>
-
-      <div class="section-divider"></div>
-
-      <!-- ── Section 2: Academic & Career ── -->
-      <div class="section-label">&#127979; רקע אקדמי ומקצועי</div>
-      <div class="row g-3 mb-1">
-        <div class="col-md-6">
-          <label for="degree_field" class="form-label">תחום לימודים / תואר <span class="required-star">*</span></label>
-          <input type="text" id="degree_field" name="degree_field" class="form-control"
-                 placeholder="לדוגמה: מדעי המחשב, תוכנה, MBA..." required />
+          <label class="form-label fw-semibold">שם מלא <span class="text-danger">*</span></label>
+          <input type="text" name="full_name" class="form-control" placeholder="ישראל ישראלי" required>
         </div>
         <div class="col-md-6">
-          <label for="interests" class="form-label">תחומי עניין טכנולוגיים / מקצועיים</label>
-          <input type="text" id="interests" name="interests" class="form-control"
-                 placeholder="לדוגמה: backend, AI, פיננסים, UX..." />
-          <div class="form-text">יעזור ל-AI להתאים את המשימות אליך</div>
+          <label class="form-label fw-semibold">אימייל</label>
+          <input type="email" name="email" class="form-control" placeholder="israel@example.com">
         </div>
         <div class="col-12">
-          <label for="career_goals" class="form-label">מטרות קריירה <span class="required-star">*</span></label>
-          <textarea id="career_goals" name="career_goals" class="form-control" rows="2"
-                    placeholder="תאר/י את התפקיד הרצוי, תעשייה, סוג חברה, מיקום..." required></textarea>
+          <label class="form-label fw-semibold">טלפון (WhatsApp) <span class="text-danger">*</span></label>
+          <input type="tel" name="phone" class="form-control" placeholder="+972501234567"
+                 pattern="^\+[0-9]{7,15}$" title="פורמט בינלאומי: +972501234567">
+          <div class="form-text">נשלח לך התראות על משימות חדשות דרך WhatsApp</div>
         </div>
       </div>
 
-      <div class="section-divider"></div>
+      <div class="divider"></div>
 
-      <!-- ── Section 3: Experience & Challenges ── -->
-      <div class="section-label">&#128172; ניסיון ואתגרים</div>
+      <!-- Section 2: Education (dynamic) -->
+      <div class="section-title">&#127979; רמת לימוד</div>
       <div class="row g-3 mb-3">
-        <div class="col-12">
-          <label for="previous_experience" class="form-label">ניסיון קודם בראיונות / עבודה</label>
-          <textarea id="previous_experience" name="previous_experience" class="form-control" rows="2"
-                    placeholder="למשל: עברתי 3 ראיונות ונכשלתי בשלב הטכני, עבדתי כפרילנסר שנה... (אפשר גם 'אין ניסיון')"></textarea>
-          <div class="form-text">ככל שתפרט/י יותר — כך הניתוח יהיה מדויק יותר</div>
+        <div class="col-6">
+          <label class="edu-option d-block">
+            <input type="radio" name="education_level" value="highschool" class="d-none" id="radio-hs" required>
+            <div class="edu-card text-center">
+              <div style="font-size:1.5rem;">&#127979;</div>
+              <div>תיכון</div>
+            </div>
+          </label>
         </div>
-        <div class="col-12">
-          <label for="main_challenges" class="form-label">אתגרים עיקריים שאתה/את מזהה בעצמך</label>
-          <textarea id="main_challenges" name="main_challenges" class="form-control" rows="2"
-                    placeholder="למשל: חרדה בראיונות, קושי לספר על עצמי, בעיות בשאלות Behavioral, חוסר ביטחון..."></textarea>
-          <div class="form-text">זה יעזור למנטור/ית להתמקד בנקודות שצריכות עבודה</div>
+        <div class="col-6">
+          <label class="edu-option d-block">
+            <input type="radio" name="education_level" value="college" class="d-none" id="radio-col">
+            <div class="edu-card text-center">
+              <div style="font-size:1.5rem;">&#127979;</div>
+              <div>מכללה / אוניברסיטה</div>
+            </div>
+          </label>
         </div>
       </div>
 
-      <button type="submit" class="btn btn-primary btn-lg w-100 fw-semibold">
-        שמור והמשך לתרגול &#8594;
+      <!-- High school: grade -->
+      <div id="section-highschool" class="mb-3">
+        <label class="form-label fw-semibold">כיתה</label>
+        <select name="current_occupation_or_grade_hs" class="form-select" id="select-hs">
+          <option value="">בחר/י כיתה...</option>
+          <option value="כיתה ז׳">כיתה ז׳</option>
+          <option value="כיתה ח׳">כיתה ח׳</option>
+          <option value="כיתה ט׳">כיתה ט׳</option>
+          <option value="כיתה י׳">כיתה י׳</option>
+          <option value="כיתה י״א">כיתה י״א</option>
+          <option value="כיתה י״ב">כיתה י״ב</option>
+        </select>
+      </div>
+
+      <!-- College: degree -->
+      <div id="section-college" class="mb-3">
+        <label class="form-label fw-semibold">תואר ותחום לימוד</label>
+        <input type="text" id="input-college" class="form-control"
+               placeholder="לדוגמה: תואר ראשון במדעי המחשב">
+      </div>
+
+      <!-- Hidden combined field -->
+      <input type="hidden" name="current_occupation_or_grade" id="combined-occupation">
+
+      <div class="divider"></div>
+
+      <!-- Section 3: Goals & Weaknesses -->
+      <div class="section-title">&#127919; מטרות ואתגרים</div>
+      <div class="row g-3 mb-4">
+        <div class="col-12">
+          <label class="form-label fw-semibold">מטרות קריירה <span class="text-danger">*</span></label>
+          <textarea name="career_goals" class="form-control" rows="3" required
+                    placeholder="לאן אתה/את שואף/ת? איזה תפקיד? איזה תחום? בטווח של שנה? חמש שנים?"></textarea>
+        </div>
+        <div class="col-12">
+          <label class="form-label fw-semibold">חששות ונקודות חולשה</label>
+          <textarea name="fears_weaknesses" class="form-control" rows="2"
+                    placeholder="מה מרגיש קשה? בכתיבת קורות חיים? בראיונות? בחיפוש עבודה?"></textarea>
+          <div class="form-text">המנטור שלך יראה זאת ויעזור לך בדיוק בנקודות האלה</div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg w-100 fw-semibold" id="submitBtn">
+        שמור והתחל &#8594;
       </button>
     </form>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const radioHS  = document.getElementById('radio-hs');
+    const radioCol = document.getElementById('radio-col');
+    const secHS    = document.getElementById('section-highschool');
+    const secCol   = document.getElementById('section-college');
+    const selHS    = document.getElementById('select-hs');
+    const inpCol   = document.getElementById('input-college');
+    const combined = document.getElementById('combined-occupation');
+
+    function toggleEdu() {
+      if (radioHS.checked) {
+        secHS.style.display = 'block';
+        secCol.style.display = 'none';
+      } else if (radioCol.checked) {
+        secHS.style.display = 'none';
+        secCol.style.display = 'block';
+      }
+    }
+    radioHS.addEventListener('change', toggleEdu);
+    radioCol.addEventListener('change', toggleEdu);
+
+    // Before submit, combine the occupation field
+    document.getElementById('onboardingForm').addEventListener('submit', function() {
+      if (radioHS.checked) {
+        combined.value = selHS.value;
+      } else if (radioCol.checked) {
+        combined.value = inpCol.value;
+      }
+    });
+  </script>
 </body>
 </html>

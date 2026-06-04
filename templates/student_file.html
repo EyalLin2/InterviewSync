@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InterviewSync — תיק תלמיד</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
+  <style>
+    body { font-family: 'Heebo', sans-serif; background: #f4f5f9; }
+    .navbar-admin { background: #1a1f36; }
+    .navbar-brand-text { font-weight: 800; color: #fff; font-size: 1.15rem; }
+    .breadcrumb-item a { color: #635bff; text-decoration: none; }
+    .breadcrumb-item.active { color: #6b7280; }
+
+    /* Section cards */
+    .section-card {
+      background: #fff; border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+      padding: 1.5rem; margin-bottom: 1.5rem;
+    }
+    .section-title {
+      font-size: .72rem; font-weight: 700; text-transform: uppercase;
+      color: #9ca3af; letter-spacing: .5px; margin-bottom: 1rem;
+    }
+
+    /* Profile fields */
+    .field-lbl { font-size: .72rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .3px; }
+    .field-val { font-size: .9rem; color: #1a1f36; margin-top: 2px; }
+
+    /* AI strategy box */
+    .strategy-box {
+      background: #f8f7ff; border-right: 4px solid #635bff;
+      border-radius: 8px 0 0 8px; padding: 1rem 1.25rem;
+      font-size: .88rem; white-space: pre-wrap; line-height: 1.7;
+      color: #1a1f36;
+    }
+    .strategy-empty { color: #9ca3af; font-style: italic; }
+
+    /* Avatar */
+    .avatar-lg {
+      width: 56px; height: 56px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1.4rem; color: #fff; flex-shrink: 0;
+    }
+
+    /* Task lists */
+    .task-item {
+      display: flex; align-items: flex-start; gap: .75rem;
+      padding: .65rem 0; border-bottom: 1px solid #f0f1f5;
+    }
+    .task-item:last-child { border-bottom: none; }
+    .task-item-title { font-weight: 600; font-size: .88rem; }
+    .task-item-meta  { font-size: .73rem; color: #9ca3af; }
+    .cat-pill { font-size: .65rem; font-weight: 700; border-radius: 50px; padding: .15rem .55rem; }
+    .cat-resume   { background: #ffecd2; color: #b45309; }
+    .cat-linkedin { background: #dbeafe; color: #1d4ed8; }
+    .cat-interview{ background: #fce7f3; color: #9d174d; }
+    .cat-quiz     { background: #ede9fe; color: #5b21b6; }
+    .cat-general  { background: #f3f4f6; color: #374151; }
+
+    /* Assignment form */
+    .assign-group { margin-bottom: .75rem; }
+    .assign-group-title { font-size: .75rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: .3px; margin-bottom: .3rem; }
+    .form-check-label { font-size: .85rem; }
+
+    /* Resume textarea */
+    .resume-area { min-height: 220px; font-size: .85rem; font-family: 'Heebo', monospace; resize: vertical; }
+
+    .btn-primary-crm { background: #635bff; border-color: #635bff; }
+    .btn-primary-crm:hover { background: #4f46e5; border-color: #4f46e5; }
+    .btn-ai { background: linear-gradient(90deg, #635bff, #a855f7); border: none; }
+    .btn-ai:hover { opacity: .9; }
+
+    .badge-done { background: #d1fae5; color: #065f46; }
+    .badge-pending { background: #fef3c7; color: #92400e; }
+
+    .edu-badge-hs  { background: #fef3c7; color: #92400e; }
+    .edu-badge-col { background: #dbeafe; color: #1e40af; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-admin px-4 py-2">
+    <span class="navbar-brand-text">&#127891; InterviewSync</span>
+    <div class="ms-auto d-flex align-items-center gap-3">
+      <span class="text-white-50 small">{{ user.username }}</span>
+      <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">התנתקות</a>
+    </div>
+  </nav>
+
+  <div class="container-fluid py-4 px-4" style="max-width:1100px;">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">לוח ניהול</a></li>
+        <li class="breadcrumb-item active">תיק תלמיד — {{ profile.full_name if profile else student.username }}</li>
+      </ol>
+    </nav>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="alert alert-{{ cat }} alert-dismissible fade show py-2 small" role="alert">
+          {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endwith %}
+
+    {% set avatar_colors = ['#635bff','#f72585','#4cc9f0','#2d6a4f','#e76f51','#7209b7'] %}
+    {% set acolor = avatar_colors[student.id % 6] %}
+    {% set cat_class = {'קורות חיים':'cat-resume','LinkedIn':'cat-linkedin','הכנה לראיון':'cat-interview','שאלון':'cat-quiz','כללי':'cat-general'} %}
+
+    <div class="row g-4">
+
+      <!-- ── Left Column ── -->
+      <div class="col-lg-7">
+
+        <!-- Section 1: Personal profile -->
+        <div class="section-card">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="avatar-lg" style="background:{{ acolor }};">
+              {{ (profile.full_name if profile and profile.full_name else student.username)[0].upper() }}
+            </div>
+            <div>
+              <h5 class="mb-0 fw-bold">{{ profile.full_name if profile and profile.full_name else student.username }}</h5>
+              <span class="text-muted small">@{{ student.username }}</span>
+              {% if profile and profile.education_level == 'highschool' %}
+                <span class="badge edu-badge-hs rounded-pill ms-2">תיכון</span>
+              {% elif profile and profile.education_level == 'college' %}
+                <span class="badge edu-badge-col rounded-pill ms-2">מכללה</span>
+              {% endif %}
+            </div>
+          </div>
+
+          {% if not profile or not profile.full_name %}
+            <div class="alert alert-warning py-2 small">&#9888;&#65039; הסטודנט טרם מילא פרופיל ראשוני.</div>
+          {% else %}
+            <div class="section-title">פרטי קשר ולימודים</div>
+            <div class="row g-3 mb-3">
+              <div class="col-sm-4">
+                <div class="field-lbl">אימייל</div>
+                <div class="field-val">
+                  {% if profile.email %}
+                    <a href="mailto:{{ profile.email }}" class="text-decoration-none" style="color:#635bff;">{{ profile.email }}</a>
+                  {% else %}—{% endif %}
+                </div>
+              </div>
+              <div class="col-sm-4">
+                <div class="field-lbl">טלפון (WhatsApp)</div>
+                <div class="field-val">
+                  {% if profile.phone %}
+                    <a href="https://wa.me/{{ profile.phone | replace('+','') }}" target="_blank"
+                       class="text-decoration-none" style="color:#25d366;">
+                      &#128242; {{ profile.phone }}
+                    </a>
+                  {% else %}—{% endif %}
+                </div>
+              </div>
+              <div class="col-sm-4">
+                <div class="field-lbl">כיתה / תואר</div>
+                <div class="field-val">{{ profile.current_occupation_or_grade or '—' }}</div>
+              </div>
+            </div>
+
+            <div class="section-title">מטרות ואתגרים</div>
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <div class="field-lbl">מטרות קריירה</div>
+                <div class="field-val">{{ profile.career_goals or '—' }}</div>
+              </div>
+              <div class="col-sm-6">
+                <div class="field-lbl">חששות ונקודות חולשה</div>
+                <div class="field-val">{{ profile.fears_weaknesses or '—' }}</div>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Section 2: AI Coaching Strategy -->
+        <div class="section-card">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="section-title mb-0">&#129504; אסטרטגיית הדרכה AI</div>
+            <div class="d-flex gap-2">
+              <form method="POST">
+                <input type="hidden" name="action" value="regenerate_strategy">
+                <button type="submit" class="btn btn-sm btn-outline-secondary py-1" {{ 'disabled' if not profile }}>
+                  &#8635; רענן
+                </button>
+              </form>
+              <form method="POST" action="{{ url_for('ai_tasks_for_student', student_id=student.id) }}">
+                <button type="submit" class="btn btn-sm btn-ai text-white py-1 fw-semibold" {{ 'disabled' if not profile }}>
+                  &#10024; צור משימות AI
+                </button>
+              </form>
+            </div>
+          </div>
+
+          {% if profile and profile.ai_coaching_strategy %}
+            <div class="strategy-box">{{ profile.ai_coaching_strategy }}</div>
+          {% elif profile %}
+            <div class="strategy-box strategy-empty">
+              לחץ/י "רענן" כדי לייצר אסטרטגיית הדרכה מותאמת אישית.
+            </div>
+          {% else %}
+            <div class="strategy-box strategy-empty">
+              הסטודנט צריך למלא פרופיל ראשית.
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Section 4: Resume Management -->
+        <div class="section-card">
+          <div class="section-title">&#128196; ניהול קורות חיים (CV)</div>
+          <form method="POST">
+            <input type="hidden" name="action" value="save_resume">
+            <div class="mb-2">
+              <textarea name="resume_content" class="form-control resume-area"
+                        placeholder="הדבק/י כאן את קורות החיים של התלמיד, או כתוב/י אותם מאפס...">{{ profile.resume_content if profile else '' }}</textarea>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-muted small">&#128274; גלוי למנטור בלבד</span>
+              <button type="submit" class="btn btn-primary-crm text-white btn-sm fw-semibold">
+                שמור קורות חיים
+              </button>
+            </div>
+          </form>
+        </div>
+
+      </div>
+
+      <!-- ── Right Column ── -->
+      <div class="col-lg-5">
+
+        <!-- Section 3: Task management -->
+        <div class="section-card">
+          <div class="section-title">&#128203; ניהול משימות</div>
+
+          <!-- Active tasks -->
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <div class="fw-semibold small">משימות פעילות ({{ active|length }})</div>
+            <span class="badge" style="background:#635bff;">{{ active|length }}/{{ (active|length)+(completed|length) }}</span>
+          </div>
+
+          {% if not active %}
+            <p class="text-muted small">אין משימות פעילות.</p>
+          {% else %}
+            {% for at in active %}
+              {% set t = at.task %}
+              <div class="task-item">
+                <span class="cat-pill {{ cat_class.get(t.category,'cat-general') }} flex-shrink-0 mt-1">{{ t.category }}</span>
+                <div class="flex-grow-1">
+                  <div class="task-item-title">{{ t.title }}</div>
+                  <div class="task-item-meta">שויך {{ at.assigned_at.strftime('%d/%m/%Y') }}</div>
+                </div>
+                <span class="badge badge-pending rounded-pill flex-shrink-0">ממתין</span>
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          <!-- Completed tasks -->
+          {% if completed %}
+            <div class="fw-semibold small mt-3 mb-2">הושלמו ({{ completed|length }})</div>
+            {% for at in completed %}
+              {% set t = at.task %}
+              <div class="task-item" style="opacity:.65;">
+                <span class="text-success fw-bold flex-shrink-0 mt-1">&#10003;</span>
+                <div class="flex-grow-1">
+                  <div class="task-item-title" style="text-decoration:line-through;">{{ t.title }}</div>
+                  <div class="task-item-meta">{{ at.completed_at.strftime('%d/%m/%Y') if at.completed_at else '' }}</div>
+                </div>
+                <span class="badge badge-done rounded-pill flex-shrink-0">בוצע</span>
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          <hr class="my-3">
+
+          <!-- Assign form -->
+          <div class="fw-semibold small mb-2">&#128203; שיוך משימות מהבנק</div>
+          <form method="POST">
+            <input type="hidden" name="action" value="assign_tasks">
+            {% for cat in categories %}
+              {% set cat_tasks = taskbank | selectattr('category','equalto',cat) | list %}
+              {% if cat_tasks %}
+                <div class="assign-group">
+                  <div class="assign-group-title">{{ cat }}</div>
+                  {% for t in cat_tasks %}
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox"
+                             name="task_ids" value="{{ t.id }}"
+                             id="t{{ t.id }}"
+                             {{ 'checked' if t.id in assigned_ids }}>
+                      <label class="form-check-label" for="t{{ t.id }}">{{ t.title }}</label>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            {% endfor %}
+            {% if not taskbank %}
+              <p class="text-muted small">אין משימות בבנק — הוסף משימות דרך "בנק משימות".</p>
+            {% endif %}
+            <button type="submit" class="btn btn-primary-crm text-white btn-sm w-100 fw-semibold mt-2">
+              &#10003; עדכן שיוך משימות
+            </button>
+          </form>
+        </div>
+
+      </div>
+    </div><!-- row -->
+  </div><!-- container -->
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
