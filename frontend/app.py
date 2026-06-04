@@ -26,7 +26,7 @@ def inject_now():
 
 @app.template_filter("dt")
 def fmt_dt(value, fmt="%d/%m/%Y"):
-    """Format an ISO datetime string or date object. Usage: {{ value | dt }} or {{ value | dt('%H:%M') }}"""
+    """Format an ISO datetime/date string or object. {{ value | dt }} or {{ value | dt('%H:%M') }}"""
     if not value:
         return ""
     if isinstance(value, str):
@@ -38,6 +38,21 @@ def fmt_dt(value, fmt="%d/%m/%Y"):
         return value.strftime(fmt)
     except Exception:
         return str(value)
+
+
+@app.template_filter("to_date")
+def to_date(value):
+    """Convert an ISO date string to a date object for arithmetic. {{ value | to_date }}"""
+    if not value:
+        return None
+    if isinstance(value, _date):
+        return value
+    if isinstance(value, _datetime):
+        return value.date()
+    try:
+        return _datetime.fromisoformat(str(value)).date()
+    except Exception:
+        return None
 
 
 # ─────────────────────────────────────────────
@@ -226,7 +241,12 @@ def meeting_confirm(mid):
     r     = api_get(f"/api/meetings/{mid}/confirm", params={"token": token})
     if r.status_code == 403:
         abort(403)
-    data = r.json()
+    if r.status_code == 404:
+        abort(404)
+    try:
+        data = r.json()
+    except Exception:
+        abort(500)
     return render_template("meeting_confirm.html",
         meeting=data.get("meeting", {}),
         already_confirmed=data.get("already_confirmed", False))
@@ -245,10 +265,13 @@ def admin_dashboard():
     taskbank   = r_tasks.json()    if r_tasks.status_code    == 200 else []
     categories = sorted({t["category"] for t in taskbank})
 
+    # Build progress dict keyed by student id for template compatibility
+    progress = {s["id"]: s.get("progress", {"total": 0, "done": 0, "pct": 0})
+                for s in students}
+
     upcoming_count = sum(
         1 for s in students
-        for _ in [s]
-        if s["progress"]["total"] > s["progress"]["done"]
+        if s.get("progress", {}).get("total", 0) > s.get("progress", {}).get("done", 0)
     )
 
     return render_template("admin.html",
@@ -256,6 +279,7 @@ def admin_dashboard():
         students=students,
         taskbank=taskbank,
         categories=categories,
+        progress=progress,
         upcoming_count=upcoming_count,
     )
 
