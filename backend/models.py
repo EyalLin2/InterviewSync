@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, date
+from datetime import datetime, date  # noqa: F401  # date used by SQLAlchemy Date column
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()

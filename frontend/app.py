@@ -8,8 +8,8 @@ import os
 from functools import wraps
 
 import requests as http
-from flask import (Flask, render_template, request, redirect,
-                   url_for, session, flash, send_from_directory, abort)
+from flask import (Flask, render_template, request, redirect, abort,
+                   url_for, session, flash)
 
 from datetime import date as _date, datetime as _datetime
 

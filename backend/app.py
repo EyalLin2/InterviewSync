@@ -4,11 +4,10 @@ import hmac
 import hashlib
 import calendar as _cal
 from datetime import datetime, date, timedelta
-from collections import defaultdict
 from functools import wraps
 
 import jwt
-from flask import Flask, request, jsonify, send_from_directory, abort
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
@@ -35,7 +34,7 @@ CORS(app, supports_credentials=True)
 
 def create_token(user_id: int, role: str) -> str:
     payload = {
-        "sub":  user_id,
+        "sub":  str(user_id),   # JWT spec requires string subject
         "role": role,
         "exp":  datetime.utcnow() + timedelta(days=7),
     }
@@ -62,7 +61,7 @@ def require_auth(fn):
         payload = decode_token(get_token_from_request() or "")
         if not payload:
             return jsonify({"error": "Unauthorized"}), 401
-        request.user_id = payload["sub"]
+        request.user_id = int(payload["sub"])   # convert back to int
         request.role    = payload["role"]
         return fn(*args, **kwargs)
     return wrapper
