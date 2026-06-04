@@ -2,23 +2,25 @@
 __pycache__/
 *.pyc
 *.pyo
-*.pyd
-.Python
 *.egg-info/
 dist/
 build/
 
-# Flask / SQLite
+# Database (never commit)
 instance/
 *.db
 *.sqlite3
 
-# Uploads (user files — never commit)
+# Uploads (user files — use S3 in production)
 static/uploads/
+frontend/static/uploads/
+uploads/
 
-# Environment
+# Environment & secrets (never commit)
 .env
 .env.*
+values-secret.yaml
+*-secret.yaml
 
 # OS
 .DS_Store

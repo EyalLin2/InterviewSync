@@ -42,9 +42,9 @@
 
     <div class="meeting-detail">
       <div class="fw-bold fs-5 text-primary mb-1">
-        &#128197; {{ meeting.scheduled_at.strftime("%d/%m/%Y") }}
+        &#128197; {{ meeting.scheduled_at| dt }}
       </div>
-      <div class="text-muted">שעה {{ meeting.scheduled_at.strftime("%H:%M") }}</div>
+      <div class="text-muted">שעה {{ meeting.scheduled_at | dt("%H:%M") }}</div>
       <div class="text-muted small">משך: {{ meeting.duration_min }} דקות</div>
       {% if meeting.notes %}
         <div class="text-muted small mt-1">{{ meeting.notes }}</div>

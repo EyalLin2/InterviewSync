@@ -1,0 +1,60 @@
+version: "3.9"
+
+services:
+
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       interviewsync
+      POSTGRES_USER:     interviewsync
+      POSTGRES_PASSWORD: devpassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "interviewsync"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DB_HOST:     postgres
+      DB_PORT:     5432
+      DB_NAME:     interviewsync
+      DB_USER:     interviewsync
+      DB_PASSWORD: devpassword
+      SECRET_KEY:  dev-secret-key-change-in-prod
+      UPLOAD_FOLDER: /app/uploads
+      # Optional — set these to enable AI and WhatsApp:
+      # AI_API_KEY:             your_openai_key
+      # TWILIO_ACCOUNT_SID:     your_sid
+      # TWILIO_AUTH_TOKEN:      your_token
+      # TWILIO_WHATSAPP_FROM:   whatsapp:+14155238886
+      # FRONTEND_URL:           http://localhost:5000
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      BACKEND_URL: http://backend:8000
+      SECRET_KEY:  dev-secret-key-change-in-prod
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  uploads_data:

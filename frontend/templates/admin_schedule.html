@@ -233,7 +233,7 @@
                   <div class="flex-grow-1">
                     <div class="fw-semibold small">{{ name }}</div>
                     <div class="text-muted" style="font-size:.75rem;">
-                      {{ m.scheduled_at.strftime("%d/%m/%Y %H:%M") }} · {{ m.duration_min }} דק׳
+                      {{ m.scheduled_at | dt("%d/%m/%Y %H:%M") }} · {{ m.duration_min }} דק׳
                     </div>
                     {% if m.notes %}<div class="text-muted" style="font-size:.73rem;">{{ m.notes }}</div>{% endif %}
                     <span class="badge {{ 'badge-confirmed' if m.status == 'confirmed' else 'badge-pending' }} rounded-pill" style="font-size:.65rem;">

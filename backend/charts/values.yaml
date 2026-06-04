@@ -1,0 +1,52 @@
+replicaCount: 2
+
+image:
+  # Replace with your AWS ECR URI
+  repository: <AWS_ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/interviewsync-backend
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+# AWS ECR pull secret — create with:
+# kubectl create secret docker-registry ecr-registry-secret \
+#   --docker-server=<ACCOUNT>.dkr.ecr.<REGION>.amazonaws.com \
+#   --docker-username=AWS \
+#   --docker-password=$(aws ecr get-login-password)
+imagePullSecrets:
+  - name: ecr-registry-secret
+
+service:
+  type: ClusterIP
+  port: 8000
+
+# Backend is NOT exposed via Ingress — only reachable from frontend inside the cluster
+ingress:
+  enabled: false
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 200m
+    memory: 256Mi
+
+# All sensitive values should be overridden via Helm --set or a values-secret.yaml (gitignored)
+env:
+  DB_HOST: "postgres-service"
+  DB_PORT: "5432"
+  DB_NAME: "interviewsync"
+  DB_USER: "interviewsync"
+  DB_PASSWORD: "change-in-production"
+  SECRET_KEY: "change-in-production"
+  AI_API_KEY: ""
+  TWILIO_ACCOUNT_SID: ""
+  TWILIO_AUTH_TOKEN: ""
+  TWILIO_WHATSAPP_FROM: ""
+  FRONTEND_URL: "https://interviewsync.example.com"
+  UPLOAD_FOLDER: "/app/uploads"
+
+# Persistent volume for uploaded files (in production, use S3 instead)
+persistence:
+  enabled: false
+  storageClass: ""
+  size: 5Gi

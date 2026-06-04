@@ -161,9 +161,9 @@
                 {% set pct = [[(elapsed / total_days * 100)|int, 0]|max, 100]|min if total_days > 0 else 0 %}
                 <div class="mb-2">
                   <div class="d-flex justify-content-between small text-muted mb-1">
-                    <span>{{ start.strftime('%d/%m/%Y') }}</span>
+                    <span>{{ start| dt }}</span>
                     <span>{{ elapsed }} ימים מתוך {{ total_days }}</span>
-                    <span>{{ profile.target_end_date.strftime('%d/%m/%Y') }}</span>
+                    <span>{{ profile.target_end_date| dt }}</span>
                   </div>
                   <div class="timeline-bar">
                     <div class="timeline-fill" style="width:{{ pct }}%;"></div>
@@ -171,7 +171,7 @@
                   <div class="text-muted small mt-1 text-center">{{ pct }}% מהתהליך הושלם</div>
                 </div>
               {% else %}
-                <div class="text-muted small">בתהליך מ-{{ start.strftime('%d/%m/%Y') }} · אין תאריך יעד</div>
+                <div class="text-muted small">בתהליך מ-{{ start| dt }} · אין תאריך יעד</div>
               {% endif %}
             {% endif %}
             <div class="mb-3 mt-3">
@@ -191,7 +191,7 @@
               <form method="POST"><input type="hidden" name="action" value="regenerate_strategy">
                 <button type="submit" class="btn btn-sm btn-outline-secondary py-1" {{ 'disabled' if not profile }}>&#8635; רענן</button>
               </form>
-              <form method="POST" action="{{ url_for('ai_tasks_for_student', student_id=student.id) }}">
+              <form method="POST" action="{{ url_for('ai_tasks_for_student', sid=student.id) }}">
                 <button type="submit" class="btn btn-sm btn-ai text-white py-1 fw-semibold">&#10024; צור משימות AI</button>
               </form>
             </div>
@@ -236,7 +236,7 @@
             <div class="section-title">&#128197; פגישות קרובות</div>
             {% for m in student_meetings %}
               <div class="meeting-mini">
-                <strong>{{ m.scheduled_at.strftime('%d/%m/%Y %H:%M') }}</strong>
+                <strong>{{ m.scheduled_at | dt('%d/%m/%Y %H:%M') }}</strong>
                 · {{ m.duration_min }} דקות
                 <span class="badge rounded-pill ms-1 {{ 'badge-done' if m.status == 'confirmed' else 'badge-pending' }}" style="font-size:.65rem;">
                   {{ 'מאושר' if m.status == 'confirmed' else 'ממתין' }}
@@ -266,7 +266,7 @@
                 <span class="cat-pill {{ cat_class.get(t.category,'cat-general') }} flex-shrink-0 mt-1">{{ t.category }}</span>
                 <div class="flex-grow-1">
                   <div class="task-item-title">{{ t.title }}</div>
-                  <div class="task-item-meta">{{ at.assigned_at.strftime('%d/%m/%Y') }}</div>
+                  <div class="task-item-meta">{{ at.assigned_at| dt }}</div>
                 </div>
                 <span class="badge badge-pending rounded-pill flex-shrink-0">ממתין</span>
               </div>
@@ -281,12 +281,12 @@
                 <span class="text-success fw-bold flex-shrink-0 mt-1">&#10003;</span>
                 <div class="flex-grow-1">
                   <div class="task-item-title" style="text-decoration:line-through;">{{ t.title }}</div>
-                  <div class="task-item-meta">{{ at.completed_at.strftime('%d/%m/%Y') if at.completed_at else '' }}</div>
+                  <div class="task-item-meta">{{ at.completed_at| dt if at.completed_at else '' }}</div>
                   {% if at.submission_note %}
                     <div class="submission-box mt-1">&#128172; {{ at.submission_note | truncate(120) }}</div>
                   {% endif %}
                   {% if at.submission_file %}
-                    <a href="{{ url_for('static', filename=at.submission_file) }}" target="_blank"
+                    <a href="{{ '/files/' + at.submission_file if at.submission_file else '' }}" target="_blank"
                        class="text-decoration-none small" style="color:#635bff;">&#128206; הצג קובץ מצורף</a>
                   {% endif %}
                 </div>

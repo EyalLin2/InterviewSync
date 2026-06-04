@@ -68,7 +68,7 @@
                 </span>
               </div>
               <div class="text-muted small mt-1">
-                &#9202; {{ m.scheduled_at.strftime('%H:%M') }} &nbsp;·&nbsp; {{ m.duration_min }} דקות
+                &#9202; {{ m.scheduled_at | dt('%H:%M') }} &nbsp;·&nbsp; {{ m.duration_min }} דקות
               </div>
               {% if m.notes %}
                 <div class="text-muted small mt-1">{{ m.notes }}</div>
