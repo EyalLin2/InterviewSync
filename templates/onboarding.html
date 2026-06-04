@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InterviewSync — הכנה ראשונית</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" />
+  <style>
+    body {
+      font-family: 'Heebo', sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+    .onboarding-card {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 620px;
+    }
+    .brand-title { font-size: 1.9rem; font-weight: 800; color: #0d6efd; letter-spacing: -0.5px; }
+    .brand-sub   { color: #6c757d; font-size: 0.9rem; margin-bottom: 0.5rem; }
+    .step-badge  {
+      display: inline-block;
+      background: #e8f0fe; border-radius: 50px;
+      padding: 0.3rem 1rem; font-size: 0.82rem;
+      color: #0d6efd; font-weight: 600; margin-bottom: 1.5rem;
+    }
+    .section-divider {
+      border-top: 2px dashed #e9ecef;
+      margin: 1.5rem 0 1rem;
+    }
+    .section-label {
+      font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+      color: #6c757d; letter-spacing: 0.5px; margin-bottom: 0.75rem;
+    }
+    .required-star { color: #dc3545; }
+    .info-box {
+      background: #f8f9ff;
+      border-right: 3px solid #0d6efd;
+      border-radius: 8px 0 0 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.84rem; color: #495057; margin-bottom: 1.5rem;
+    }
+    .form-label { font-weight: 600; font-size: 0.88rem; }
+    .form-text  { font-size: 0.78rem; }
+  </style>
+</head>
+<body>
+  <div class="onboarding-card">
+    <div class="text-center mb-3">
+      <div class="brand-title">&#127891; InterviewSync</div>
+      <div class="brand-sub">הכנה לראיונות עם בינה מלאכותית</div>
+      <span class="step-badge">&#128203; טופס הכנה ראשוני</span>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show py-2" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endwith %}
+
+    <div class="info-box">
+      &#128161; המידע שתמלא/י יעזור למנטור/ית שלך לבנות עבורך תוכנית הכנה מותאמת אישית
+      ולקבל ניתוח AI מפורט על נקודות החוזק ואתגרים שכדאי לעבוד עליהם.
+      שדות המסומנים ב-<span class="required-star">*</span> הם חובה.
+    </div>
+
+    <form method="POST" action="{{ url_for('onboarding') }}">
+
+      <!-- ── Section 1: Basic Info ── -->
+      <div class="section-label">&#128100; פרטים אישיים</div>
+      <div class="row g-3 mb-1">
+        <div class="col-md-6">
+          <label for="full_name" class="form-label">שם מלא <span class="required-star">*</span></label>
+          <input type="text" id="full_name" name="full_name" class="form-control"
+                 placeholder="ישראל ישראלי" required autofocus />
+        </div>
+        <div class="col-md-4">
+          <label for="email" class="form-label">אימייל <span class="required-star">*</span></label>
+          <input type="email" id="email" name="email" class="form-control"
+                 placeholder="israel@example.com" required />
+        </div>
+        <div class="col-md-2">
+          <label for="age" class="form-label">גיל</label>
+          <input type="number" id="age" name="age" class="form-control"
+                 placeholder="24" min="16" max="99" />
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- ── Section 2: Academic & Career ── -->
+      <div class="section-label">&#127979; רקע אקדמי ומקצועי</div>
+      <div class="row g-3 mb-1">
+        <div class="col-md-6">
+          <label for="degree_field" class="form-label">תחום לימודים / תואר <span class="required-star">*</span></label>
+          <input type="text" id="degree_field" name="degree_field" class="form-control"
+                 placeholder="לדוגמה: מדעי המחשב, תוכנה, MBA..." required />
+        </div>
+        <div class="col-md-6">
+          <label for="interests" class="form-label">תחומי עניין טכנולוגיים / מקצועיים</label>
+          <input type="text" id="interests" name="interests" class="form-control"
+                 placeholder="לדוגמה: backend, AI, פיננסים, UX..." />
+          <div class="form-text">יעזור ל-AI להתאים את המשימות אליך</div>
+        </div>
+        <div class="col-12">
+          <label for="career_goals" class="form-label">מטרות קריירה <span class="required-star">*</span></label>
+          <textarea id="career_goals" name="career_goals" class="form-control" rows="2"
+                    placeholder="תאר/י את התפקיד הרצוי, תעשייה, סוג חברה, מיקום..." required></textarea>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- ── Section 3: Experience & Challenges ── -->
+      <div class="section-label">&#128172; ניסיון ואתגרים</div>
+      <div class="row g-3 mb-3">
+        <div class="col-12">
+          <label for="previous_experience" class="form-label">ניסיון קודם בראיונות / עבודה</label>
+          <textarea id="previous_experience" name="previous_experience" class="form-control" rows="2"
+                    placeholder="למשל: עברתי 3 ראיונות ונכשלתי בשלב הטכני, עבדתי כפרילנסר שנה... (אפשר גם 'אין ניסיון')"></textarea>
+          <div class="form-text">ככל שתפרט/י יותר — כך הניתוח יהיה מדויק יותר</div>
+        </div>
+        <div class="col-12">
+          <label for="main_challenges" class="form-label">אתגרים עיקריים שאתה/את מזהה בעצמך</label>
+          <textarea id="main_challenges" name="main_challenges" class="form-control" rows="2"
+                    placeholder="למשל: חרדה בראיונות, קושי לספר על עצמי, בעיות בשאלות Behavioral, חוסר ביטחון..."></textarea>
+          <div class="form-text">זה יעזור למנטור/ית להתמקד בנקודות שצריכות עבודה</div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg w-100 fw-semibold">
+        שמור והמשך לתרגול &#8594;
+      </button>
+    </form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

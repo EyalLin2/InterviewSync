@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>InterviewSync — Login</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <title>InterviewSync — כניסה</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" />
   <style>
-    body {
+    body { font-family: 'Heebo', sans-serif;
       min-height: 100vh;
       background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
       display: flex;
@@ -46,7 +48,7 @@
   <div class="login-card">
     <div class="text-center mb-4">
       <div class="brand-title">&#127891; InterviewSync</div>
-      <div class="brand-sub">AI-Powered Interview Preparation</div>
+      <div class="brand-sub">הכנה לראיונות עם בינה מלאכותית</div>
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -60,22 +62,22 @@
 
     <form method="POST" action="{{ url_for('login') }}">
       <div class="mb-3">
-        <label for="username" class="form-label fw-semibold">Username</label>
+        <label for="username" class="form-label fw-semibold">שם משתמש</label>
         <input type="text" id="username" name="username" class="form-control form-control-lg"
-               placeholder="Enter your username" required autofocus />
+               placeholder="הכנס/י שם משתמש" required autofocus />
       </div>
       <div class="mb-4">
-        <label for="password" class="form-label fw-semibold">Password</label>
+        <label for="password" class="form-label fw-semibold">סיסמה</label>
         <input type="password" id="password" name="password" class="form-control form-control-lg"
-               placeholder="Enter your password" required />
+               placeholder="הכנס/י סיסמה" required />
       </div>
-      <button type="submit" class="btn btn-primary btn-lg w-100">Sign In</button>
+      <button type="submit" class="btn btn-primary btn-lg w-100">כניסה</button>
     </form>
 
     <div class="demo-badge mt-4">
-      <strong>Demo accounts:</strong><br />
-      Mentor &mdash; <code>admin</code> / <code>admin123</code><br />
-      Student &mdash; <code>student1</code> / <code>student123</code>
+      <strong>חשבונות לדוגמה:</strong><br />
+      מנטור &mdash; <code>admin</code> / <code>admin123</code><br />
+      סטודנט &mdash; <code>student1</code> / <code>student123</code>
     </div>
   </div>
 

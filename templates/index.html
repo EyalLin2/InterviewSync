@@ -1,39 +1,59 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>InterviewSync — Student Portal</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <title>InterviewSync — פורטל סטודנט</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" />
   <style>
-    body { background: #f4f6f9; }
-    .navbar-brand { font-weight: 700; font-size: 1.3rem; }
-    .sidebar { min-height: calc(100vh - 56px); background: #fff; border-right: 1px solid #dee2e6; }
-    .sidebar .nav-link { color: #495057; border-radius: 8px; padding: 0.5rem 0.75rem; margin-bottom: 2px; }
+    body { font-family: 'Heebo', sans-serif; background: #f0f2f8; }
+    .navbar-brand { font-weight: 800; font-size: 1.25rem; }
+
+    /* Sidebar */
+    .sidebar { min-height: calc(100vh - 56px); background: #fff; border-left: 1px solid #e4e8f0; }
+    .sidebar .nav-link { color: #495057; border-radius: 8px; padding: 0.45rem 0.75rem; margin-bottom: 2px; font-size: 0.84rem; }
     .sidebar .nav-link:hover, .sidebar .nav-link.active { background: #e8f0fe; color: #0d6efd; }
-    .category-badge { font-size: 0.7rem; }
-    .star-card { background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); }
-    .star-label {
-      display: inline-block;
-      width: 90px;
-      font-weight: 700;
-      font-size: 0.75rem;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      color: #6c757d;
+    .sidebar-section { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: #adb5bd; letter-spacing: 0.5px; padding: 0.5rem 0.75rem 0.25rem; margin-top: 0.5rem; }
+
+    /* Cards */
+    .content-card { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+
+    /* Progress bar */
+    .progress-strip {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #fff; border-radius: 12px; padding: 1rem 1.25rem;
     }
+    .progress-strip .prog-num { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+    .progress-strip .prog-label { font-size: 0.76rem; opacity: 0.85; }
+
+    /* STAR form */
+    .star-label { font-weight: 700; font-size: 0.8rem; color: #6c757d; }
     .ai-feedback-box {
       background: linear-gradient(135deg, #eef2ff, #f0fdf4);
-      border-left: 4px solid #0d6efd;
-      border-radius: 0 8px 8px 0;
-      font-size: 0.88rem;
-      white-space: pre-wrap;
+      border-right: 4px solid #0d6efd; border-radius: 8px 0 0 8px;
+      font-size: 0.85rem; white-space: pre-wrap;
     }
     .mentor-feedback-box {
-      background: #fff8e1;
-      border-left: 4px solid #ffc107;
-      border-radius: 0 8px 8px 0;
-      font-size: 0.88rem;
+      background: #fff8e1; border-right: 4px solid #ffc107;
+      border-radius: 8px 0 0 8px; font-size: 0.85rem;
+    }
+    .hint-box {
+      background: #f0fff4; border-right: 3px solid #198754;
+      border-radius: 8px 0 0 8px; font-size: 0.82rem; color: #155724;
+    }
+
+    /* General tasks */
+    .task-card { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .task-type-badge-reading   { background: #e3f2fd; color: #0277bd; }
+    .task-type-badge-video     { background: #fce4ec; color: #c62828; }
+    .task-type-badge-exercise  { background: #e8f5e9; color: #2e7d32; }
+    .task-type-badge-custom    { background: #f3e5f5; color: #6a1b9a; }
+    .task-type-badge-ai_generated { background: #ede7f6; color: #4527a0; }
+    .task-hint-box {
+      background: #fffde7; border-right: 3px solid #f9a825;
+      border-radius: 8px 0 0 8px; font-size: 0.82rem; color: #5d4037;
     }
     .answered-icon { color: #198754; }
     .question-item { cursor: pointer; transition: background 0.15s; }
@@ -41,41 +61,80 @@
   </style>
 </head>
 <body>
+
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container-fluid px-4">
       <span class="navbar-brand">&#127891; InterviewSync</span>
       <div class="ms-auto d-flex align-items-center gap-3">
-        <span class="text-white-50 small">Signed in as <strong class="text-white">{{ user.username }}</strong></span>
-        <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">Logout</a>
+        <span class="text-white-50 small">שלום, <strong class="text-white">{{ user.full_name or user.username }}</strong></span>
+        <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">התנתקות</a>
       </div>
     </div>
   </nav>
 
   <div class="container-fluid">
     <div class="row">
-      <!-- Sidebar: Question List -->
-      <div class="col-lg-3 col-md-4 sidebar py-3 px-3">
-        <p class="text-muted small fw-semibold mb-2 text-uppercase">Practice Questions</p>
-        <div class="nav flex-column" id="questionList">
-          {% set categories = questions | map(attribute='category') | unique | list %}
-          {% for cat in categories %}
-            <p class="text-muted small mb-1 mt-2 fw-bold">{{ cat }}</p>
-            {% for q in questions if q.category == cat %}
-              <a href="#q{{ q.id }}" class="nav-link question-item d-flex justify-content-between align-items-start"
-                 onclick="scrollToQuestion({{ q.id }})">
-                <span class="small">{{ q.title | truncate(55) }}</span>
-                {% if q.id in my_answers %}
-                  <span class="answered-icon ms-1">&#10003;</span>
+
+      <!-- Sidebar -->
+      <div class="col-lg-3 col-md-4 sidebar py-3 px-2">
+
+        <!-- Progress summary -->
+        <div class="px-2 mb-3">
+          <div class="progress-strip">
+            <div class="d-flex gap-4">
+              <div>
+                <div class="prog-num">{{ answered_count }}/{{ assigned_count }}</div>
+                <div class="prog-label">שאלות STAR</div>
+              </div>
+              <div>
+                <div class="prog-num">{{ general_tasks_done }}/{{ general_task_count }}</div>
+                <div class="prog-label">משימות כלליות</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STAR questions list -->
+        {% if questions %}
+          <div class="sidebar-section">שאלות ראיון STAR</div>
+          <div class="nav flex-column" id="questionList">
+            {% set categories = questions | map(attribute='category') | unique | list %}
+            {% for cat in categories %}
+              <div class="text-muted px-2 mt-2 mb-1" style="font-size:0.72rem; font-weight:700;">{{ cat }}</div>
+              {% for q in questions if q.category == cat %}
+                <a href="#q{{ q.id }}" class="nav-link question-item d-flex justify-content-between align-items-start"
+                   onclick="scrollTo('q{{ q.id }}')">
+                  <span>{{ q.title | truncate(50) }}</span>
+                  {% if q.id in my_answers %}
+                    <span class="answered-icon ms-1 flex-shrink-0">&#10003;</span>
+                  {% endif %}
+                </a>
+              {% endfor %}
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <!-- General tasks list -->
+        {% if general_tasks %}
+          <div class="sidebar-section mt-2">משימות כלליות</div>
+          <div class="nav flex-column">
+            {% for t in general_tasks %}
+              <a href="#gt{{ t.id }}" class="nav-link question-item d-flex justify-content-between align-items-start"
+                 onclick="scrollTo('gt{{ t.id }}')">
+                <span>{{ t.title | truncate(50) }}</span>
+                {% if my_gta.get(t.id) and my_gta[t.id].completed %}
+                  <span class="answered-icon ms-1 flex-shrink-0">&#10003;</span>
                 {% endif %}
               </a>
             {% endfor %}
-          {% endfor %}
-        </div>
+          </div>
+        {% endif %}
       </div>
 
-      <!-- Main Content -->
+      <!-- Main content -->
       <div class="col-lg-9 col-md-8 py-4 px-4">
+
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% for category, message in messages %}
             <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
@@ -85,91 +144,172 @@
           {% endfor %}
         {% endwith %}
 
-        <div class="d-flex align-items-center mb-4">
-          <div>
-            <h4 class="mb-0 fw-bold">My Practice Board</h4>
-            <p class="text-muted small mb-0">Answer each question using the STAR method — get instant AI feedback.</p>
-          </div>
-          <span class="ms-auto badge bg-success fs-6">
-            {{ my_answers | length }} / {{ questions | length }} answered
-          </span>
-        </div>
+        <h4 class="fw-bold mb-1">לוח התרגול שלי</h4>
+        <p class="text-muted small mb-4">ענה/י על כל שאלה בשיטת STAR וסיים/י את המשימות שהמנטור שייך אליך.</p>
 
-        {% if not questions %}
-          <div class="alert alert-info">No questions available yet. Ask your mentor to add some!</div>
+        <!-- ── STAR Questions ── -->
+        {% if questions %}
+          <div class="d-flex align-items-center mb-3">
+            <h5 class="fw-bold mb-0">&#127775; שאלות ראיון — פורמט STAR</h5>
+          </div>
+        {% endif %}
+
+        {% if not questions and not general_tasks %}
+          <div class="alert alert-info">
+            &#128274; אין משימות משויכות אליך עדיין. פנה/י למנטור/ית שלך.
+          </div>
         {% endif %}
 
         {% for question in questions %}
           {% set answer = my_answers.get(question.id) %}
-          <div class="star-card p-4 mb-4" id="q{{ question.id }}">
-            <!-- Question Header -->
+          <div class="content-card p-4 mb-4" id="q{{ question.id }}">
+
+            <!-- Question header -->
             <div class="d-flex align-items-start gap-2 mb-3">
               <div class="flex-grow-1">
-                <span class="badge bg-secondary category-badge mb-1">{{ question.category }}</span>
-                <span class="badge bg-light text-muted category-badge mb-1 border">{{ question.target_role }}</span>
+                <span class="badge bg-secondary mb-1" style="font-size:0.68rem;">{{ question.category }}</span>
+                <span class="badge bg-light text-muted mb-1 border" style="font-size:0.68rem;">{{ question.target_role }}</span>
                 <h6 class="mb-0 fw-semibold">{{ question.title }}</h6>
               </div>
               {% if answer %}
-                <span class="badge bg-success">Answered</span>
+                <span class="badge bg-success flex-shrink-0">הושלם ✓</span>
               {% else %}
-                <span class="badge bg-warning text-dark">Pending</span>
+                <span class="badge bg-warning text-dark flex-shrink-0">ממתין</span>
               {% endif %}
             </div>
+
+            <!-- AI Hint (interactive guidance) -->
+            {% if question.hint %}
+              <div class="hint-box p-3 mb-3 rounded">
+                <div class="fw-semibold mb-1" style="font-size:0.8rem;">&#129300; הנחיה לתשובה טובה</div>
+                {{ question.hint }}
+              </div>
+            {% endif %}
 
             <!-- STAR Form -->
             <form method="POST" action="{{ url_for('index') }}">
               <input type="hidden" name="question_id" value="{{ question.id }}" />
               <div class="row g-2 mb-3">
                 {% for field, label, hint in [
-                  ('situation', 'Situation', 'Set the scene and provide context.'),
-                  ('task', 'Task', 'Describe your responsibility or challenge.'),
-                  ('action', 'Action', 'Explain the specific steps you took.'),
-                  ('result', 'Result', 'Share the outcome — use numbers where possible.')
+                  ('situation', 'סיטואציה', 'תאר/י את ההקשר והרקע.'),
+                  ('task',      'משימה',    'תאר/י את האחריות שלך או האתגר.'),
+                  ('action',    'פעולה',    'הסבר/י את הצעדים הספציפיים שנקטת.'),
+                  ('result',    'תוצאה',    'שתף/י את התוצאה — השתמש/י במספרים כשאפשר.')
                 ] %}
                   <div class="col-12">
                     <label class="form-label d-flex align-items-center gap-2 mb-1">
                       <span class="star-label">{{ label }}</span>
-                      <span class="text-muted small">{{ hint }}</span>
+                      <span class="text-muted" style="font-size:0.78rem;">{{ hint }}</span>
                     </label>
-                    <textarea name="{{ field }}" rows="2"
-                      class="form-control form-control-sm"
-                      placeholder="{{ hint }}">{{ answer[field] if answer else '' }}</textarea>
+                    <textarea name="{{ field }}" rows="2" class="form-control form-control-sm"
+                              placeholder="{{ hint }}">{{ answer[field] if answer else '' }}</textarea>
                   </div>
                 {% endfor %}
               </div>
               <button type="submit" class="btn btn-primary btn-sm px-4">
-                {% if answer %}Update & Re-analyze{% else %}Submit & Get AI Feedback{% endif %}
+                {% if answer %}עדכן וניתוח מחדש{% else %}שלח/י וקבל/י משוב AI{% endif %}
               </button>
             </form>
 
-            <!-- Feedback Section -->
+            <!-- Feedback -->
             {% if answer %}
               <hr class="my-3" />
               <div class="row g-3">
                 <div class="col-md-6">
-                  <p class="small fw-bold mb-1">&#129504; AI Feedback</p>
-                  <div class="ai-feedback-box p-3">
-                    {{ answer.ai_feedback or 'No AI feedback yet.' }}
+                  <p class="small fw-bold mb-1">&#129504; משוב AI</p>
+                  <div class="ai-feedback-box p-3 rounded">
+                    {{ answer.ai_feedback or 'אין משוב AI עדיין.' }}
                   </div>
                 </div>
                 <div class="col-md-6">
-                  <p class="small fw-bold mb-1">&#128172; Mentor Feedback</p>
-                  <div class="mentor-feedback-box p-3">
-                    {{ answer.mentor_feedback or 'Your mentor has not left feedback yet.' }}
+                  <p class="small fw-bold mb-1">&#128172; משוב מנטור</p>
+                  <div class="mentor-feedback-box p-3 rounded">
+                    {{ answer.mentor_feedback or 'המנטור/ית שלך טרם השאיר/ה משוב.' }}
                   </div>
                 </div>
               </div>
             {% endif %}
           </div>
         {% endfor %}
+
+        <!-- ── General Tasks ── -->
+        {% if general_tasks %}
+          <div class="d-flex align-items-center mb-3 mt-4">
+            <h5 class="fw-bold mb-0">&#128203; משימות כלליות</h5>
+            <span class="badge bg-primary ms-2">{{ general_tasks_done }}/{{ general_task_count }}</span>
+          </div>
+
+          {% set type_labels = {
+            'reading':      ('&#128214;', 'קריאה',    'task-type-badge-reading'),
+            'video':        ('&#127916;', 'וידאו',    'task-type-badge-video'),
+            'exercise':     ('&#129302;', 'תרגיל',    'task-type-badge-exercise'),
+            'custom':       ('&#128203;', 'מטלה',     'task-type-badge-custom'),
+            'ai_generated': ('&#129504;', 'AI',       'task-type-badge-ai_generated')
+          } %}
+
+          {% for task in general_tasks %}
+            {% set gta = my_gta.get(task.id) %}
+            {% set tdata = type_labels.get(task.task_type, ('📋', task.task_type, 'task-type-badge-custom')) %}
+            <div class="task-card p-4 mb-3" id="gt{{ task.id }}">
+              <div class="d-flex align-items-start gap-2 mb-2">
+                <div class="flex-grow-1">
+                  <span class="badge {{ tdata[2] }} mb-1" style="font-size:0.68rem;">
+                    {{ tdata[0] | safe }} {{ tdata[1] }}
+                  </span>
+                  <h6 class="mb-0 fw-semibold">{{ task.title }}</h6>
+                  {% if task.description %}
+                    <p class="text-muted small mb-0 mt-1">{{ task.description }}</p>
+                  {% endif %}
+                </div>
+                {% if gta and gta.completed %}
+                  <span class="badge bg-success flex-shrink-0">הושלם ✓</span>
+                {% else %}
+                  <span class="badge bg-warning text-dark flex-shrink-0">לביצוע</span>
+                {% endif %}
+              </div>
+
+              <!-- AI interactive hint -->
+              {% if task.ai_hint %}
+                <div class="task-hint-box p-3 mb-3 rounded">
+                  <div class="fw-semibold mb-1" style="font-size:0.8rem;">&#129300; הנחיה אינטראקטיבית</div>
+                  {{ task.ai_hint }}
+                </div>
+              {% endif %}
+
+              {% if gta and gta.completed %}
+                <!-- Completed state -->
+                <div class="alert alert-success py-2 mb-0 small">
+                  &#10003; הושלם
+                  {% if gta.completion_note %}
+                    — <em>{{ gta.completion_note }}</em>
+                  {% endif %}
+                </div>
+              {% else %}
+                <!-- Completion form -->
+                <form method="POST" action="{{ url_for('index') }}">
+                  <input type="hidden" name="action" value="complete_general_task" />
+                  <input type="hidden" name="gtask_id" value="{{ task.id }}" />
+                  <div class="mb-2">
+                    <textarea name="completion_note" class="form-control form-control-sm" rows="2"
+                              placeholder="הערת השלמה (אופציונלי) — מה למדת? מה היה קשה? מה הפתיע אותך?"></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-success btn-sm px-4">
+                    &#10003; סיימתי את המשימה
+                  </button>
+                </form>
+              {% endif %}
+            </div>
+          {% endfor %}
+        {% endif %}
+
       </div>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    function scrollToQuestion(id) {
-      const el = document.getElementById('q' + id);
+    function scrollTo(id) {
+      const el = document.getElementById(id);
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   </script>
