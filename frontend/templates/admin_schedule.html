@@ -64,6 +64,10 @@
     .pill-pending   { background: #fef3c7; color: #92400e; }
     .pill-intake    { background: #dbeafe; color: #1e40af; }
     .pill-support   { background: #fce7f3; color: #9d174d; }
+    /* Student type colors */
+    .pill-hs       { background: #fef3c7; color: #92400e; }   /* highschool — yellow */
+    .pill-college  { background: #dbeafe; color: #1d4ed8; }   /* college — blue */
+    .pill-career   { background: #ede9fe; color: #5b21b6; }   /* career — purple */
 
     /* ── Day detail panel ── */
     .day-detail {
@@ -97,6 +101,7 @@
     <div class="ms-auto d-flex align-items-center gap-3">
       <a href="{{ url_for('admin_hub') }}" class="btn btn-outline-light btn-sm">&#8592; לוח הבית</a>
       <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-light btn-sm">לוח פרטי</a>
+      <a href="{{ url_for('admin_business') }}" class="btn btn-outline-light btn-sm">&#128188; לוח עסקי</a>
       <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">התנתקות</a>
     </div>
   </nav>
@@ -148,8 +153,9 @@
                        {% if dm %}onclick="selectDay({{ day }}, {{ dm|tojson|safe }})"{% endif %}>
                     <div class="day-num {{ 'weekend' if is_weekend }}">{{ day }}</div>
                     {% for m in dm[:3] %}
-                      {% set pill_cls = 'pill-intake' if m.get('meeting_type','') == 'intake' else ('pill-support' if m.get('meeting_type','') == 'support' else ('pill-confirmed' if m.status == 'confirmed' else 'pill-pending')) %}
-                      <span class="meeting-pill {{ pill_cls }}">
+                      {% set edu = m.get('education_level','college') %}
+                      {% set edu_cls = 'pill-hs' if edu=='highschool' else ('pill-career' if edu=='career' else 'pill-college') %}
+                      <span class="meeting-pill {{ edu_cls }}">
                         {{ m.time }} {{ m.name }}
                       </span>
                     {% endfor %}
@@ -162,6 +168,13 @@
             {% endfor %}
           </div>
 
+        </div>
+
+        <!-- Color legend -->
+        <div class="d-flex gap-3 flex-wrap mb-2" style="font-size:.72rem;">
+          <span><span class="meeting-pill pill-hs" style="padding:.1rem .5rem;">דוגמה</span> תלמיד תיכון</span>
+          <span><span class="meeting-pill pill-college" style="padding:.1rem .5rem;">דוגמה</span> סטודנט</span>
+          <span><span class="meeting-pill pill-career" style="padding:.1rem .5rem;">דוגמה</span> הכוונה תעסוקתית</span>
         </div>
 
         <!-- Day detail panel (shown when day is clicked) -->

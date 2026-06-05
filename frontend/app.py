@@ -451,6 +451,11 @@ def student_file(sid):
     notes      = r_notes.json()  if r_notes.status_code  == 200 else []
     categories = sorted({t["category"] for t in taskbank})
 
+    r_billing = api_get(f"/api/students/{sid}/billing")
+    r_svcs    = api_get("/api/services")
+    billing_info = r_billing.json() if r_billing.status_code == 200 else {}
+    services     = r_svcs.json()    if r_svcs.status_code    == 200 else []
+
     return render_template("student_file.html",
         user=me(),
         student=student,
@@ -462,6 +467,8 @@ def student_file(sid):
         categories=categories,
         student_meetings=student.get("meetings", []),
         notes=notes,
+        billing_info=billing_info,
+        services=services,
     )
 
 
@@ -484,6 +491,118 @@ def student_report(sid):
         notes=notes,
         now_date=_date.today(),
     )
+
+
+@app.route("/admin/private/billing")
+@admin_required
+def billing_dashboard():
+    month = request.args.get("month", "")
+    params = {"month": month} if month else {}
+    r = api_get("/api/billing", params=params)
+    data = r.json() if r.status_code == 200 else {}
+    r_svcs = api_get("/api/services")
+    services = r_svcs.json() if r_svcs.status_code == 200 else []
+    return render_template("billing_dashboard.html",
+        user=me(), data=data, services=services)
+
+
+@app.route("/admin/private/billing/generate", methods=["POST"])
+@admin_required
+def billing_generate():
+    month = request.form.get("month", _datetime.utcnow().strftime("%Y-%m"))
+    r = api_post(f"/api/billing/generate/{month}")
+    if r.status_code == 200:
+        flash(f"חיוב חושב ל-{month}: {r.json().get('processed',0)} סטודנטים.", "success")
+    else:
+        flash("שגיאה בחישוב חיוב.", "danger")
+    return redirect(url_for("billing_dashboard") + f"?month={month}")
+
+
+@app.route("/admin/private/billing/<int:rec_id>/pay", methods=["POST"])
+@admin_required
+def billing_mark_paid(rec_id):
+    paid = request.form.get("paid", "1") == "1"
+    note = request.form.get("note", "").strip()
+    r = api_patch(f"/api/billing/{rec_id}/pay",
+                  json={"paid": paid, "note": note})
+    if r.status_code < 300:
+        flash("עודכן.", "success")
+    else:
+        try:
+            flash(r.json().get("error", "שגיאה."), "danger")
+        except Exception:
+            flash("שגיאה בעדכון.", "danger")
+    month = request.form.get("month", "")
+    return redirect(url_for("billing_dashboard") + (f"?month={month}" if month else ""))
+
+
+@app.route("/admin/private/billing/invoice/<int:student_id>/<month>")
+@admin_required
+def billing_invoice(student_id, month):
+    r_hist = api_get(f"/api/students/{student_id}/billing/history",
+                     params={"year": month[:4]})
+    r_stu  = api_get(f"/api/students/{student_id}")
+    if r_stu.status_code != 200:
+        flash("סטודנט לא נמצא.", "danger")
+        return redirect(url_for("billing_dashboard"))
+    history = r_hist.json() if r_hist.status_code == 200 else {}
+    student = r_stu.json()
+    # Find this month record
+    rec = next((r for r in history.get("records",[]) if r["month"] == month), None)
+    return render_template("billing_invoice.html",
+        user=me(), student=student, profile=student.get("profile",{}),
+        record=rec, month=month, history=history)
+
+
+@app.route("/admin/private/services")
+@admin_required
+def services_settings():
+    r = api_get("/api/services")
+    services = r.json() if r.status_code == 200 else []
+    return render_template("services_settings.html", user=me(), services=services)
+
+
+@app.route("/admin/private/services", methods=["POST"])
+@admin_required
+def services_settings_post():
+    action = request.form.get("action")
+    if action == "add":
+        r = api_post("/api/services", json={
+            "name":             request.form.get("name","").strip(),
+            "description":      request.form.get("description","").strip(),
+            "unit":             request.form.get("unit","per_session"),
+            "price_highschool": float(request.form.get("price_highschool",0) or 0),
+            "price_college":    float(request.form.get("price_college",0) or 0),
+            "price_career":     float(request.form.get("price_career",0) or 0),
+        })
+        _flash_from_response(r, "השירות נוסף.", "success")
+    elif action == "edit":
+        sid = request.form.get("service_id", type=int)
+        r = api_patch(f"/api/services/{sid}", json={
+            "name":             request.form.get("name","").strip(),
+            "description":      request.form.get("description","").strip(),
+            "unit":             request.form.get("unit","per_session"),
+            "price_highschool": float(request.form.get("price_highschool",0) or 0),
+            "price_college":    float(request.form.get("price_college",0) or 0),
+            "price_career":     float(request.form.get("price_career",0) or 0),
+        })
+        _flash_from_response(r, "עודכן.")
+    elif action == "delete":
+        sid = request.form.get("service_id", type=int)
+        r = api_delete(f"/api/services/{sid}")
+        _flash_from_response(r, "נמחק.")
+    return redirect(url_for("services_settings"))
+
+
+@app.route("/admin/private/student/<int:sid>/billing-settings", methods=["POST"])
+@admin_required
+def student_billing_set(sid):
+    r = api_post(f"/api/students/{sid}/billing", json={
+        "service_id":   request.form.get("service_id", type=int),
+        "custom_price": float(request.form.get("custom_price",0) or 0) or None,
+    })
+    _flash_from_response(r, "הגדרות חיוב עודכנו.")
+    return redirect(url_for("student_file", sid=sid))
 
 
 @app.route("/admin/private/reports/meetings")
@@ -616,6 +735,19 @@ def admin_intake(sid):
     return render_template("admin_intake.html",
         user=me(), student=student,
         profile=student.get("profile", {}))
+
+
+@app.route("/admin/private/student/<int:sid>/billing-history")
+@admin_required
+def student_billing_history_proxy(sid):
+    from flask import jsonify as _j
+    year = request.args.get("year", "")
+    params = {"year": year} if year else {}
+    r = api_get(f"/api/students/{sid}/billing/history", params=params)
+    try:
+        return _j(r.json()), r.status_code
+    except Exception:
+        return _j({"records": []}), 500
 
 
 @app.route("/admin/private/student/<int:sid>/upload-cv", methods=["POST"])

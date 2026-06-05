@@ -172,3 +172,54 @@ class ActivityLog(db.Model):
     description        = db.Column(db.Text, default="")
     workshop_id        = db.Column(db.Integer, db.ForeignKey("workshops.id"), nullable=True)
     created_at         = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+# ── Billing models ─────────────────────────────────────────────────────────
+
+class Service(db.Model):
+    """Admin-defined service catalog with pricing tiers."""
+    __tablename__ = "services"
+    id                = db.Column(db.Integer, primary_key=True)
+    name              = db.Column(db.String(120), nullable=False)
+    description       = db.Column(db.Text, default="")
+    unit              = db.Column(db.String(20), default="per_session")
+    # per_session | monthly | fixed
+    price_highschool  = db.Column(db.Float, default=0)
+    price_college     = db.Column(db.Float, default=0)
+    price_career      = db.Column(db.Float, default=0)
+    is_active         = db.Column(db.Boolean, default=True)
+    created_at        = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class StudentBilling(db.Model):
+    """Links a student to a service with optional custom price."""
+    __tablename__ = "student_billing"
+    id                  = db.Column(db.Integer, primary_key=True)
+    student_id          = db.Column(db.Integer, db.ForeignKey("users.id"),
+                                    unique=True, nullable=False)
+    service_id          = db.Column(db.Integer, db.ForeignKey("services.id"),
+                                    nullable=True)
+    custom_price        = db.Column(db.Float, nullable=True)
+    sessions_per_month  = db.Column(db.Integer, nullable=True)
+    started_at          = db.Column(db.Date, nullable=True)
+    is_active           = db.Column(db.Boolean, default=True)
+    service             = db.relationship("Service", backref="student_billings",
+                                          lazy=True)
+
+
+class BillingRecord(db.Model):
+    """Monthly billing record per student."""
+    __tablename__ = "billing_records"
+    id              = db.Column(db.Integer, primary_key=True)
+    student_id      = db.Column(db.Integer, db.ForeignKey("users.id"),
+                                nullable=False)
+    service_id      = db.Column(db.Integer, db.ForeignKey("services.id"),
+                                nullable=True)
+    month           = db.Column(db.String(7), nullable=False)  # YYYY-MM
+    meetings_count  = db.Column(db.Integer, default=0)
+    amount_due      = db.Column(db.Float, default=0)
+    paid_at         = db.Column(db.DateTime, nullable=True)
+    payment_note    = db.Column(db.Text, default="")
+    created_at      = db.Column(db.DateTime, default=datetime.utcnow)
+    __table_args__  = (db.UniqueConstraint("student_id", "month",
+                                           name="uq_billing_student_month"),)

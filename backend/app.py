@@ -17,7 +17,8 @@ from groq import Groq
 from models import (db, get_database_url,
                     User, StudentProfile, TaskBank, AssignedTask, Meeting,
                     MentorNote,
-                    Workshop, Inquiry, ActivityLog, TOPIC_CATEGORIES)
+                    Workshop, Inquiry, ActivityLog, TOPIC_CATEGORIES,
+                    Service, StudentBilling, BillingRecord)
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"]     = get_database_url()
@@ -848,11 +849,14 @@ def list_meetings():
         s = db.session.get(User, m.student_id)
         p = s.profile if s else None
         name = (p.full_name if p and p.full_name else (s.username if s else "?"))
+        edu = (p.education_level or "college") if p else "college"
         by_day.setdefault(m.scheduled_at.day, []).append({
             "id": m.id, "name": name,
             "time": m.scheduled_at.strftime("%H:%M"),
             "duration": m.duration_min,
             "status": m.status, "notes": m.notes or "",
+            "meeting_type":     m.meeting_type or "progress_review",
+            "education_level":  edu,  # for color coding
         })
 
     cal_weeks = _cal.Calendar(firstweekday=6).monthdayscalendar(year, month)
@@ -1467,6 +1471,292 @@ def student_chat(sid):
 
 
 # ─────────────────────────────────────────────
+# Billing
+# ─────────────────────────────────────────────
+
+def _service_dict(s: Service) -> dict:
+    return {
+        "id": s.id, "name": s.name, "description": s.description,
+        "unit": s.unit, "is_active": s.is_active,
+        "price_highschool": s.price_highschool,
+        "price_college":    s.price_college,
+        "price_career":     s.price_career,
+    }
+
+
+def _price_for_student(service: Service, profile: StudentProfile | None,
+                       custom: float | None = None) -> float:
+    """Return the applicable price for a student."""
+    if custom is not None:
+        return custom
+    if not profile:
+        return service.price_college
+    lvl = profile.education_level or "college"
+    if lvl == "highschool":
+        return service.price_highschool
+    if lvl == "career":
+        return service.price_career
+    return service.price_college
+
+
+# ── Service Catalog ────────────────────────────────────────────────────────
+
+@app.route("/api/services")
+@require_admin
+def list_services():
+    svcs = Service.query.order_by(Service.name).all()
+    return jsonify([_service_dict(s) for s in svcs])
+
+
+@app.route("/api/services", methods=["POST"])
+@require_admin
+def create_service():
+    body = request.get_json() or {}
+    name = body.get("name", "").strip()
+    if not name:
+        return jsonify({"error": "name required"}), 400
+    s = Service(
+        name=name,
+        description=body.get("description", ""),
+        unit=body.get("unit", "per_session"),
+        price_highschool=float(body.get("price_highschool", 0)),
+        price_college=float(body.get("price_college", 0)),
+        price_career=float(body.get("price_career", 0)),
+    )
+    db.session.add(s)
+    db.session.commit()
+    return jsonify(_service_dict(s)), 201
+
+
+@app.route("/api/services/<int:sid>", methods=["PATCH"])
+@require_admin
+def update_service(sid):
+    s    = Service.query.get_or_404(sid)
+    body = request.get_json() or {}
+    for field in ("name", "description", "unit"):
+        if field in body:
+            setattr(s, field, body[field])
+    for field in ("price_highschool", "price_college", "price_career"):
+        if field in body:
+            setattr(s, field, float(body[field]))
+    if "is_active" in body:
+        s.is_active = bool(body["is_active"])
+    db.session.commit()
+    return jsonify(_service_dict(s))
+
+
+@app.route("/api/services/<int:sid>", methods=["DELETE"])
+@require_admin
+def delete_service(sid):
+    s = Service.query.get_or_404(sid)
+    db.session.delete(s)
+    db.session.commit()
+    return jsonify({"ok": True})
+
+
+# ── Student Billing Assignment ─────────────────────────────────────────────
+
+@app.route("/api/students/<int:student_id>/billing")
+@require_admin
+def get_student_billing(student_id):
+    User.query.filter_by(id=student_id, role="student").first_or_404()
+    sb = StudentBilling.query.filter_by(student_id=student_id).first()
+    if not sb:
+        return jsonify({"assigned": False})
+    s = sb.service
+    student = db.session.get(User, student_id)
+    price = _price_for_student(s, student.profile, sb.custom_price) if s else 0
+    return jsonify({
+        "assigned": True,
+        "service_id":   sb.service_id,
+        "service_name": s.name if s else None,
+        "service_unit": s.unit if s else None,
+        "custom_price": sb.custom_price,
+        "effective_price": price,
+        "is_active": sb.is_active,
+    })
+
+
+@app.route("/api/students/<int:student_id>/billing", methods=["POST"])
+@require_admin
+def set_student_billing(student_id):
+    User.query.filter_by(id=student_id, role="student").first_or_404()
+    body = request.get_json() or {}
+    sb   = StudentBilling.query.filter_by(student_id=student_id).first()
+    if not sb:
+        sb = StudentBilling(student_id=student_id)
+        db.session.add(sb)
+    sb.service_id   = body.get("service_id")
+    sb.custom_price = float(body["custom_price"]) if body.get("custom_price") else None
+    sb.is_active    = body.get("is_active", True)
+    db.session.commit()
+
+    s     = db.session.get(Service, sb.service_id) if sb.service_id else None
+    price = _price_for_student(s, db.session.get(User, student_id).profile,
+                               sb.custom_price) if s else 0
+    return jsonify({"ok": True, "effective_price": price})
+
+
+# ── Billing Records & Monthly Report ──────────────────────────────────────
+
+@app.route("/api/billing")
+@require_admin
+def billing_dashboard():
+    """Monthly billing overview."""
+    month = request.args.get("month", datetime.utcnow().strftime("%Y-%m"))
+
+    # Fetch or auto-generate records for this month
+    records = (BillingRecord.query.filter_by(month=month)
+               .order_by(BillingRecord.student_id).all())
+
+    MONTHS_HE = {1:"ינואר",2:"פברואר",3:"מרץ",4:"אפריל",5:"מאי",6:"יוני",
+                 7:"יולי",8:"אוגוסט",9:"ספטמבר",10:"אוקטובר",11:"נובמבר",12:"דצמבר"}
+    y, m = int(month[:4]), int(month[5:])
+    month_name = f"{MONTHS_HE[m]} {y}"
+
+    prev_m = f"{y}-{m-1:02d}" if m > 1 else f"{y-1}-12"
+    next_m = f"{y}-{m+1:02d}" if m < 12 else f"{y+1}-01"
+
+    result = []
+    for rec in records:
+        s = db.session.get(User, rec.student_id)
+        p = s.profile if s else None
+        svc = db.session.get(Service, rec.service_id) if rec.service_id else None
+        result.append({
+            "id":            rec.id,
+            "student_id":    rec.student_id,
+            "student_name":  (p.full_name if p and p.full_name else (s.username if s else "?")),
+            "service_name":  svc.name if svc else "—",
+            "service_unit":  svc.unit if svc else "per_session",
+            "month":         rec.month,
+            "meetings_count":rec.meetings_count,
+            "amount_due":    rec.amount_due,
+            "paid_at":       rec.paid_at.isoformat() if rec.paid_at else None,
+            "payment_note":  rec.payment_note,
+        })
+
+    total_due  = sum(r["amount_due"] for r in result)
+    total_paid = sum(r["amount_due"] for r in result if r["paid_at"])
+
+    return jsonify({
+        "month":      month,
+        "month_name": month_name,
+        "prev_month": prev_m,
+        "next_month": next_m,
+        "records":    result,
+        "total_due":  total_due,
+        "total_paid": total_paid,
+        "total_pending": total_due - total_paid,
+    })
+
+
+@app.route("/api/billing/generate/<month>", methods=["POST"])
+@require_admin
+def generate_billing(month):
+    """Calculate billing for all active students for the given month (YYYY-MM)."""
+    try:
+        y, m = int(month[:4]), int(month[5:])
+    except Exception:
+        return jsonify({"error": "Invalid month format (YYYY-MM)"}), 400
+
+    from_dt = datetime(y, m, 1)
+    to_dt   = datetime(y + 1, 1, 1) if m == 12 else datetime(y, m + 1, 1)
+
+    students = User.query.filter_by(role="student").all()
+    created = 0
+
+    for student in students:
+        sb = StudentBilling.query.filter_by(student_id=student.id, is_active=True).first()
+        if not sb or not sb.service_id:
+            continue
+        svc = db.session.get(Service, sb.service_id)
+        if not svc:
+            continue
+
+        # Count confirmed/completed meetings this month
+        meeting_count = (Meeting.query
+                         .filter_by(student_id=student.id)
+                         .filter(Meeting.scheduled_at >= from_dt,
+                                 Meeting.scheduled_at <  to_dt)
+                         .filter(Meeting.status.in_(["confirmed", "completed"]))
+                         .count())
+
+        price = _price_for_student(svc, student.profile, sb.custom_price)
+
+        if svc.unit == "per_session":
+            amount = meeting_count * price
+        else:
+            amount = price  # monthly / fixed
+
+        # Upsert
+        rec = BillingRecord.query.filter_by(
+            student_id=student.id, month=month).first()
+        if not rec:
+            rec = BillingRecord(student_id=student.id, month=month)
+            db.session.add(rec)
+        rec.service_id     = sb.service_id
+        rec.meetings_count = meeting_count
+        rec.amount_due     = amount
+        created += 1
+
+    db.session.commit()
+    return jsonify({"ok": True, "processed": created, "month": month})
+
+
+@app.route("/api/billing/<int:rec_id>/pay", methods=["PATCH"])
+@require_admin
+def mark_billing_paid(rec_id):
+    rec  = BillingRecord.query.get_or_404(rec_id)
+    body = request.get_json() or {}
+    if body.get("paid"):
+        rec.paid_at      = datetime.utcnow()
+        rec.payment_note = body.get("note", "")
+    else:
+        rec.paid_at      = None
+        rec.payment_note = ""
+    db.session.commit()
+    return jsonify({"ok": True,
+                    "paid_at": rec.paid_at.isoformat() if rec.paid_at else None})
+
+
+@app.route("/api/students/<int:student_id>/billing/history")
+@require_admin
+def student_billing_history(student_id):
+    """Per-student monthly billing history."""
+    User.query.filter_by(id=student_id, role="student").first_or_404()
+    year = request.args.get("year", type=int, default=datetime.utcnow().year)
+
+    records = (BillingRecord.query
+               .filter_by(student_id=student_id)
+               .filter(BillingRecord.month.like(f"{year}-%"))
+               .order_by(BillingRecord.month.desc()).all())
+
+    result = []
+    for rec in records:
+        svc = db.session.get(Service, rec.service_id) if rec.service_id else None
+        result.append({
+            "id":            rec.id,
+            "month":         rec.month,
+            "service_name":  svc.name if svc else "—",
+            "service_unit":  svc.unit if svc else "per_session",
+            "meetings_count":rec.meetings_count,
+            "amount_due":    rec.amount_due,
+            "paid_at":       rec.paid_at.isoformat() if rec.paid_at else None,
+            "payment_note":  rec.payment_note,
+        })
+
+    total_year = sum(r["amount_due"] for r in result)
+    meetings_year = sum(r["meetings_count"] for r in result)
+
+    return jsonify({
+        "year":           year,
+        "records":        result,
+        "total_year":     total_year,
+        "meetings_year":  meetings_year,
+    })
+
+
+# ─────────────────────────────────────────────
 # Reports
 # ─────────────────────────────────────────────
 
@@ -1622,6 +1912,28 @@ def seed_db():
             TaskBank(title="מחקר חברות יעד", description="זהה 5 חברות ומצא/י פרטים על כל אחת.", category="כללי", task_type="task"),
         ]
         db.session.add_all(starters)
+
+    # Default service catalog
+    if Service.query.count() == 0:
+        default_services = [
+            Service(name="שיעור",           description="פגישה אישית — לפי שעה",
+                    unit="per_session",
+                    price_highschool=150, price_college=200, price_career=250),
+            Service(name="כתיבת ראיון",     description="כתיבת קורות חיים ומכתב כיסוי",
+                    unit="fixed",
+                    price_highschool=400, price_college=500, price_career=700),
+            Service(name="ליווי תעסוקי",    description="חבילת ליווי חודשית",
+                    unit="monthly",
+                    price_highschool=600, price_college=800, price_career=1200),
+            Service(name="חיפוש כיוון",     description="סדרת פגישות לבחירת כיוון",
+                    unit="monthly",
+                    price_highschool=500, price_college=700, price_career=1000),
+            Service(name="תוכנית מלאה",     description="ליווי מלא — הכל כלול",
+                    unit="monthly",
+                    price_highschool=900, price_college=1200, price_career=1800),
+        ]
+        db.session.add_all(default_services)
+
     db.session.commit()
 
 

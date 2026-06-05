@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>חשבונית — {{ profile.full_name or student.username }} {{ month }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family:'Heebo',sans-serif; background:#fff; color:#1a1f36; max-width:600px; margin:0 auto; padding:2rem; }
+    .print-btn { background:#635bff; color:#fff; border:none; border-radius:8px; padding:.5rem 1.25rem; font-size:.9rem; font-weight:700; cursor:pointer; margin-bottom:1.5rem; }
+    .invoice-header { border-bottom:3px solid #635bff; padding-bottom:1.5rem; margin-bottom:1.5rem; }
+    .business-name { font-size:1.6rem; font-weight:800; color:#635bff; }
+    .invoice-title  { font-size:1.1rem; font-weight:700; color:#374151; margin-top:.5rem; }
+    .invoice-num    { font-size:.82rem; color:#9ca3af; }
+    .section-lbl { font-size:.7rem; font-weight:700; text-transform:uppercase; color:#9ca3af; letter-spacing:.4px; margin-bottom:.3rem; }
+    .amount-box { background:#f8f7ff; border-right:4px solid #635bff; border-radius:8px 0 0 8px; padding:1rem 1.25rem; margin-top:1.5rem; }
+    .amount-big { font-size:2rem; font-weight:800; color:#635bff; }
+    .status-paid    { background:#d1fae5; color:#065f46; border-radius:50px; padding:.25rem .75rem; font-size:.8rem; font-weight:700; }
+    .status-pending { background:#fef3c7; color:#92400e; border-radius:50px; padding:.25rem .75rem; font-size:.8rem; font-weight:700; }
+    table { width:100%; border-collapse:collapse; margin-top:1rem; }
+    th,td { padding:.5rem .75rem; border-bottom:1px solid #f0f1f5; text-align:right; }
+    th { font-size:.75rem; font-weight:700; color:#9ca3af; text-transform:uppercase; background:#f8f9ff; }
+    .footer-note { margin-top:2rem; font-size:.75rem; color:#9ca3af; text-align:center; border-top:1px solid #f0f1f5; padding-top:1rem; }
+    @media print {
+      .print-btn { display:none; }
+      body { padding:1rem; }
+    }
+  </style>
+</head>
+<body>
+  <button class="print-btn" onclick="window.print()">&#128424;&#65039; הדפס / שמור PDF</button>
+
+  <div class="invoice-header">
+    <div class="business-name">&#127891; InterviewSync</div>
+    <div class="invoice-title">חשבונית שירות</div>
+    <div class="invoice-num">
+      מס׳ {{ student.id }}-{{ month|replace('-','') }} ·
+      הופק {{ now_date | dt }}
+    </div>
+  </div>
+
+  <!-- Client -->
+  <div class="row g-4 mb-3">
+    <div class="col-6">
+      <div class="section-lbl">לקוח/ה</div>
+      <div class="fw-bold">{{ profile.full_name or student.username }}</div>
+      {% if profile.email %}<div class="text-muted small">{{ profile.email }}</div>{% endif %}
+      {% if profile.phone %}<div class="text-muted small">{{ profile.phone }}</div>{% endif %}
+    </div>
+    <div class="col-6 text-start">
+      <div class="section-lbl">תקופה</div>
+      <div class="fw-bold">{{ month }}</div>
+      {% if record %}
+        <div class="mt-1">
+          {% if record.paid_at %}
+            <span class="status-paid">שולם ✓ {{ record.paid_at | dt }}</span>
+          {% else %}
+            <span class="status-pending">ממתין לתשלום</span>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Services table -->
+  {% if record %}
+    <table>
+      <thead>
+        <tr>
+          <th>שירות</th>
+          <th style="text-align:center;">פגישות</th>
+          <th style="text-align:center;">מחיר ליחידה</th>
+          <th style="text-align:center;">סה"כ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="fw-semibold">{{ record.service_name }}</td>
+          <td style="text-align:center;">{{ record.meetings_count }}</td>
+          <td style="text-align:center;">
+            {% if record.service_unit == 'per_session' and record.meetings_count > 0 %}
+              ₪{{ (record.amount_due / record.meetings_count)|int }}
+            {% else %}—{% endif %}
+          </td>
+          <td style="text-align:center; font-weight:700;">₪{{ record.amount_due|int }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="amount-box">
+      <div class="section-lbl">סה"כ לתשלום</div>
+      <div class="amount-big">₪{{ record.amount_due|int }}</div>
+    </div>
+  {% else %}
+    <div class="text-muted small py-3">אין נתוני חיוב לחודש זה — חשב חיוב מלוח החיוב.</div>
+  {% endif %}
+
+  <!-- Year summary -->
+  {% if history and history.records %}
+    <div style="margin-top:2rem;">
+      <div class="section-lbl mb-2">היסטוריית תשלומים — {{ history.year }}</div>
+      <table>
+        <thead><tr><th>חודש</th><th>פגישות</th><th style="text-align:center;">סכום</th><th style="text-align:center;">סטטוס</th></tr></thead>
+        <tbody>
+          {% for r in history.records %}
+            <tr>
+              <td class="small">{{ r.month }}</td>
+              <td class="small">{{ r.meetings_count }}</td>
+              <td class="small fw-semibold" style="text-align:center;">₪{{ r.amount_due|int }}</td>
+              <td style="text-align:center;">
+                {% if r.paid_at %}
+                  <span class="status-paid" style="font-size:.7rem;">שולם</span>
+                {% else %}
+                  <span class="status-pending" style="font-size:.7rem;">ממתין</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+          <tr style="border-top:2px solid #635bff;">
+            <td class="fw-bold small">סה"כ {{ history.year }}</td>
+            <td class="fw-bold small">{{ history.meetings_year }}</td>
+            <td class="fw-bold small" style="text-align:center; color:#635bff;">₪{{ history.total_year|int }}</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+
+  <div class="footer-note">InterviewSync · מערכת ניהול ליווי קריירה · {{ now_date | dt }}</div>
+</body>
+</html>
