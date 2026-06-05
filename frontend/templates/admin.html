@@ -248,10 +248,16 @@
             <option value="progress">מיין: התקדמות</option>
             <option value="activity">מיין: ימים ללא פעילות</option>
           </select>
-          <button class="btn btn-primary-crm text-white btn-sm fw-semibold ms-auto"
-                  data-bs-toggle="modal" data-bs-target="#addStudentModal">
-            &#10133; הוסף סטודנט
-          </button>
+          <div class="d-flex gap-2 ms-auto">
+            <a href="{{ url_for('admin_new_intake') }}"
+               class="btn btn-outline-primary btn-sm fw-semibold">
+              &#128203; סטודנט חדש + שאלון קליטה
+            </a>
+            <button class="btn btn-primary-crm text-white btn-sm fw-semibold"
+                    data-bs-toggle="modal" data-bs-target="#addStudentModal">
+              &#10133; הוסף מהיר
+            </button>
+          </div>
         </div>
 
         {% if not students %}

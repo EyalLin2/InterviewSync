@@ -185,11 +185,12 @@
             <input type="hidden" name="action" value="create_meeting">
             <div class="mb-3">
               <label class="form-label fw-semibold small">תלמיד/ה <span class="text-danger">*</span></label>
-              <select name="student_id" class="form-select" required>
+              <select name="student_id" class="form-select" required id="schedStudentSel">
                 <option value="">בחר/י תלמיד...</option>
                 {% for s in students %}
-                  <option value="{{ s.id }}">
-                    {{ s.profile.full_name if s.profile and s.profile.full_name else s.username }}
+                  <option value="{{ s.id }}"
+                          {{ 'selected' if prefill_student and prefill_student == s.id }}>
+                    {{ s.name }}
                   </option>
                 {% endfor %}
               </select>

@@ -535,6 +535,26 @@ def student_ai_confirm(sid):
         return _j({"error": "שגיאה"}), 500
 
 
+@app.route("/admin/private/new-intake")
+@admin_required
+def admin_new_intake():
+    """Start a new student intake — creates account then goes to questionnaire."""
+    return render_template("admin_new_intake.html", user=me())
+
+
+@app.route("/admin/private/new-intake", methods=["POST"])
+@admin_required
+def admin_new_intake_post():
+    username = request.form.get("username","").strip()
+    password = request.form.get("password","").strip() or "change123"
+    r = api_post("/api/students", json={"username": username, "password": password})
+    if r.status_code == 201:
+        sid = r.json()["id"]
+        return redirect(url_for("admin_intake", sid=sid))
+    flash(r.json().get("error","שגיאה ביצירת סטודנט."), "danger")
+    return redirect(url_for("admin_new_intake"))
+
+
 @app.route("/admin/private/student/<int:sid>/intake", methods=["GET", "POST"])
 @admin_required
 def admin_intake(sid):
@@ -674,9 +694,10 @@ def admin_schedule():
         return redirect(url_for("admin_schedule"))
 
     # GET: fetch calendar data from backend
-    year  = request.args.get("year",  type=int)
-    month = request.args.get("month", type=int)
-    params = {}
+    year    = request.args.get("year",    type=int)
+    month   = request.args.get("month",   type=int)
+    prefill = request.args.get("prefill", type=int)  # student_id to pre-select
+    params  = {}
     if year:  params["year"]  = year
     if month: params["month"] = month
 
@@ -694,6 +715,7 @@ def admin_schedule():
         month_name=data.get("month_name", ""),
         prev_year=data.get("prev_year"),  prev_month=data.get("prev_month"),
         next_year=data.get("next_year"),  next_month=data.get("next_month"),
+        prefill_student=prefill,
         today=data.get("today", ""),
     )
 

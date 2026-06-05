@@ -155,7 +155,79 @@
     .chat-msg.ai   { background: #fff; border: 1px solid #e4e8f0; align-self: flex-start; border-radius: 10px 10px 10px 0; }
     .chat-msg.ai.loading { color: #9ca3af; font-style: italic; }
     .chat-input { font-size: .83rem; }
-    .chat-wrap { background: #fff; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.06); padding: 1.25rem 1.5rem; margin-top: 1.5rem; }
+    /* ── Floating Chat Widget ── */
+    .chat-bubble-btn {
+      position: fixed; left: 1.5rem; bottom: 1.5rem; z-index: 1050;
+      width: 56px; height: 56px; border-radius: 50%;
+      background: linear-gradient(135deg, #635bff, #a855f7);
+      border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(99,91,255,.45);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; transition: transform .15s, box-shadow .15s;
+    }
+    .chat-bubble-btn:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(99,91,255,.55); }
+    .chat-bubble-btn .chat-unread {
+      position: absolute; top: -3px; right: -3px;
+      background: #ef4444; color: #fff; border-radius: 50%;
+      width: 18px; height: 18px; font-size: .65rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      display: none;
+    }
+
+    .chat-panel {
+      position: fixed; left: 1.5rem; bottom: 5rem; z-index: 1049;
+      width: 360px; max-width: calc(100vw - 2rem);
+      background: #fff; border-radius: 16px;
+      box-shadow: 0 8px 40px rgba(0,0,0,.2);
+      display: flex; flex-direction: column;
+      transform: translateY(20px) scale(.95);
+      opacity: 0; pointer-events: none;
+      transition: all .2s cubic-bezier(.34,1.56,.64,1);
+      max-height: 520px;
+    }
+    .chat-panel.open {
+      transform: translateY(0) scale(1);
+      opacity: 1; pointer-events: all;
+    }
+    .chat-panel-header {
+      background: linear-gradient(135deg, #635bff, #a855f7);
+      color: #fff; border-radius: 16px 16px 0 0;
+      padding: .9rem 1.1rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .chat-panel-header .title { font-weight: 700; font-size: .92rem; }
+    .chat-panel-header .subtitle { font-size: .72rem; opacity: .8; }
+    .chat-panel-close { background: rgba(255,255,255,.2); border: none; color: #fff; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: .9rem; display: flex; align-items: center; justify-content: center; }
+    .chat-panel-close:hover { background: rgba(255,255,255,.35); }
+
+    .chat-quick-chips {
+      padding: .6rem .8rem .25rem;
+      display: flex; gap: .35rem; flex-wrap: wrap;
+      border-bottom: 1px solid #f0f1f5;
+    }
+    .chat-chip { font-size: .7rem; border: 1px solid #e4e8f0; border-radius: 50px; padding: .18rem .6rem; background: #fff; cursor: pointer; color: #374151; transition: background .1s; }
+    .chat-chip:hover { background: #f0f0ff; border-color: #635bff; color: #635bff; }
+
+    .chat-panel-msgs {
+      flex: 1; overflow-y: auto; padding: .75rem;
+      display: flex; flex-direction: column; gap: .45rem;
+      min-height: 160px; max-height: 280px;
+    }
+    .chat-panel-input {
+      padding: .6rem .75rem; border-top: 1px solid #f0f1f5;
+      display: flex; gap: .5rem; align-items: center;
+    }
+    .chat-panel-input input {
+      flex: 1; border: 1px solid #e4e8f0; border-radius: 50px;
+      padding: .4rem .9rem; font-size: .83rem; outline: none;
+      font-family: 'Heebo', sans-serif;
+    }
+    .chat-panel-input input:focus { border-color: #635bff; }
+    .chat-panel-send {
+      width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+      background: #635bff; border: none; color: #fff; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; font-size: .9rem;
+    }
+    .chat-panel-send:hover { background: #4f46e5; }
   </style>
 </head>
 <body>
@@ -218,9 +290,9 @@
       {% if profile and profile.email %}
         <a href="mailto:{{ profile.email }}" class="qa qa-email">&#9993;&#65039; אימייל</a>
       {% endif %}
-      <a href="{{ url_for('admin_schedule') }}" class="qa qa-meet">&#128197; קבע פגישה</a>
+      <a href="{{ url_for('admin_schedule') }}?prefill={{ student.id }}" class="qa qa-meet">&#128197; קבע פגישה</a>
       <a href="{{ url_for('admin_intake', sid=student.id) }}"
-         class="qa" style="background:#fef3c7;color:#92400e;">&#128203; שאלון קבלה</a>
+         class="qa" style="background:#fef3c7;color:#92400e;">&#128203; שאלון קליטה</a>
 
       <div class="ms-auto d-flex align-items-center gap-2">
         <span class="text-muted" style="font-size:.75rem;">סטטוס:</span>
@@ -337,7 +409,7 @@
                   {% else %}&#128196; קו"ח{% endif %}
                 </button>
               </li>
-              <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-ai" type="button">&#129504; AI</button></li>
+              <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-ai" type="button">&#129504; אסטרטגיית עבודה</button></li>
               <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-notes" type="button">
                 &#128221; הערות
                 {% if notes %}<span class="badge rounded-pill ms-1" style="background:#635bff;font-size:.6rem;">{{ notes|length }}</span>{% endif %}
@@ -435,7 +507,7 @@
               <div class="tab-pane fade" id="tab-ai">
                 <!-- Strategy header -->
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                  <span class="text-muted small">ניתוח AI מותאם אישית למנטור</span>
+                  <span class="text-muted small">אסטרטגיית הדרכה וכלי בינה מלאכותית</span>
                   <div class="d-flex gap-2">
                     <form method="POST">
                       <input type="hidden" name="action" value="regenerate_strategy">
@@ -670,44 +742,6 @@
 
       </div>
     </div><!-- row -->
-
-    <!-- ── General AI Chat (bottom) ── -->
-    <div class="chat-wrap">
-      <div class="d-flex align-items-center justify-content-between mb-3">
-        <div>
-          <span class="fw-bold" style="font-size:.95rem;">&#129302; צ׳ט AI — גישה לכל הנתונים</span>
-          <div class="text-muted" style="font-size:.75rem;">שאל/י על הסטודנט, בקש המלצות, השווה להתקדמות — ה-AI מכיר את כל התיק</div>
-        </div>
-        <button class="btn btn-sm btn-outline-secondary py-0 px-2 no-print" style="font-size:.72rem;"
-                onclick="clearChat('general')">&#128260; אפס שיחה</button>
-      </div>
-
-      <!-- Quick prompts -->
-      <div class="d-flex gap-2 flex-wrap mb-3">
-        {% set quick = [
-          ('מה השלב הבא עבור הסטודנט?', '🎯'),
-          ('האם הסטודנט בקצב הנכון?', '📊'),
-          ('אילו משימות כדאי להוסיף?', '📋'),
-          ('מה לדון בפגישה הבאה?', '📅'),
-        ] %}
-        {% for q, icon in quick %}
-          <button class="btn btn-sm btn-outline-secondary py-0" style="font-size:.73rem;"
-                  onclick="sendQuick('general', {{ student.id }}, {{ q|tojson }})">
-            {{ icon }} {{ q }}
-          </button>
-        {% endfor %}
-      </div>
-
-      <div id="chat-general-msgs" class="chat-msgs" style="max-height:320px;"></div>
-      <div class="d-flex gap-2 mt-2">
-        <input type="text" id="chat-general-input" class="form-control chat-input"
-               placeholder="שאל/י כל דבר על {{ profile.full_name if profile else student.username }}..."
-               onkeydown="if(event.key==='Enter') sendChat('general', {{ student.id }})">
-        <button class="btn btn-crm px-4 flex-shrink-0 fw-semibold"
-                onclick="sendChat('general', {{ student.id }})">שלח &#8592;</button>
-      </div>
-    </div>
-
   </div><!-- container -->
 
   <!-- ── Modal: Edit Profile ── -->
@@ -890,9 +924,56 @@
     </div>
   </div>
 
+  <!-- ── Floating Chat Widget ── -->
+  <button class="chat-bubble-btn no-print" onclick="toggleChatPanel()" title="צ׳ט AI על הסטודנט">
+    &#129302;
+    <span class="chat-unread" id="chatUnread">1</span>
+  </button>
+
+  <div class="chat-panel no-print" id="chatPanel">
+    <div class="chat-panel-header">
+      <div>
+        <div class="title">&#129302; AI — {{ profile.full_name if profile else student.username }}</div>
+        <div class="subtitle">שאל/י על התיק, ההתקדמות, הצעות</div>
+      </div>
+      <div class="d-flex gap-2 align-items-center">
+        <button class="chat-panel-close" onclick="clearChat('general')" title="אפס שיחה">&#128260;</button>
+        <button class="chat-panel-close" onclick="toggleChatPanel()">&#10005;</button>
+      </div>
+    </div>
+
+    <!-- Quick chips -->
+    <div class="chat-quick-chips">
+      {% for q in ['🎯 מה השלב הבא?', '📊 האם בקצב?', '📋 אילו משימות?', '📅 מה לדון?'] %}
+        <button class="chat-chip"
+                onclick="sendQuick('general', {{ student.id }}, {{ q[2:]|trim|tojson }})">{{ q }}</button>
+      {% endfor %}
+    </div>
+
+    <!-- Messages -->
+    <div class="chat-panel-msgs" id="chat-general-msgs"></div>
+
+    <!-- Input -->
+    <div class="chat-panel-input">
+      <input type="text" id="chat-general-input"
+             placeholder="שאל/י כל שאלה..."
+             onkeydown="if(event.key==='Enter') sendChat('general', {{ student.id }})">
+      <button class="chat-panel-send" onclick="sendChat('general', {{ student.id }})">&#8592;</button>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     // ── AI Chat ──────────────────────────────────────────────────────
+    // ── Floating chat panel ────────────────────────────────────────
+    function toggleChatPanel() {
+      const panel = document.getElementById('chatPanel');
+      const isOpen = panel.classList.contains('open');
+      panel.classList.toggle('open', !isOpen);
+      // Hide unread badge when opening
+      if (!isOpen) document.getElementById('chatUnread').style.display = 'none';
+    }
+
     const chatHistory = { student: [], general: [] };
 
     function addMsg(chatId, role, text) {
