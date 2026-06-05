@@ -859,6 +859,39 @@ def list_meetings():
             "education_level":  edu,  # for color coding
         })
 
+    # Add business workshops to the calendar
+    month_workshops = (Workshop.query
+                       .filter(Workshop.scheduled_at >= from_dt,
+                               Workshop.scheduled_at <  to_dt,
+                               Workshop.status != "cancelled")
+                       .order_by(Workshop.scheduled_at).all())
+    for w in month_workshops:
+        by_day.setdefault(w.scheduled_at.day, []).append({
+            "id": w.id, "name": w.title,
+            "time": w.scheduled_at.strftime("%H:%M"),
+            "duration": w.duration_min if hasattr(w, "duration_min") else 60,
+            "status": w.status, "notes": w.notes or "",
+            "event_type": "workshop",         # distinguish from meeting
+            "meeting_type": "workshop",
+            "education_level": "workshop",    # special color
+            "workshop_type":  w.workshop_type or "one_time",
+            "topic":          w.topic_category or "",
+        })
+
+    # Upcoming workshops for sidebar
+    upcoming_workshops = [
+        {"id": w.id, "name": w.title,
+         "scheduled_at": w.scheduled_at.isoformat(),
+         "duration_min": 60,
+         "status": w.status, "notes": w.notes or "",
+         "event_type": "workshop",
+         "topic": w.topic_category or ""}
+        for w in Workshop.query
+            .filter(Workshop.scheduled_at >= datetime.utcnow())
+            .filter(Workshop.status != "cancelled")
+            .order_by(Workshop.scheduled_at).limit(5).all()
+    ]
+
     cal_weeks = _cal.Calendar(firstweekday=6).monthdayscalendar(year, month)
 
     MONTHS_HE = {1:"ינואר",2:"פברואר",3:"מרץ",4:"אפריל",5:"מאי",6:"יוני",
@@ -879,7 +912,9 @@ def list_meetings():
         "year": year, "month": month, "month_name": MONTHS_HE[month],
         "prev_year": prev_year, "prev_month": prev_month,
         "next_year": next_year, "next_month": next_month,
-        "upcoming": upcoming, "students": students,
+        "upcoming": upcoming,
+        "upcoming_workshops": upcoming_workshops,
+        "students": students,
         "today": date.today().isoformat(),
     })
 

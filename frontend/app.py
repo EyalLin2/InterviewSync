@@ -849,6 +849,7 @@ def admin_schedule():
         next_year=data.get("next_year"),  next_month=data.get("next_month"),
         prefill_student=prefill,
         today=data.get("today", ""),
+        upcoming_workshops=data.get("upcoming_workshops", []),
     )
 
 

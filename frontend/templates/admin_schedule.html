@@ -68,6 +68,8 @@
     .pill-hs       { background: #fef3c7; color: #92400e; }   /* highschool — yellow */
     .pill-college  { background: #dbeafe; color: #1d4ed8; }   /* college — blue */
     .pill-career   { background: #ede9fe; color: #5b21b6; }   /* career — purple */
+    /* Business workshop */
+    .pill-workshop { background: #d1fae5; color: #065f46; border: 1px dashed #10b981; }
 
     /* ── Day detail panel ── */
     .day-detail {
@@ -154,9 +156,17 @@
                     <div class="day-num {{ 'weekend' if is_weekend }}">{{ day }}</div>
                     {% for m in dm[:3] %}
                       {% set edu = m.get('education_level','college') %}
-                      {% set edu_cls = 'pill-hs' if edu=='highschool' else ('pill-career' if edu=='career' else 'pill-college') %}
+                      {% if edu == 'workshop' %}
+                        {% set edu_cls = 'pill-workshop' %}
+                      {% elif edu == 'highschool' %}
+                        {% set edu_cls = 'pill-hs' %}
+                      {% elif edu == 'career' %}
+                        {% set edu_cls = 'pill-career' %}
+                      {% else %}
+                        {% set edu_cls = 'pill-college' %}
+                      {% endif %}
                       <span class="meeting-pill {{ edu_cls }}">
-                        {{ m.time }} {{ m.name }}
+                        {{ '🏪' if edu=='workshop' else '' }}{{ m.time }} {{ m.name | truncate(14) }}
                       </span>
                     {% endfor %}
                     {% if dm|length > 3 %}
@@ -172,9 +182,10 @@
 
         <!-- Color legend -->
         <div class="d-flex gap-3 flex-wrap mb-2" style="font-size:.72rem;">
-          <span><span class="meeting-pill pill-hs" style="padding:.1rem .5rem;">דוגמה</span> תלמיד תיכון</span>
-          <span><span class="meeting-pill pill-college" style="padding:.1rem .5rem;">דוגמה</span> סטודנט</span>
-          <span><span class="meeting-pill pill-career" style="padding:.1rem .5rem;">דוגמה</span> הכוונה תעסוקתית</span>
+          <span><span class="meeting-pill pill-hs" style="padding:.1rem .5rem;">•</span> תיכון</span>
+          <span><span class="meeting-pill pill-college" style="padding:.1rem .5rem;">•</span> סטודנט</span>
+          <span><span class="meeting-pill pill-career" style="padding:.1rem .5rem;">•</span> קריירה</span>
+          <span><span class="meeting-pill pill-workshop" style="padding:.1rem .5rem;">•</span> סדנה עסקית</span>
         </div>
 
         <!-- Day detail panel (shown when day is clicked) -->
@@ -297,6 +308,26 @@
             {% endfor %}
           {% endif %}
         </div>
+
+        <!-- Upcoming business workshops -->
+        {% if upcoming_workshops %}
+          <div class="form-card" style="border-right: 3px solid #10b981;">
+            <div class="section-title">&#127979; סדנאות עסקיות קרובות</div>
+            {% for w in upcoming_workshops %}
+              <div class="meeting-row" style="background:#f0fff4;">
+                <strong>{{ w.scheduled_at | dt }}</strong>
+                {% if w.scheduled_at | dt('%H:%M') != '00:00' %} {{ w.scheduled_at | dt('%H:%M') }}{% endif %}
+                <br>
+                <span class="fw-semibold small">{{ w.name }}</span>
+                {% if w.topic %}<span class="text-muted" style="font-size:.72rem;">· {{ w.topic }}</span>{% endif %}
+                <div style="margin-top:.25rem;">
+                  <a href="{{ url_for('admin_business') }}#tab-workshops"
+                     class="text-muted" style="font-size:.7rem;">ניהול בלוח עסקי &#8592;</a>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
 
       </div>
     </div><!-- row -->
