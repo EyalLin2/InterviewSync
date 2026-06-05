@@ -34,8 +34,7 @@ services:
       SECRET_KEY:       dev-secret-key-change-in-prod
       UPLOAD_FOLDER:    /app/uploads
       INACTIVITY_DAYS:  7
-      # Optional — set these to enable AI and WhatsApp:
-      # GEMINI_API_KEY:         your_gemini_key  ← חינמי מ-aistudio.google.com/apikey
+      GROQ_API_KEY: ${GROQ_API_KEY:-}   # set in .env file (gitignored) — free at console.groq.com
       # TWILIO_ACCOUNT_SID:     your_sid
       # TWILIO_AUTH_TOKEN:      your_token
       # TWILIO_WHATSAPP_FROM:   whatsapp:+14155238886

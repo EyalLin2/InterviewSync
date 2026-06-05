@@ -12,7 +12,7 @@ from flask_cors import CORS
 from apscheduler.schedulers.background import BackgroundScheduler
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-import google.generativeai as genai
+from groq import Groq
 
 from models import (db, get_database_url,
                     User, StudentProfile, TaskBank, AssignedTask, Meeting,
@@ -131,12 +131,11 @@ def normalize_phone(phone: str) -> str:
 # ─────────────────────────────────────────────
 
 def _ai_client():
-    """Return configured Gemini model or None if no key."""
-    key = os.environ.get("GEMINI_API_KEY") or os.environ.get("AI_API_KEY")
+    """Return configured Groq client or None if no key."""
+    key = os.environ.get("GROQ_API_KEY") or os.environ.get("AI_API_KEY")
     if not key:
         return None
-    genai.configure(api_key=key)
-    return genai.GenerativeModel("gemini-2.0-flash")
+    return Groq(api_key=key)
 
 
 def _parse_json(raw: str) -> list:
@@ -187,10 +186,14 @@ def ai_coaching_strategy(profile: StudentProfile) -> str:
         f"כתוב אסטרטגיית הדרכה (4-5 נקודות) מותאמת אישית עבור המנטור בעברית מקצועית."
     )
     try:
-        r = client.generate_content(prompt)
-        return r.text.strip()
+        r = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=700,
+        )
+        return r.choices[0].message.content.strip()
     except Exception as e:
-        app.logger.error("Gemini coaching strategy error: %s", e)
+        app.logger.error("Groq coaching strategy error: %s", e)
         return ""
 
 
@@ -206,10 +209,14 @@ def ai_generate_tasks(profile: StudentProfile, count: int = 5) -> list:
         f'החזר JSON בלבד (ללא מרקדאון): [{{"title":"...","description":"...","category":"קורות חיים|LinkedIn|הכנה לראיון|שאלון|כללי","task_type":"task|reflection|exercise"}}]'
     )
     try:
-        r = client.generate_content(prompt)
-        return _parse_json(r.text)[:count]
+        r = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=1000,
+        )
+        return _parse_json(r.choices[0].message.content)[:count]
     except Exception as e:
-        app.logger.error("Gemini generate tasks error: %s", e)
+        app.logger.error("Groq generate tasks error: %s", e)
         return []
 
 
@@ -607,7 +614,7 @@ def regen_strategy(sid):
         return jsonify({"error": "No profile"}), 404
     if not _ai_client():
         return jsonify({"error": "no_api_key",
-                        "message": "GEMINI_API_KEY לא מוגדר — הוסף אותו ל-docker-compose.yml ומפתח חינמי: aistudio.google.com/apikey",
+                        "message": "GROQ_API_KEY לא מוגדר — הוסף אותו ל-docker-compose.yml ומפתח חינמי: aistudio.google.com/apikey",
                         "strategy": p.ai_coaching_strategy or ""}), 503
     result = ai_coaching_strategy(p)
     if result:
