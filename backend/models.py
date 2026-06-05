@@ -50,6 +50,7 @@ class StudentProfile(db.Model):
     mentor_notes                = db.Column(db.Text, default="")
     resume_file                 = db.Column(db.String(512), default="")   # uploaded CV file path
     student_status              = db.Column(db.String(20), default="active")
+    ai_strategy_updated_at      = db.Column(db.DateTime, nullable=True)
     # active | paused | completed
     # ── Type-specific fields ──────────────────────────────────────────
     # highschool

@@ -259,6 +259,7 @@ def _profile_dict(p: StudentProfile | None) -> dict:
         "mentor_notes":   p.mentor_notes,
         "resume_file":    p.resume_file or "",
         "student_status": p.student_status or "active",
+        "ai_strategy_updated_at": p.ai_strategy_updated_at.isoformat() if p.ai_strategy_updated_at else None,
         # type-specific fields
         "interests_hobbies":    p.interests_hobbies or "",
         "institution_name":     p.institution_name or "",
@@ -491,9 +492,11 @@ def get_student(sid):
 @require_admin
 def update_student_profile(sid):
     student = User.query.filter_by(id=sid, role="student").first_or_404()
-    p       = student.profile
+    p = student.profile
     if not p:
-        return jsonify({"error": "No profile yet"}), 404
+        # Create profile on first admin PATCH
+        p = StudentProfile(user_id=sid)
+        db.session.add(p)
     body = request.get_json() or {}
     # Date fields
     for field in ("process_start_date", "target_end_date"):
@@ -620,8 +623,10 @@ def regen_strategy(sid):
     result = ai_coaching_strategy(p)
     if result:
         p.ai_coaching_strategy = result
+        p.ai_strategy_updated_at = datetime.utcnow()
         db.session.commit()
-    return jsonify({"strategy": p.ai_coaching_strategy or ""})
+    return jsonify({"strategy": p.ai_coaching_strategy or "",
+                    "updated_at": p.ai_strategy_updated_at.isoformat() if p.ai_strategy_updated_at else None})
 
 
 @app.route("/api/ai/tasks/<int:sid>/suggest", methods=["POST"])
@@ -807,6 +812,20 @@ def submit_task(tid):
                 at.submission_file = path
         db.session.commit()
     return jsonify({"ok": True})
+
+
+@app.route("/api/admin/assignments/<int:at_id>/complete", methods=["PATCH"])
+@require_admin
+def admin_complete_task(at_id):
+    """Admin marks a student's task as completed on their behalf."""
+    at = AssignedTask.query.get_or_404(at_id)
+    note = (request.get_json() or {}).get("note", "")
+    at.status       = "completed"
+    at.completed_at = datetime.utcnow()
+    if note:
+        at.submission_note = note
+    db.session.commit()
+    return jsonify({"ok": True, "completed_at": at.completed_at.isoformat()})
 
 
 @app.route("/api/my/meetings")
@@ -1989,6 +2008,7 @@ with app.app_context():
             "ALTER TABLE student_profiles ADD COLUMN reason_for_guidance TEXT DEFAULT ''",
             "ALTER TABLE meetings ADD COLUMN meeting_type TEXT DEFAULT 'progress_review'",
             "ALTER TABLE student_profiles ADD COLUMN resume_file TEXT DEFAULT ''",
+            "ALTER TABLE student_profiles ADD COLUMN ai_strategy_updated_at TIMESTAMP",
         ]:
             try:
                 _conn.execute(db.text(_stmt))

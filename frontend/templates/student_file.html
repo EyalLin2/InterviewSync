@@ -144,6 +144,16 @@
     .edu-badge-col { background: #dbeafe; color: #1e40af; }
     .resume-area { min-height: 200px; font-size: .84rem; resize: vertical; }
 
+    /* ── Focus Banner ── */
+    .focus-banner { border-radius: 8px 0 0 8px; padding: .65rem 1rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+    .focus-banner.fb-danger  { background: #fef2f2; border-right: 4px solid #ef4444; }
+    .focus-banner.fb-warning { background: #fffbeb; border-right: 4px solid #f59e0b; }
+    .focus-text { font-size: .85rem; font-weight: 600; }
+    .focus-sub  { font-size: .73rem; color: #6b7280; margin-top: .1rem; }
+    /* Complete task button */
+    .btn-done { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; border-radius: 6px; font-size: .7rem; font-weight: 700; padding: .18rem .5rem; cursor: pointer; white-space: nowrap; }
+    .btn-done:hover { background: #a7f3d0; }
+
     /* ── AI Chat ── */
     .chat-msgs {
       background: #f8f9ff; border-radius: 10px; padding: .75rem;
@@ -362,7 +372,47 @@
           </div>
           <div class="stat-lbl">&#9889; סטטוס</div>
         </div>
+        {% if billing_info and billing_info.assigned %}
+          <div class="stat-box">
+            <div class="stat-num" style="font-size:1rem; font-weight:800; color:#635bff;">₪{{ billing_info.effective_price|int }}</div>
+            <div class="stat-lbl">&#128176; {{ '/ פגישה' if billing_info.service_unit == 'per_session' else '/ חודש' }}</div>
+          </div>
+        {% endif %}
       </div>
+
+      {# ── Focus Banner (after stats) ── #}
+      {% if profile and profile.full_name %}
+        {% set overdue_tasks = [] %}
+        {% for at in active %}
+          {% set age = ((now_date - (at.assigned_at | to_date)).days) if at.assigned_at else 0 %}
+          {% if age > 7 %}{% set _ = overdue_tasks.append(1) %}{% endif %}
+        {% endfor %}
+        {% if overdue_tasks|length > 0 %}
+          <div class="focus-banner fb-danger mb-3">
+            <div>
+              <div class="focus-text">&#128308; {{ overdue_tasks|length }} משימות מחכות יותר מ-7 ימים</div>
+              <div class="focus-sub">בדוק/י את הסטודנט או עדכן/י את המשימות</div>
+            </div>
+            <a href="#right-col" class="btn btn-sm btn-outline-danger py-0 px-2 no-print" style="font-size:.73rem; white-space:nowrap;"
+               onclick="document.getElementById('right-col').scrollIntoView({behavior:'smooth'}); return false;">
+              למשימות &#8595;
+            </a>
+          </div>
+        {% elif last_contact_days is not none and last_contact_days > 10 %}
+          <div class="focus-banner fb-warning mb-3">
+            <div>
+              <div class="focus-text">&#9203; לא פעיל {{ last_contact_days }} ימים</div>
+              <div class="focus-sub">שקול/י לשלוח תזכורת</div>
+            </div>
+            {% if profile and profile.phone %}
+              <a href="https://wa.me/{{ profile.phone | replace('+','') }}" target="_blank"
+                 class="btn btn-sm btn-outline-warning py-0 px-2 no-print" style="font-size:.73rem; white-space:nowrap;">
+                &#128242; WA
+              </a>
+            {% endif %}
+          </div>
+        {% endif %}
+      {% endif %}
     {% endif %}
 
     <!-- ── Main layout ── -->
@@ -523,29 +573,24 @@
                 {% set strategy = profile.ai_coaching_strategy if profile else '' %}
                 {% set is_error = strategy and ('API_KEY' in strategy or 'נכשל' in strategy or 'Gemini' in strategy) %}
                 {% if strategy and not is_error %}
-                  <div class="strategy-box mb-3">{{ strategy }}</div>
+                  <div class="strategy-box mb-2">{{ strategy }}</div>
                 {% else %}
-                  <div class="strategy-box strategy-empty mb-3">
+                  <div class="strategy-box strategy-empty mb-2">
                     {% if is_error %}&#9888;&#65039; הגדר <code>GROQ_API_KEY</code> ב-docker-compose.yml ולחץ "רענן". מפתח חינמי: console.groq.com
                     {% else %}לחץ/י "רענן" לייצור אסטרטגיית הדרכה מותאמת.{% endif %}
                   </div>
                 {% endif %}
-
-                <!-- ── AI Chat on student ── -->
-                <div class="border-top pt-3">
-                  <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="section-title mb-0">&#129302; צ׳ט על הסטודנט הזה</span>
-                    <button class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:.72rem;"
-                            onclick="clearChat('student')">&#128260; אפס</button>
+                {# ── Timestamp ── #}
+                {% if profile and profile.ai_strategy_updated_at %}
+                  {% set strat_days = ((now_date - (profile.ai_strategy_updated_at | to_date)).days) %}
+                  <div class="text-muted" style="font-size:.72rem; margin-bottom:.5rem;">
+                    &#9203; נוצר {{ 'היום' if strat_days == 0 else ('אתמול' if strat_days == 1 else strat_days|string + ' ימים') }} ·
+                    <a href="javascript:void(0)" onclick="document.querySelector('[name=action][value=regenerate_strategy]').closest('form').submit()" style="color:#635bff;">רענן עכשיו</a>
                   </div>
-                  <div id="chat-student-msgs" class="chat-msgs" style="max-height:260px;"></div>
-                  <div class="d-flex gap-2 mt-2">
-                    <input type="text" id="chat-student-input" class="form-control form-control-sm chat-input"
-                           placeholder="שאל/י על ההתקדמות, המשימות, הגישה..."
-                           onkeydown="if(event.key==='Enter') sendChat('student', {{ student.id }})">
-                    <button class="btn btn-crm btn-sm px-3 flex-shrink-0"
-                            onclick="sendChat('student', {{ student.id }})">שלח</button>
-                  </div>
+                {% endif %}
+                {# ── Chat moved to floating bubble only ── #}
+                <div class="text-muted no-print" style="font-size:.75rem; padding:.4rem .75rem; background:#f8f9ff; border-radius:8px;">
+                  &#129302; לצ׳ט AI — לחץ/י על הבועה הסגולה בפינה השמאלית &#8595;
                 </div>
               </div>
 
@@ -666,47 +711,10 @@
       </div>
 
       <!-- ── Right column ── -->
-      <div class="col-lg-5">
+      <div class="col-lg-5" id="right-col">
 
-        <!-- Last note snippet -->
-        {% if notes %}
-          <div class="card-crm" style="padding:.9rem 1.25rem; background:#f8f9ff; border-right:3px solid #635bff; border-radius:8px 0 0 8px; margin-bottom:1rem;">
-            <div class="d-flex justify-content-between align-items-start gap-2">
-              <div style="font-size:.8rem; color:#1a1f36; flex-grow:1;">&#128172; {{ notes[0].text | truncate(100) }}</div>
-              <span style="font-size:.68rem; color:#9ca3af; white-space:nowrap;">{{ notes[0].created_at | dt('%d/%m') }}</span>
-            </div>
-            <a class="text-muted" style="font-size:.72rem; text-decoration:none;" href="javascript:void(0)"
-               onclick="document.querySelector('[data-bs-target=\'#tab-notes\']').click()">
-              {% if notes|length > 1 %} + עוד {{ notes|length - 1 }} הערות &#8592;{% else %}לכל ההערות &#8592;{% endif %}
-            </a>
-          </div>
-        {% endif %}
-
-        <!-- Meetings -->
-        {% if student_meetings %}
-          <div class="card-crm" style="border-right: 3px solid #10b981; padding: 1.25rem 1.5rem;">
-            <div class="section-title mb-2">&#128197; פגישות קרובות</div>
-            {% for m in student_meetings %}
-              {% set mt_labels = {'intake':'שיחת היכרות','progress_review':'סקירת התקדמות','support':'תמיכה','other':'אחר'} %}
-              <div class="meeting-row">
-                <strong>{{ m.scheduled_at | dt('%d/%m/%Y %H:%M') }}</strong> · {{ m.duration_min }} דק׳
-                {% if m.get('meeting_type') and m.meeting_type != 'progress_review' %}
-                  <span style="font-size:.68rem; color:#635bff; margin-right:.3rem;">· {{ mt_labels.get(m.meeting_type, m.meeting_type) }}</span>
-                {% endif %}
-                <span class="badge rounded-pill ms-1"
-                      style="font-size:.62rem; background:{% if m.status=='confirmed' %}#d1fae5; color:#065f46{% else %}#fef3c7; color:#92400e{% endif %};">
-                  {{ 'מאושר' if m.status=='confirmed' else 'ממתין' }}
-                </span>
-                {% if m.notes %}<div class="text-muted" style="font-size:.75rem;">{{ m.notes }}</div>{% endif %}
-              </div>
-            {% endfor %}
-            <a href="{{ url_for('admin_schedule') }}" class="text-muted small">כל הפגישות &#8592;</a>
-          </div>
-        {% endif %}
-
-        <!-- Tasks -->
+        <!-- ① Tasks (FIRST — most actionable) -->
         <div class="card-crm">
-          <!-- Active tasks -->
           <div class="d-flex justify-content-between align-items-center mb-2">
             <div class="section-title mb-0">&#9889; משימות פעילות ({{ active|length }})</div>
             <span class="badge" style="background:#635bff;font-size:.68rem;">{{ active|length }}/{{ (active|length)+(completed|length) }}</span>
@@ -717,7 +725,6 @@
           {% else %}
             {% for at in active %}
               {% set t = at.task %}
-              {# Compute task age #}
               {% set assigned_d = at.assigned_at | to_date %}
               {% set age_days = ((now_date - assigned_d).days) if assigned_d else none %}
               <div class="task-row">
@@ -738,6 +745,13 @@
                   {% endif %}
                   <div class="task-meta">שויך {{ at.assigned_at | dt }}</div>
                 </div>
+                <!-- Admin complete button -->
+                <form method="POST" action="{{ url_for('admin_complete_task', at_id=at.id) }}"
+                      class="flex-shrink-0 no-print"
+                      onsubmit="return confirm('לסמן כהושלמה?')">
+                  <input type="hidden" name="student_id" value="{{ student.id }}">
+                  <button type="submit" class="btn-done">✓</button>
+                </form>
               </div>
             {% endfor %}
           {% endif %}
@@ -795,6 +809,42 @@
             </button>
           </div>
         </div>
+
+        <!-- ② Meetings -->
+        {% if student_meetings %}
+          <div class="card-crm" style="border-right: 3px solid #10b981; padding: 1.25rem 1.5rem;">
+            <div class="section-title mb-2">&#128197; פגישות קרובות</div>
+            {% for m in student_meetings %}
+              {% set mt_labels = {'intake':'שיחת היכרות','progress_review':'סקירת התקדמות','support':'תמיכה','other':'אחר'} %}
+              <div class="meeting-row">
+                <strong>{{ m.scheduled_at | dt('%d/%m/%Y %H:%M') }}</strong> · {{ m.duration_min }} דק׳
+                {% if m.get('meeting_type') and m.meeting_type != 'progress_review' %}
+                  <span style="font-size:.68rem; color:#635bff; margin-right:.3rem;">· {{ mt_labels.get(m.meeting_type, m.meeting_type) }}</span>
+                {% endif %}
+                <span class="badge rounded-pill ms-1"
+                      style="font-size:.62rem; background:{% if m.status=='confirmed' %}#d1fae5; color:#065f46{% else %}#fef3c7; color:#92400e{% endif %};">
+                  {{ 'מאושר' if m.status=='confirmed' else 'ממתין' }}
+                </span>
+                {% if m.notes %}<div class="text-muted" style="font-size:.75rem;">{{ m.notes }}</div>{% endif %}
+              </div>
+            {% endfor %}
+            <a href="{{ url_for('admin_schedule') }}" class="text-muted small">כל הפגישות &#8592;</a>
+          </div>
+        {% endif %}
+
+        <!-- ③ Last note (compact) -->
+        {% if notes %}
+          <div class="card-crm" style="padding:.9rem 1.25rem; background:#f8f9ff; border-right:3px solid #635bff; border-radius:8px 0 0 8px; margin-bottom:1rem;">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+              <div style="font-size:.8rem; color:#1a1f36; flex-grow:1;">&#128172; {{ notes[0].text | truncate(100) }}</div>
+              <span style="font-size:.68rem; color:#9ca3af; white-space:nowrap;">{{ notes[0].created_at | dt('%d/%m') }}</span>
+            </div>
+            <a class="text-muted" style="font-size:.72rem; text-decoration:none;" href="javascript:void(0)"
+               onclick="document.querySelector('[data-bs-target=\'#tab-notes\']').click()">
+              {% if notes|length > 1 %} + עוד {{ notes|length - 1 }} הערות &#8592;{% else %}לכל ההערות &#8592;{% endif %}
+            </a>
+          </div>
+        {% endif %}
 
       </div>
     </div><!-- row -->

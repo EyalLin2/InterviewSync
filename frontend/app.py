@@ -750,6 +750,21 @@ def student_billing_history_proxy(sid):
         return _j({"records": []}), 500
 
 
+@app.route("/admin/private/assignment/<int:at_id>/complete", methods=["POST"])
+@admin_required
+def admin_complete_task(at_id):
+    from flask import jsonify as _j
+    note = request.form.get("note","").strip()
+    r = api_patch(f"/api/admin/assignments/{at_id}/complete",
+                  json={"note": note})
+    if r.status_code == 200:
+        flash("המשימה סומנה כהושלמה ✓", "success")
+    else:
+        flash("שגיאה.", "danger")
+    sid = request.form.get("student_id","")
+    return redirect(url_for("student_file", sid=sid) if sid else url_for("admin_dashboard"))
+
+
 @app.route("/admin/private/student/<int:sid>/upload-cv", methods=["POST"])
 @admin_required
 def admin_upload_cv(sid):
