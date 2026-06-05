@@ -431,12 +431,12 @@
                   </div>
                 </div>
                 {% set strategy = profile.ai_coaching_strategy if profile else '' %}
-                {% set is_error = strategy and ('AI_API_KEY' in strategy or 'נכשל' in strategy) %}
+                {% set is_error = strategy and ('API_KEY' in strategy or 'נכשל' in strategy or 'Gemini' in strategy) %}
                 {% if strategy and not is_error %}
                   <div class="strategy-box">{{ strategy }}</div>
                 {% else %}
                   <div class="strategy-box strategy-empty">
-                    {% if is_error %}&#9888;&#65039; הגדר <code>AI_API_KEY</code> ולחץ "רענן".
+                    {% if is_error %}&#9888;&#65039; הגדר <code>GEMINI_API_KEY</code> ב-docker-compose.yml ולחץ "רענן". מפתח חינמי: aistudio.google.com
                     {% else %}לחץ/י "רענן" לייצור אסטרטגיית הדרכה מותאמת.{% endif %}
                   </div>
                 {% endif %}

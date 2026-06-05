@@ -421,7 +421,7 @@ def student_file(sid):
         elif action == "regenerate_strategy":
             r = api_post(f"/api/ai/coaching-strategy/{sid}")
             if r.status_code == 503:
-                flash("AI לא מוגדר — הוסף AI_API_KEY ל-docker-compose.yml ואתחל את השרת.", "warning")
+                flash("Gemini AI לא מוגדר — הוסף GEMINI_API_KEY ל-docker-compose.yml. קבל מפתח חינמי: aistudio.google.com/apikey", "warning")
             else:
                 _flash_from_response(r, "אסטרטגיית ההדרכה עודכנה ✓")
 
