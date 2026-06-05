@@ -623,6 +623,52 @@ def regen_strategy(sid):
     return jsonify({"strategy": p.ai_coaching_strategy or ""})
 
 
+@app.route("/api/ai/tasks/<int:sid>/suggest", methods=["POST"])
+@require_admin
+def suggest_ai_tasks(sid):
+    """Generate AI task suggestions WITHOUT saving — admin reviews first."""
+    student = User.query.filter_by(id=sid, role="student").first_or_404()
+    p = student.profile
+    if not p:
+        return jsonify({"error": "No profile"}), 404
+    suggestions = ai_generate_tasks(p, count=5)
+    if not suggestions:
+        return jsonify({"error": "AI unavailable or no API key"}), 503
+    return jsonify({"suggestions": suggestions})
+
+
+@app.route("/api/ai/tasks/<int:sid>/confirm", methods=["POST"])
+@require_admin
+def confirm_ai_tasks(sid):
+    """Save selected AI suggestions to task bank and assign to student."""
+    student = User.query.filter_by(id=sid, role="student").first_or_404()
+    p = student.profile
+    body      = request.get_json() or {}
+    tasks     = body.get("tasks", [])  # list of {title, description, category, task_type}
+    assign    = body.get("assign", False)
+
+    created = []
+    for s in tasks:
+        title = s.get("title", "").strip()
+        if not title:
+            continue
+        task = TaskBank(title=title, description=s.get("description", ""),
+                        category=s.get("category", "כללי"), task_type=s.get("task_type", "task"))
+        db.session.add(task)
+        db.session.flush()
+        if assign:
+            db.session.add(AssignedTask(user_id=sid, task_id=task.id))
+        created.append(_task_dict(task))
+
+    db.session.commit()
+
+    if assign and p and p.phone and created:
+        name = p.full_name or student.username
+        send_whatsapp(p.phone, f"שלום {name}! המנטור הוסיף {len(created)} משימות חדשות. 📋")
+
+    return jsonify({"created": len(created), "tasks": created, "assigned": assign})
+
+
 @app.route("/api/ai/tasks/<int:sid>", methods=["POST"])
 @require_admin
 def gen_ai_tasks(sid):
@@ -1299,6 +1345,125 @@ def dashboard_focus():
         "pending_submissions": pending_submissions[:5],
         "pending_meetings": pending_meetings[:5],
     })
+
+
+# ─────────────────────────────────────────────
+# AI Chat
+# ─────────────────────────────────────────────
+
+def _build_student_context(sid: int) -> str:
+    """Build a rich context string about a student for the AI chat."""
+    student = User.query.filter_by(id=sid, role="student").first()
+    if not student:
+        return "סטודנט לא נמצא."
+
+    p = student.profile
+    if not p:
+        return f"סטודנט {student.username} — אין פרופיל עדיין."
+
+    edu_map = {"highschool": "תלמיד תיכון", "college": "סטודנט", "career": "הכוונה תעסוקתית"}
+    lines = [
+        f"שם: {p.full_name or student.username}",
+        f"סוג: {edu_map.get(p.education_level, 'לא צוין')}",
+        f"שלב: {p.current_occupation_or_grade or 'לא צוין'}",
+        f"מטרות: {p.career_goals or 'לא צוינו'}",
+        f"חששות: {p.fears_weaknesses or 'לא צוינו'}",
+        f"סטטוס: {p.student_status or 'active'}",
+    ]
+    if p.education_level == "highschool" and p.interests_hobbies:
+        lines.append(f"תחומי עניין: {p.interests_hobbies}")
+    if p.education_level == "college" and p.institution_name:
+        lines.append(f"מוסד: {p.institution_name}")
+    if p.education_level == "career" and p.current_job:
+        lines.append(f"תפקיד: {p.current_job} | ניסיון: {p.years_experience or '?'} שנים")
+
+    # Tasks
+    active    = AssignedTask.query.filter_by(user_id=sid, status="pending").all()
+    completed = (AssignedTask.query.filter_by(user_id=sid, status="completed")
+                 .order_by(AssignedTask.completed_at.desc()).limit(5).all())
+
+    if active:
+        lines.append("\nמשימות פעילות:")
+        for a in active:
+            t = a.task
+            age = (datetime.utcnow() - a.assigned_at).days if a.assigned_at else 0
+            lines.append(f"  • {t.title} [{t.category}] — מחכה {age} ימים")
+
+    if completed:
+        lines.append("\nמשימות שהושלמו לאחרונה:")
+        for a in completed:
+            note = f" | הגשה: {a.submission_note[:80]}" if a.submission_note else ""
+            lines.append(f"  ✓ {a.task.title}{note}")
+
+    # Recent notes
+    notes = (MentorNote.query.filter_by(student_id=sid)
+             .order_by(MentorNote.created_at.desc()).limit(4).all())
+    if notes:
+        lines.append("\nהערות מנטור אחרונות:")
+        for n in notes:
+            lines.append(f"  [{n.created_at.strftime('%d/%m')}] {n.text[:100]}")
+
+    # Meetings
+    upcoming = (Meeting.query.filter_by(student_id=sid)
+                .filter(Meeting.scheduled_at >= datetime.utcnow())
+                .filter(Meeting.status != "cancelled")
+                .order_by(Meeting.scheduled_at).limit(2).all())
+    if upcoming:
+        lines.append("\nפגישות קרובות:")
+        for m in upcoming:
+            lines.append(f"  📅 {m.scheduled_at.strftime('%d/%m %H:%M')} ({m.duration_min} דק׳)")
+
+    # Coaching strategy
+    if p.ai_coaching_strategy and len(p.ai_coaching_strategy) > 20:
+        lines.append(f"\nאסטרטגיית הדרכה:\n{p.ai_coaching_strategy[:500]}")
+
+    return "\n".join(lines)
+
+
+@app.route("/api/students/<int:sid>/chat", methods=["POST"])
+@require_admin
+def student_chat(sid):
+    """AI chat with full student context."""
+    client = _ai_client()
+    if not client:
+        return jsonify({"error": "no_api_key",
+                        "reply": "GROQ_API_KEY לא מוגדר — הוסף ל-docker-compose.yml"}), 503
+
+    body     = request.get_json() or {}
+    history  = body.get("messages", [])   # [{"role":"user/assistant","content":"..."}]
+    new_msg  = body.get("message", "").strip()
+    if not new_msg:
+        return jsonify({"error": "message required"}), 400
+
+    context = _build_student_context(sid)
+    system_prompt = (
+        "אתה עוזר AI חכם למנטור קריירה. יש לך גישה לכל המידע על הסטודנט הבא:\n\n"
+        f"{context}\n\n"
+        "ענה בעברית קצרה וממוקדת. תן המלצות מעשיות. "
+        "אם שואלים על התקדמות — נתח לפי הנתונים. "
+        "אם שואלים על משימות — הסתמך על הרשימה. "
+        "היה ישיר ואל תחזור על מה שכבר ידוע."
+    )
+
+    messages = [{"role": "system", "content": system_prompt}]
+    # Add history (last 10 turns to stay within context)
+    for msg in history[-10:]:
+        if msg.get("role") in ("user", "assistant"):
+            messages.append({"role": msg["role"], "content": msg["content"]})
+    messages.append({"role": "user", "content": new_msg})
+
+    try:
+        r = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=messages,
+            max_tokens=600,
+            temperature=0.7,
+        )
+        reply = r.choices[0].message.content.strip()
+        return jsonify({"reply": reply})
+    except Exception as e:
+        app.logger.error("Chat error: %s", e)
+        return jsonify({"reply": f"שגיאה: {str(e)[:100]}"}), 500
 
 
 # ─────────────────────────────────────────────

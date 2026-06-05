@@ -143,6 +143,19 @@
     .edu-badge-hs  { background: #fef3c7; color: #92400e; }
     .edu-badge-col { background: #dbeafe; color: #1e40af; }
     .resume-area { min-height: 200px; font-size: .84rem; resize: vertical; }
+
+    /* ── AI Chat ── */
+    .chat-msgs {
+      background: #f8f9ff; border-radius: 10px; padding: .75rem;
+      overflow-y: auto; display: flex; flex-direction: column; gap: .5rem;
+      min-height: 80px;
+    }
+    .chat-msg { max-width: 88%; padding: .45rem .75rem; border-radius: 10px; font-size: .84rem; line-height: 1.5; }
+    .chat-msg.user { background: #635bff; color: #fff; align-self: flex-end; border-radius: 10px 10px 0 10px; }
+    .chat-msg.ai   { background: #fff; border: 1px solid #e4e8f0; align-self: flex-start; border-radius: 10px 10px 10px 0; }
+    .chat-msg.ai.loading { color: #9ca3af; font-style: italic; }
+    .chat-input { font-size: .83rem; }
+    .chat-wrap { background: #fff; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.06); padding: 1.25rem 1.5rem; margin-top: 1.5rem; }
   </style>
 </head>
 <body>
@@ -206,6 +219,8 @@
         <a href="mailto:{{ profile.email }}" class="qa qa-email">&#9993;&#65039; אימייל</a>
       {% endif %}
       <a href="{{ url_for('admin_schedule') }}" class="qa qa-meet">&#128197; קבע פגישה</a>
+      <a href="{{ url_for('admin_intake', sid=student.id) }}"
+         class="qa" style="background:#fef3c7;color:#92400e;">&#128203; שאלון קבלה</a>
 
       <div class="ms-auto d-flex align-items-center gap-2">
         <span class="text-muted" style="font-size:.75rem;">סטטוס:</span>
@@ -416,8 +431,9 @@
                 </div>
               </div>
 
-              <!-- Tab: AI Strategy -->
+              <!-- Tab: AI Strategy + Chat -->
               <div class="tab-pane fade" id="tab-ai">
+                <!-- Strategy header -->
                 <div class="d-flex justify-content-between align-items-center mb-3">
                   <span class="text-muted small">ניתוח AI מותאם אישית למנטור</span>
                   <div class="d-flex gap-2">
@@ -425,21 +441,37 @@
                       <input type="hidden" name="action" value="regenerate_strategy">
                       <button type="submit" class="btn btn-sm btn-outline-secondary py-1">&#8635; רענן</button>
                     </form>
-                    <form method="POST" action="{{ url_for('ai_tasks_for_student', sid=student.id) }}">
-                      <button type="submit" class="btn btn-sm btn-ai py-1">&#10024; צור משימות AI</button>
-                    </form>
+                    <button type="button" class="btn btn-sm btn-ai py-1"
+                            onclick="loadAiSuggestions({{ student.id }})">&#10024; הצע משימות AI</button>
                   </div>
                 </div>
                 {% set strategy = profile.ai_coaching_strategy if profile else '' %}
                 {% set is_error = strategy and ('API_KEY' in strategy or 'נכשל' in strategy or 'Gemini' in strategy) %}
                 {% if strategy and not is_error %}
-                  <div class="strategy-box">{{ strategy }}</div>
+                  <div class="strategy-box mb-3">{{ strategy }}</div>
                 {% else %}
-                  <div class="strategy-box strategy-empty">
+                  <div class="strategy-box strategy-empty mb-3">
                     {% if is_error %}&#9888;&#65039; הגדר <code>GROQ_API_KEY</code> ב-docker-compose.yml ולחץ "רענן". מפתח חינמי: console.groq.com
                     {% else %}לחץ/י "רענן" לייצור אסטרטגיית הדרכה מותאמת.{% endif %}
                   </div>
                 {% endif %}
+
+                <!-- ── AI Chat on student ── -->
+                <div class="border-top pt-3">
+                  <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="section-title mb-0">&#129302; צ׳ט על הסטודנט הזה</span>
+                    <button class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:.72rem;"
+                            onclick="clearChat('student')">&#128260; אפס</button>
+                  </div>
+                  <div id="chat-student-msgs" class="chat-msgs" style="max-height:260px;"></div>
+                  <div class="d-flex gap-2 mt-2">
+                    <input type="text" id="chat-student-input" class="form-control form-control-sm chat-input"
+                           placeholder="שאל/י על ההתקדמות, המשימות, הגישה..."
+                           onkeydown="if(event.key==='Enter') sendChat('student', {{ student.id }})">
+                    <button class="btn btn-crm btn-sm px-3 flex-shrink-0"
+                            onclick="sendChat('student', {{ student.id }})">שלח</button>
+                  </div>
+                </div>
               </div>
 
               <!-- Tab: CV (content adapts to type) -->
@@ -623,18 +655,60 @@
             </div>
           {% endif %}
 
-          <!-- Assign button -->
-          <div class="border-top mt-3 pt-3">
-            <button class="btn btn-crm btn-sm w-100 fw-semibold"
+          <!-- Assign buttons -->
+          <div class="border-top mt-3 pt-3 d-flex gap-2">
+            <button class="btn btn-crm btn-sm flex-grow-1 fw-semibold"
                     data-bs-toggle="modal" data-bs-target="#assignModal">
-              &#128203; ניהול שיוך משימות
+              &#128203; ניהול שיוך
+            </button>
+            <button class="btn btn-sm btn-ai fw-semibold flex-shrink-0"
+                    onclick="loadAiSuggestions({{ student.id }})">
+              &#10024; AI
             </button>
           </div>
         </div>
 
       </div>
     </div><!-- row -->
-  </div>
+
+    <!-- ── General AI Chat (bottom) ── -->
+    <div class="chat-wrap">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+          <span class="fw-bold" style="font-size:.95rem;">&#129302; צ׳ט AI — גישה לכל הנתונים</span>
+          <div class="text-muted" style="font-size:.75rem;">שאל/י על הסטודנט, בקש המלצות, השווה להתקדמות — ה-AI מכיר את כל התיק</div>
+        </div>
+        <button class="btn btn-sm btn-outline-secondary py-0 px-2 no-print" style="font-size:.72rem;"
+                onclick="clearChat('general')">&#128260; אפס שיחה</button>
+      </div>
+
+      <!-- Quick prompts -->
+      <div class="d-flex gap-2 flex-wrap mb-3">
+        {% set quick = [
+          ('מה השלב הבא עבור הסטודנט?', '🎯'),
+          ('האם הסטודנט בקצב הנכון?', '📊'),
+          ('אילו משימות כדאי להוסיף?', '📋'),
+          ('מה לדון בפגישה הבאה?', '📅'),
+        ] %}
+        {% for q, icon in quick %}
+          <button class="btn btn-sm btn-outline-secondary py-0" style="font-size:.73rem;"
+                  onclick="sendQuick('general', {{ student.id }}, {{ q|tojson }})">
+            {{ icon }} {{ q }}
+          </button>
+        {% endfor %}
+      </div>
+
+      <div id="chat-general-msgs" class="chat-msgs" style="max-height:320px;"></div>
+      <div class="d-flex gap-2 mt-2">
+        <input type="text" id="chat-general-input" class="form-control chat-input"
+               placeholder="שאל/י כל דבר על {{ profile.full_name if profile else student.username }}..."
+               onkeydown="if(event.key==='Enter') sendChat('general', {{ student.id }})">
+        <button class="btn btn-crm px-4 flex-shrink-0 fw-semibold"
+                onclick="sendChat('general', {{ student.id }})">שלח &#8592;</button>
+      </div>
+    </div>
+
+  </div><!-- container -->
 
   <!-- ── Modal: Edit Profile ── -->
   {% if profile %}
@@ -736,6 +810,41 @@
   </div>
   {% endif %}
 
+  <!-- ── Modal: AI Task Suggestions ── -->
+  <div class="modal fade" id="aiSuggestModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h6 class="modal-title fw-bold">&#10024; הצעות משימות AI</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="aiSuggestLoading" class="text-center text-muted py-4">
+            <div class="spinner-border spinner-border-sm text-primary me-2"></div>
+            מייצר הצעות מותאמות אישית...
+          </div>
+          <div id="aiSuggestList" style="display:none;">
+            <p class="text-muted small mb-3">בחר/י את המשימות שברצונך להוסיף:</p>
+            <div id="aiSuggestItems"></div>
+          </div>
+        </div>
+        <div class="modal-footer flex-column align-items-stretch gap-2" id="aiSuggestFooter" style="display:none!important;">
+          <div class="d-flex gap-2 justify-content-end">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ביטול</button>
+            <button type="button" class="btn btn-outline-primary btn-sm fw-semibold"
+                    onclick="confirmAiTasks({{ student.id }}, false)">
+              &#128203; הוסף לבנק בלבד
+            </button>
+            <button type="button" class="btn btn-crm btn-sm fw-semibold"
+                    onclick="confirmAiTasks({{ student.id }}, true)">
+              &#10003; הוסף לבנק + שייך לסטודנט
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ── Modal: Assign Tasks ── -->
   <div class="modal fade" id="assignModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -783,6 +892,133 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+    // ── AI Chat ──────────────────────────────────────────────────────
+    const chatHistory = { student: [], general: [] };
+
+    function addMsg(chatId, role, text) {
+      const box = document.getElementById(`chat-${chatId}-msgs`);
+      const div = document.createElement('div');
+      div.className = `chat-msg ${role}`;
+      div.textContent = text;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+      return div;
+    }
+
+    async function sendChat(chatId, studentId) {
+      const input = document.getElementById(`chat-${chatId}-input`);
+      const msg   = input.value.trim();
+      if (!msg) return;
+      input.value = '';
+
+      addMsg(chatId, 'user', msg);
+      const loading = addMsg(chatId, 'ai loading', '...');
+
+      chatHistory[chatId].push({ role: 'user', content: msg });
+
+      try {
+        const resp = await fetch(`/admin/private/student/${studentId}/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: chatHistory[chatId].slice(-12), message: msg }),
+        });
+        const data = await resp.json();
+        const reply = data.reply || 'שגיאה בקבלת תשובה.';
+        loading.textContent = reply;
+        loading.classList.remove('loading');
+        chatHistory[chatId].push({ role: 'assistant', content: reply });
+      } catch (e) {
+        loading.textContent = 'שגיאת רשת — נסה שוב.';
+        loading.classList.remove('loading');
+      }
+    }
+
+    function sendQuick(chatId, studentId, text) {
+      document.getElementById(`chat-${chatId}-input`).value = text;
+      sendChat(chatId, studentId);
+    }
+
+    function clearChat(chatId) {
+      chatHistory[chatId] = [];
+      document.getElementById(`chat-${chatId}-msgs`).innerHTML = '';
+    }
+
+    // ── AI Task Suggestions ─────────────────────────────────────────
+    let aiSuggestions = [];
+
+    async function loadAiSuggestions(studentId) {
+      const modal = new bootstrap.Modal(document.getElementById('aiSuggestModal'));
+      modal.show();
+      document.getElementById('aiSuggestLoading').style.display = '';
+      document.getElementById('aiSuggestList').style.display    = 'none';
+      document.getElementById('aiSuggestFooter').style.setProperty('display', 'none', 'important');
+
+      try {
+        const resp = await fetch(`/admin/private/student/${studentId}/ai-suggest`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}',
+        });
+        const data = await resp.json();
+        aiSuggestions = data.suggestions || [];
+
+        const container = document.getElementById('aiSuggestItems');
+        container.innerHTML = '';
+
+        if (!aiSuggestions.length) {
+          container.innerHTML = '<p class="text-muted small">לא ניתן לייצר הצעות — בדוק GROQ_API_KEY.</p>';
+        } else {
+          const catColors = {'קורות חיים':'cat-resume','LinkedIn':'cat-linkedin','הכנה לראיון':'cat-interview','שאלון':'cat-quiz','כללי':'cat-general'};
+          aiSuggestions.forEach((s, i) => {
+            const cls = catColors[s.category] || 'cat-general';
+            container.innerHTML += `
+              <div class="d-flex align-items-start gap-2 p-2 border rounded mb-2" style="background:#fafafa;">
+                <input type="checkbox" class="form-check-input mt-1 flex-shrink-0 ai-task-check"
+                       id="ait${i}" data-idx="${i}" checked>
+                <label for="ait${i}" class="flex-grow-1" style="cursor:pointer;">
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="cat-pill ${cls}">${s.category}</span>
+                    <span class="fw-semibold" style="font-size:.87rem;">${s.title}</span>
+                  </div>
+                  <div class="text-muted" style="font-size:.78rem;">${s.description || ''}</div>
+                </label>
+              </div>`;
+          });
+        }
+
+        document.getElementById('aiSuggestLoading').style.display = 'none';
+        document.getElementById('aiSuggestList').style.display    = '';
+        document.getElementById('aiSuggestFooter').style.removeProperty('display');
+      } catch(e) {
+        document.getElementById('aiSuggestLoading').textContent = 'שגיאת תקשורת — נסה שוב.';
+      }
+    }
+
+    async function confirmAiTasks(studentId, assign) {
+      const checked = [...document.querySelectorAll('.ai-task-check:checked')]
+                        .map(cb => aiSuggestions[parseInt(cb.dataset.idx)])
+                        .filter(Boolean);
+      if (!checked.length) { alert('לא נבחרו משימות.'); return; }
+
+      const btn = event.target;
+      btn.disabled = true;
+      btn.textContent = '...שומר';
+
+      try {
+        const resp = await fetch(`/admin/private/student/${studentId}/ai-confirm`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tasks: checked, assign }),
+        });
+        const data = await resp.json();
+        bootstrap.Modal.getInstance(document.getElementById('aiSuggestModal')).hide();
+        alert(`✅ נוצרו ${data.created} משימות${assign ? ' ושויכו לסטודנט' : ' בבנק'}.`);
+        location.reload();
+      } catch(e) {
+        btn.disabled = false;
+        btn.textContent = 'נסה שוב';
+      }
+    }
+
+    // ── Task assign filter ───────────────────────────────────────────
     function filterAssign(q) {
       q = q.toLowerCase();
       document.querySelectorAll('#assignList .assign-item').forEach(i => {

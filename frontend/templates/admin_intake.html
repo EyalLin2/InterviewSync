@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>שאלון קבלה — {{ profile.full_name or student.username }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
+  <style>
+    body { font-family: 'Heebo', sans-serif; background: #f4f5f9; }
+    .navbar-admin { background: #1a1f36; }
+    .navbar-brand-text { font-weight: 800; color: #fff; font-size: 1.1rem; }
+    .page-card { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,.07); padding: 2rem; max-width: 720px; margin: 2rem auto; }
+    .section-divider { border-top: 2px dashed #e9ecef; margin: 1.5rem 0 1rem; }
+    .section-label { font-size: .7rem; font-weight: 700; text-transform: uppercase; color: #9ca3af; letter-spacing: .5px; margin-bottom: .75rem; }
+    .edu-card { border: 2px solid #dee2e6; border-radius: 10px; padding: .6rem .9rem; text-align: center; transition: all .15s; cursor: pointer; }
+    .edu-option input[type=radio]:checked + .edu-card { border-color: #635bff; background: #f0f0ff; }
+    .edu-card:hover { border-color: #635bff; }
+    .btn-crm { background: #635bff; border-color: #635bff; color: #fff; font-weight: 600; }
+    .btn-crm:hover { background: #4f46e5; color: #fff; }
+    #section-highschool, #section-college, #section-career { display: none; }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-admin px-4 py-2">
+    <span class="navbar-brand-text">&#127891; InterviewSync</span>
+    <div class="ms-auto d-flex gap-3">
+      <a href="{{ url_for('student_file', sid=student.id) }}" class="btn btn-outline-light btn-sm">&#8592; חזרה לתיק</a>
+      <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">התנתקות</a>
+    </div>
+  </nav>
+
+  <div class="page-card">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for cat, msg in messages %}
+        <div class="alert alert-{{ cat }} alert-dismissible fade show py-2 small" role="alert">
+          {{ msg }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endwith %}
+
+    <div class="d-flex align-items-center gap-3 mb-4">
+      <div style="width:40px;height:40px;border-radius:50%;background:#635bff;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:1rem;">
+        {{ (profile.full_name or student.username)[0].upper() }}
+      </div>
+      <div>
+        <h5 class="mb-0 fw-bold">שאלון קבלה — {{ profile.full_name or student.username }}</h5>
+        <div class="text-muted small">מילוי ע"י המנטור בפגישה · נשמר ישירות לתיק האישי</div>
+      </div>
+    </div>
+
+    <form method="POST" id="intakeForm">
+
+      <!-- Section 1: Personal -->
+      <div class="section-label">&#128100; פרטים אישיים</div>
+      <div class="row g-3 mb-1">
+        <div class="col-md-5">
+          <label class="form-label fw-semibold small">שם מלא <span class="text-danger">*</span></label>
+          <input type="text" name="full_name" class="form-control" value="{{ profile.full_name or '' }}" required>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold small">אימייל</label>
+          <input type="email" name="email" class="form-control" value="{{ profile.email or '' }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold small">טלפון (WhatsApp)</label>
+          <input type="tel" name="phone" class="form-control" value="{{ profile.phone or '' }}" placeholder="0501234567">
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- Section 2: Type -->
+      <div class="section-label">&#9733; רמת / סוג לימודים</div>
+      <div class="row g-3 mb-3">
+        <div class="col-4">
+          <label class="edu-option d-block">
+            <input type="radio" name="education_level" value="highschool" class="d-none" id="radio-hs"
+                   {{ 'checked' if profile.education_level == 'highschool' }} required>
+            <div class="edu-card text-center">
+              <div>&#127979;</div><div class="fw-semibold small">תיכון</div>
+            </div>
+          </label>
+        </div>
+        <div class="col-4">
+          <label class="edu-option d-block">
+            <input type="radio" name="education_level" value="college" class="d-none" id="radio-col"
+                   {{ 'checked' if profile.education_level == 'college' }}>
+            <div class="edu-card text-center">
+              <div>&#127979;</div><div class="fw-semibold small">סטודנט</div>
+              <div class="text-muted" style="font-size:.7rem;">תואר/תעודה</div>
+            </div>
+          </label>
+        </div>
+        <div class="col-4">
+          <label class="edu-option d-block">
+            <input type="radio" name="education_level" value="career" class="d-none" id="radio-car"
+                   {{ 'checked' if profile.education_level == 'career' }}>
+            <div class="edu-card text-center">
+              <div>&#128188;</div><div class="fw-semibold small">הכוונה</div>
+              <div class="text-muted" style="font-size:.7rem;">תעסוקתית</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- HS fields -->
+      <div id="section-highschool" class="row g-2 mb-2">
+        <div class="col-sm-4">
+          <label class="form-label fw-semibold small">כיתה</label>
+          <select id="select-hs" class="form-select">
+            {% for k in ['כיתה ז׳','כיתה ח׳','כיתה ט׳','כיתה י׳','כיתה י״א','כיתה י״ב'] %}
+              <option {{ 'selected' if profile.current_occupation_or_grade == k }}>{{ k }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-sm-8">
+          <label class="form-label fw-semibold small">תחומי עניין ותחביבים</label>
+          <input type="text" name="interests_hobbies" class="form-control"
+                 value="{{ profile.interests_hobbies or '' }}"
+                 placeholder="טכנולוגיה, ספורט, מוסיקה...">
+        </div>
+      </div>
+
+      <!-- College fields -->
+      <div id="section-college" class="row g-2 mb-2">
+        <div class="col-sm-5">
+          <label class="form-label fw-semibold small">תחום ותואר <span class="text-danger">*</span></label>
+          <input type="text" id="input-college" class="form-control"
+                 value="{{ profile.current_occupation_or_grade or '' }}"
+                 placeholder="תואר ראשון מדעי המחשב">
+        </div>
+        <div class="col-sm-4">
+          <label class="form-label fw-semibold small">מוסד</label>
+          <input type="text" name="institution_name" class="form-control"
+                 value="{{ profile.institution_name or '' }}"
+                 placeholder="שם האוניברסיטה/מכללה">
+        </div>
+        <div class="col-sm-3">
+          <label class="form-label fw-semibold small">שנת סיום</label>
+          <input type="number" name="graduation_year" class="form-control"
+                 value="{{ profile.graduation_year or '' }}" min="2024" max="2035" placeholder="2026">
+        </div>
+      </div>
+
+      <!-- Career fields -->
+      <div id="section-career" class="row g-2 mb-2">
+        <div class="col-sm-6">
+          <label class="form-label fw-semibold small">תפקיד נוכחי / קודם <span class="text-danger">*</span></label>
+          <input type="text" id="input-career" class="form-control"
+                 value="{{ profile.current_occupation_or_grade or '' }}"
+                 placeholder="מנהל מכירות, מהנדסת תוכנה...">
+        </div>
+        <div class="col-sm-3">
+          <label class="form-label fw-semibold small">שנות ניסיון</label>
+          <input type="number" name="years_experience" class="form-control"
+                 value="{{ profile.years_experience or '' }}" min="0" placeholder="5">
+        </div>
+        <div class="col-sm-3">
+          <label class="form-label fw-semibold small">תחום</label>
+          <input type="text" name="career_field" class="form-control" placeholder="הייטק, פיננסים...">
+        </div>
+        <div class="col-12">
+          <label class="form-label fw-semibold small">מה הביא אותך לפנות?</label>
+          <textarea name="reason_for_guidance" class="form-control" rows="2"
+                    placeholder="שינוי קריירה, חיפוש עבודה, חזרה לשוק...">{{ profile.reason_for_guidance or '' }}</textarea>
+        </div>
+      </div>
+
+      <!-- Hidden combined -->
+      <input type="hidden" name="current_occupation_or_grade" id="combined-field">
+
+      <div class="section-divider"></div>
+
+      <!-- Section 3: Goals -->
+      <div class="section-label">&#127919; מטרות ואתגרים</div>
+      <div class="row g-3 mb-4">
+        <div class="col-12">
+          <label class="form-label fw-semibold small">מטרות קריירה <span class="text-danger">*</span></label>
+          <textarea name="career_goals" class="form-control" rows="3" required
+                    placeholder="לאן אתה/את שואף/ת? איזה תפקיד? טווח של שנה / חמש שנים?">{{ profile.career_goals or '' }}</textarea>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold small">חששות ונקודות חולשה</label>
+          <textarea name="fears_weaknesses" class="form-control" rows="3"
+                    placeholder="קושי בראיונות, חוסר ביטחון, כתיבת קורות חיים...">{{ profile.fears_weaknesses or '' }}</textarea>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-semibold small">&#128172; רשמות ראשוניות (הערות פנימיות)</label>
+          <textarea name="intake_notes" id="intakeNotes" class="form-control" rows="3"
+                    placeholder="הרשמות שלי מהפגישה — לא גלוי לסטודנט"></textarea>
+          <div class="form-text">ייכנס כהערת מנטור בתיק האישי</div>
+        </div>
+      </div>
+
+      <div class="d-flex gap-3">
+        <button type="submit" class="btn btn-crm btn-lg flex-grow-1 fw-semibold">
+          &#10003; שמור שאלון וייצר אסטרטגיה AI
+        </button>
+        <a href="{{ url_for('student_file', sid=student.id) }}" class="btn btn-outline-secondary btn-lg">
+          ביטול
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const radioHS  = document.getElementById('radio-hs');
+    const radioCol = document.getElementById('radio-col');
+    const radioCar = document.getElementById('radio-car');
+
+    function toggleType() {
+      document.getElementById('section-highschool').style.display = radioHS.checked  ? '' : 'none';
+      document.getElementById('section-college').style.display    = radioCol.checked ? '' : 'none';
+      document.getElementById('section-career').style.display     = radioCar.checked ? '' : 'none';
+    }
+    [radioHS, radioCol, radioCar].forEach(r => r.addEventListener('change', toggleType));
+    toggleType(); // init
+
+    document.getElementById('intakeForm').addEventListener('submit', function() {
+      const combined = document.getElementById('combined-field');
+      if (radioHS.checked)       combined.value = document.getElementById('select-hs').value;
+      else if (radioCol.checked) combined.value = document.getElementById('input-college').value;
+      else if (radioCar.checked) combined.value = document.getElementById('input-career').value;
+    });
+  </script>
+</body>
+</html>

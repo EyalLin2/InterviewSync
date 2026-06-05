@@ -500,6 +500,104 @@ def meetings_report():
         user=me(), report=data)
 
 
+@app.route("/admin/private/student/<int:sid>/chat", methods=["POST"])
+@admin_required
+def student_chat_proxy(sid):
+    from flask import jsonify as _jsonify
+    body = request.get_json() or {}
+    r = api_post(f"/api/students/{sid}/chat", json=body)
+    try:
+        return _jsonify(r.json()), r.status_code
+    except Exception:
+        return _jsonify({"reply": "שגיאת תקשורת עם השרת."}), 500
+
+
+@app.route("/admin/private/student/<int:sid>/ai-suggest", methods=["POST"])
+@admin_required
+def student_ai_suggest(sid):
+    from flask import jsonify as _j
+    r = api_post(f"/api/ai/tasks/{sid}/suggest")
+    try:
+        return _j(r.json()), r.status_code
+    except Exception:
+        return _j({"error": "שגיאה"}), 500
+
+
+@app.route("/admin/private/student/<int:sid>/ai-confirm", methods=["POST"])
+@admin_required
+def student_ai_confirm(sid):
+    from flask import jsonify as _j
+    body = request.get_json() or {}
+    r = api_post(f"/api/ai/tasks/{sid}/confirm", json=body)
+    try:
+        return _j(r.json()), r.status_code
+    except Exception:
+        return _j({"error": "שגיאה"}), 500
+
+
+@app.route("/admin/private/student/<int:sid>/intake", methods=["GET", "POST"])
+@admin_required
+def admin_intake(sid):
+    """Admin fills the onboarding questionnaire for a student during a meeting."""
+    r_student = api_get(f"/api/students/{sid}")
+    if r_student.status_code != 200:
+        flash("סטודנט לא נמצא.", "danger")
+        return redirect(url_for("admin_dashboard"))
+    student = r_student.json()
+
+    if request.method == "POST":
+        r = api_post("/api/auth/onboarding",
+            json={
+                "full_name":                   request.form.get("full_name","").strip(),
+                "email":                       request.form.get("email","").strip(),
+                "phone":                       request.form.get("phone","").strip(),
+                "education_level":             request.form.get("education_level","").strip(),
+                "current_occupation_or_grade": request.form.get("current_occupation_or_grade","").strip(),
+                "career_goals":                request.form.get("career_goals","").strip(),
+                "fears_weaknesses":            request.form.get("fears_weaknesses","").strip(),
+                "interests_hobbies":           request.form.get("interests_hobbies","").strip(),
+                "institution_name":            request.form.get("institution_name","").strip(),
+                "graduation_year":             request.form.get("graduation_year") or None,
+                "current_job":                 request.form.get("current_job","").strip(),
+                "years_experience":            request.form.get("years_experience") or None,
+                "reason_for_guidance":         request.form.get("reason_for_guidance","").strip(),
+            },
+            # Override user_id in token to be student's id
+        )
+        # Actually we need to call PATCH /api/students/<sid>/profile instead
+        # since this is admin editing on behalf of student
+        r2 = api_patch(f"/api/students/{sid}/profile", json={
+            "full_name":                   request.form.get("full_name","").strip(),
+            "email":                       request.form.get("email","").strip(),
+            "phone":                       request.form.get("phone","").strip(),
+            "education_level":             request.form.get("education_level","").strip(),
+            "current_occupation_or_grade": request.form.get("current_occupation_or_grade","").strip(),
+            "career_goals":                request.form.get("career_goals","").strip(),
+            "fears_weaknesses":            request.form.get("fears_weaknesses","").strip(),
+            "interests_hobbies":           request.form.get("interests_hobbies","").strip(),
+            "institution_name":            request.form.get("institution_name","").strip(),
+            "graduation_year":             request.form.get("graduation_year") or None,
+            "current_job":                 request.form.get("current_job","").strip(),
+            "years_experience":            request.form.get("years_experience") or None,
+            "reason_for_guidance":         request.form.get("reason_for_guidance","").strip(),
+        })
+        if r2.status_code == 200:
+            # Save intake notes as mentor note
+            intake_note = request.form.get("intake_notes","").strip()
+            if intake_note:
+                api_post(f"/api/students/{sid}/notes", json={"text": f"[שאלון קבלה] {intake_note}"})
+            # Regenerate AI strategy
+            api_post(f"/api/ai/coaching-strategy/{sid}")
+            flash("השאלון נשמר ואסטרטגיית הדרכה עודכנה. ✓", "success")
+        else:
+            flash(r2.json().get("error","שגיאה."), "danger")
+        return redirect(url_for("student_file", sid=sid))
+
+    return render_template("admin_intake.html",
+        user=me(), student=student,
+        profile=student.get("profile", {}))
+
+
 @app.route("/admin/private/student/<int:sid>/upload-cv", methods=["POST"])
 @admin_required
 def admin_upload_cv(sid):
