@@ -62,6 +62,8 @@
     }
     .pill-confirmed { background: #d1fae5; color: #065f46; }
     .pill-pending   { background: #fef3c7; color: #92400e; }
+    .pill-intake    { background: #dbeafe; color: #1e40af; }
+    .pill-support   { background: #fce7f3; color: #9d174d; }
 
     /* ── Day detail panel ── */
     .day-detail {
@@ -146,7 +148,8 @@
                        {% if dm %}onclick="selectDay({{ day }}, {{ dm|tojson|safe }})"{% endif %}>
                     <div class="day-num {{ 'weekend' if is_weekend }}">{{ day }}</div>
                     {% for m in dm[:3] %}
-                      <span class="meeting-pill {{ 'pill-confirmed' if m.status == 'confirmed' else 'pill-pending' }}">
+                      {% set pill_cls = 'pill-intake' if m.get('meeting_type','') == 'intake' else ('pill-support' if m.get('meeting_type','') == 'support' else ('pill-confirmed' if m.status == 'confirmed' else 'pill-pending')) %}
+                      <span class="meeting-pill {{ pill_cls }}">
                         {{ m.time }} {{ m.name }}
                       </span>
                     {% endfor %}
@@ -195,19 +198,30 @@
               <label class="form-label fw-semibold small">תאריך ושעה <span class="text-danger">*</span></label>
               <input type="datetime-local" name="scheduled_at" class="form-control" required>
             </div>
-            <div class="mb-3">
-              <label class="form-label fw-semibold small">משך</label>
-              <select name="duration_min" class="form-select">
-                <option value="30">30 דקות</option>
-                <option value="45">45 דקות</option>
-                <option value="60" selected>שעה</option>
-                <option value="90">שעה וחצי</option>
-                <option value="120">שעתיים</option>
-              </select>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label fw-semibold small">סוג פגישה</label>
+                <select name="meeting_type" class="form-select">
+                  <option value="progress_review" selected>סקירת התקדמות</option>
+                  <option value="intake">שיחת היכרות</option>
+                  <option value="support">תמיכה / ייעוץ</option>
+                  <option value="other">אחר</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-semibold small">משך</label>
+                <select name="duration_min" class="form-select">
+                  <option value="30">30 דקות</option>
+                  <option value="45">45 דקות</option>
+                  <option value="60" selected>שעה</option>
+                  <option value="90">שעה וחצי</option>
+                  <option value="120">שעתיים</option>
+                </select>
+              </div>
             </div>
             <div class="mb-4">
-              <label class="form-label fw-semibold small">הערות</label>
-              <textarea name="notes" class="form-control" rows="2" placeholder="נושא, קישור זום..."></textarea>
+              <label class="form-label fw-semibold small">הערות / קישור זום</label>
+              <textarea name="notes" class="form-control" rows="2" placeholder="קישור, נושאים לדיון..."></textarea>
             </div>
             <button type="submit" class="btn btn-primary-crm text-white w-100 fw-semibold">
               &#128197; קבע ושלח הודעה
@@ -232,7 +246,12 @@
                     {{ name[0].upper() }}
                   </div>
                   <div class="flex-grow-1">
-                    <div class="fw-semibold small">{{ name }}</div>
+                    <div class="d-flex align-items-center gap-1 flex-wrap">
+                      <span class="fw-semibold small">{{ name }}</span>
+                      {% set mt_labels = {'intake':'היכרות','progress_review':'סקירה','support':'תמיכה','other':'אחר'} %}
+                      {% set mt = m.get('meeting_type', 'progress_review') if m is mapping else m.meeting_type %}
+                      <span style="font-size:.62rem; color:#635bff;">{{ mt_labels.get(mt, mt) }}</span>
+                    </div>
                     <div class="text-muted" style="font-size:.75rem;">
                       {{ m.scheduled_at | dt("%d/%m/%Y %H:%M") }} · {{ m.duration_min }} דק׳
                     </div>
@@ -243,15 +262,20 @@
                   </div>
                   <div class="d-flex flex-column gap-1 flex-shrink-0">
                     <form method="POST" action="{{ url_for('admin_schedule') }}">
+                      <input type="hidden" name="action" value="mark_completed">
+                      <input type="hidden" name="meeting_id" value="{{ m.id }}">
+                      <button type="submit" class="btn btn-sm btn-outline-success py-0 px-2" style="font-size:.7rem;" title="סמן כהתקיימה">✓</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('admin_schedule') }}">
                       <input type="hidden" name="action" value="send_reminder">
                       <input type="hidden" name="meeting_id" value="{{ m.id }}">
-                      <button type="submit" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size:.7rem;">WA</button>
+                      <button type="submit" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size:.7rem;" title="שלח תזכורת WA">WA</button>
                     </form>
                     <form method="POST" action="{{ url_for('admin_schedule') }}"
                           onsubmit="return confirm('לבטל פגישה זו?')">
                       <input type="hidden" name="action" value="cancel_meeting">
                       <input type="hidden" name="meeting_id" value="{{ m.id }}">
-                      <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:.7rem;">✕</button>
+                      <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:.7rem;" title="בטל">✕</button>
                     </form>
                   </div>
                 </div>

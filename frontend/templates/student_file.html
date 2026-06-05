@@ -444,22 +444,31 @@
 
               <!-- Tab: CV (content adapts to type) -->
               <div class="tab-pane fade" id="tab-cv">
-                {% if etype == 'highschool' %}
-                  <div class="mb-2">
-                    <div class="field-lbl mb-1">&#128218; ניסיון עד כה — התנדבות, עבודות, פרויקטים</div>
-                    <div class="strategy-box strategy-empty" style="font-size:.8rem; margin-bottom:.75rem;">
-                      כתוב/י כאן כל ניסיון רלוונטי: עבודות קיץ, פרויקטים, תפקידים בבית ספר, התנדבות...
+                <!-- CV File Upload -->
+                <div class="mb-3">
+                  <div class="field-lbl mb-2">&#128206; העלאת קובץ קורות חיים (PDF/DOC)</div>
+                  <form method="POST" enctype="multipart/form-data"
+                        action="{{ url_for('admin_upload_cv', sid=student.id) }}">
+                    <div class="d-flex gap-2 align-items-center">
+                      <input type="file" name="cv_file" class="form-control form-control-sm"
+                             accept=".pdf,.doc,.docx" style="flex:1;">
+                      <button type="submit" class="btn btn-crm btn-sm fw-semibold flex-shrink-0">העלה</button>
                     </div>
-                  </div>
-                {% elif etype == 'career' %}
-                  <div class="mb-2">
-                    <div class="field-lbl mb-1">&#128203; קורות חיים + אסטרטגיית חיפוש</div>
-                  </div>
-                {% endif %}
+                    {% if profile and profile.resume_file %}
+                      <div class="mt-1">
+                        <a href="{{ '/files/' + profile.resume_file }}" target="_blank"
+                           class="text-decoration-none" style="font-size:.78rem; color:#635bff;">
+                          &#128206; קובץ קיים — {{ profile.resume_file.split('/')[-1] }}
+                        </a>
+                      </div>
+                    {% endif %}
+                  </form>
+                </div>
+                <div class="field-lbl mb-2">&#128221; הערות / גרסה כתובה</div>
                 <form method="POST">
                   <input type="hidden" name="action" value="save_resume">
                   <textarea name="resume_content" class="form-control resume-area mb-2"
-                            placeholder="{% if etype == 'highschool' %}כתוב/י ניסיון, כישורים ותחביבים...{% elif etype == 'career' %}קורות חיים + חברות יעד + מה כבר ניסית...{% else %}הדבק/י קורות חיים או כתוב/י מאפס...{% endif %}">{{ profile.resume_content if profile else '' }}</textarea>
+                            placeholder="{% if etype == 'highschool' %}כתוב/י ניסיון, כישורים ותחביבים...{% elif etype == 'career' %}קורות חיים + חברות יעד + מה כבר ניסית...{% else %}הדבק/י קורות חיים או הערות...{% endif %}">{{ profile.resume_content if profile else '' }}</textarea>
                   <div class="d-flex justify-content-between align-items-center">
                     <span class="text-muted small">&#128274; גלוי למנטור בלבד</span>
                     <button type="submit" class="btn btn-crm btn-sm fw-semibold">שמור</button>
@@ -499,14 +508,32 @@
       <!-- ── Right column ── -->
       <div class="col-lg-5">
 
+        <!-- Last note snippet -->
+        {% if notes %}
+          <div class="card-crm" style="padding:.9rem 1.25rem; background:#f8f9ff; border-right:3px solid #635bff; border-radius:8px 0 0 8px; margin-bottom:1rem;">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+              <div style="font-size:.8rem; color:#1a1f36; flex-grow:1;">&#128172; {{ notes[0].text | truncate(100) }}</div>
+              <span style="font-size:.68rem; color:#9ca3af; white-space:nowrap;">{{ notes[0].created_at | dt('%d/%m') }}</span>
+            </div>
+            <a class="text-muted" style="font-size:.72rem; text-decoration:none;" href="javascript:void(0)"
+               onclick="document.querySelector('[data-bs-target=\'#tab-notes\']').click()">
+              {% if notes|length > 1 %} + עוד {{ notes|length - 1 }} הערות &#8592;{% else %}לכל ההערות &#8592;{% endif %}
+            </a>
+          </div>
+        {% endif %}
+
         <!-- Meetings -->
         {% if student_meetings %}
           <div class="card-crm" style="border-right: 3px solid #10b981; padding: 1.25rem 1.5rem;">
             <div class="section-title mb-2">&#128197; פגישות קרובות</div>
             {% for m in student_meetings %}
+              {% set mt_labels = {'intake':'שיחת היכרות','progress_review':'סקירת התקדמות','support':'תמיכה','other':'אחר'} %}
               <div class="meeting-row">
                 <strong>{{ m.scheduled_at | dt('%d/%m/%Y %H:%M') }}</strong> · {{ m.duration_min }} דק׳
-                <span class="badge rounded-pill ms-1 {{ 'badge-done' if m.status=='confirmed' else '' }}"
+                {% if m.get('meeting_type') and m.meeting_type != 'progress_review' %}
+                  <span style="font-size:.68rem; color:#635bff; margin-right:.3rem;">· {{ mt_labels.get(m.meeting_type, m.meeting_type) }}</span>
+                {% endif %}
+                <span class="badge rounded-pill ms-1"
                       style="font-size:.62rem; background:{% if m.status=='confirmed' %}#d1fae5; color:#065f46{% else %}#fef3c7; color:#92400e{% endif %};">
                   {{ 'מאושר' if m.status=='confirmed' else 'ממתין' }}
                 </span>
@@ -530,10 +557,22 @@
           {% else %}
             {% for at in active %}
               {% set t = at.task %}
+              {# Compute task age #}
+              {% set assigned_d = at.assigned_at | to_date %}
+              {% set age_days = ((now_date - assigned_d).days) if assigned_d else none %}
               <div class="task-row">
                 <span class="cat-pill {{ cat_class.get(t.category,'cat-general') }}">{{ t.category }}</span>
                 <div class="flex-grow-1">
-                  <div class="task-title">{{ t.title }}</div>
+                  <div class="d-flex align-items-center gap-1 flex-wrap">
+                    <div class="task-title">{{ t.title }}</div>
+                    {% if age_days is not none and age_days >= 3 %}
+                      <span style="font-size:.65rem; font-weight:700; border-radius:50px; padding:.1rem .45rem;
+                                   {% if age_days > 7 %}background:#fee2e2; color:#991b1b;
+                                   {% else %}background:#fef3c7; color:#92400e;{% endif %}">
+                        מחכה {{ age_days }} י׳
+                      </span>
+                    {% endif %}
+                  </div>
                   {% if t.description %}
                     <div class="task-desc">{{ t.description | truncate(90) }}</div>
                   {% endif %}
@@ -610,6 +649,8 @@
           </div>
           <div class="modal-body">
             <div class="row g-3">
+              {# ── פרטי קשר ── #}
+              <div class="col-12"><div style="font-size:.7rem; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:.4px;">פרטי קשר</div></div>
               <div class="col-md-5">
                 <label class="form-label fw-semibold small">שם מלא</label>
                 <input type="text" name="full_name" class="form-control" value="{{ profile.full_name }}">
@@ -622,21 +663,62 @@
                 <label class="form-label fw-semibold small">טלפון (WhatsApp)</label>
                 <input type="tel" name="phone" class="form-control" value="{{ profile.phone }}">
               </div>
+
+              {# ── רקע לימודי ── #}
+              <div class="col-12 border-top pt-2 mt-1"><div style="font-size:.7rem; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:.4px;">רקע לימודי ומקצועי</div></div>
               <div class="col-md-4">
-                <label class="form-label fw-semibold small">רמת לימוד</label>
-                <select name="education_level" class="form-select">
-                  <option value="highschool" {{ 'selected' if profile.education_level=='highschool' }}>תיכון</option>
-                  <option value="college"    {{ 'selected' if profile.education_level=='college'    }}>מכללה/אוניברסיטה</option>
+                <label class="form-label fw-semibold small">סוג</label>
+                <select name="education_level" class="form-select" id="editEduLevel">
+                  <option value="highschool" {{ 'selected' if profile.education_level=='highschool' }}>🏫 תיכון</option>
+                  <option value="college"    {{ 'selected' if profile.education_level=='college'    }}>🎓 סטודנט</option>
+                  <option value="career"     {{ 'selected' if profile.education_level=='career'     }}>💼 הכוונה תעסוקתית</option>
                 </select>
               </div>
               <div class="col-md-8">
-                <label class="form-label fw-semibold small">כיתה / תואר</label>
+                <label class="form-label fw-semibold small">כיתה / תואר / תפקיד</label>
                 <input type="text" name="current_occupation_or_grade" class="form-control"
                        value="{{ profile.current_occupation_or_grade }}">
               </div>
+
+              {# HS fields #}
+              <div class="col-12 edit-hs" style="display:{{ 'block' if profile.education_level == 'highschool' else 'none' }}">
+                <label class="form-label fw-semibold small">תחומי עניין ותחביבים</label>
+                <input type="text" name="interests_hobbies" class="form-control" value="{{ profile.interests_hobbies or '' }}">
+              </div>
+
+              {# College fields #}
+              <div class="row g-2 edit-col" style="display:{{ 'flex' if profile.education_level == 'college' else 'none' }}">
+                <div class="col-7">
+                  <label class="form-label fw-semibold small">שם המוסד</label>
+                  <input type="text" name="institution_name" class="form-control" value="{{ profile.institution_name or '' }}">
+                </div>
+                <div class="col-5">
+                  <label class="form-label fw-semibold small">שנת סיום</label>
+                  <input type="number" name="graduation_year" class="form-control" value="{{ profile.graduation_year or '' }}" min="2024" max="2035">
+                </div>
+              </div>
+
+              {# Career fields #}
+              <div class="row g-2 edit-car" style="display:{{ 'flex' if profile.education_level == 'career' else 'none' }}">
+                <div class="col-7">
+                  <label class="form-label fw-semibold small">תפקיד נוכחי / קודם</label>
+                  <input type="text" name="current_job" class="form-control" value="{{ profile.current_job or '' }}">
+                </div>
+                <div class="col-5">
+                  <label class="form-label fw-semibold small">שנות ניסיון</label>
+                  <input type="number" name="years_experience" class="form-control" value="{{ profile.years_experience or '' }}" min="0">
+                </div>
+                <div class="col-12">
+                  <label class="form-label fw-semibold small">סיבה לפנייה</label>
+                  <textarea name="reason_for_guidance" class="form-control" rows="2">{{ profile.reason_for_guidance or '' }}</textarea>
+                </div>
+              </div>
+
+              {# ── מטרות ואתגרים ── #}
+              <div class="col-12 border-top pt-2 mt-1"><div style="font-size:.7rem; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:.4px;">מטרות ואתגרים</div></div>
               <div class="col-12">
-                <label class="form-label fw-semibold small">מטרות קריירה</label>
-                <textarea name="career_goals" class="form-control" rows="2">{{ profile.career_goals }}</textarea>
+                <label class="form-label fw-semibold small">מטרות קריירה <span class="text-danger">*</span></label>
+                <textarea name="career_goals" class="form-control" rows="3">{{ profile.career_goals }}</textarea>
               </div>
               <div class="col-12">
                 <label class="form-label fw-semibold small">חששות ונקודות חולשה</label>
@@ -711,6 +793,14 @@
         g.style.display = vis ? '' : 'none';
       });
     }
+
+    // Edit modal: dynamic type fields
+    document.getElementById('editEduLevel')?.addEventListener('change', function() {
+      const v = this.value;
+      document.querySelector('.edit-hs').style.display  = v === 'highschool' ? 'block' : 'none';
+      document.querySelector('.edit-col').style.display  = v === 'college'    ? 'flex'  : 'none';
+      document.querySelector('.edit-car').style.display  = v === 'career'     ? 'flex'  : 'none';
+    });
   </script>
 </body>
 </html>

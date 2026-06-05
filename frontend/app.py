@@ -288,11 +288,12 @@ def admin_hub():
 def admin_dashboard():
     r_students = api_get("/api/students")
     r_tasks    = api_get("/api/tasks")
+    r_focus    = api_get("/api/dashboard/focus")
     students   = r_students.json() if r_students.status_code == 200 else []
     taskbank   = r_tasks.json()    if r_tasks.status_code    == 200 else []
+    focus      = r_focus.json()    if r_focus.status_code    == 200 else {}
     categories = sorted({t["category"] for t in taskbank})
 
-    # Build progress dict keyed by student id for template compatibility
     progress = {s["id"]: s.get("progress", {"total": 0, "done": 0, "pct": 0})
                 for s in students}
 
@@ -308,6 +309,7 @@ def admin_dashboard():
         categories=categories,
         progress=progress,
         upcoming_count=upcoming_count,
+        focus=focus,
     )
 
 
@@ -498,6 +500,22 @@ def meetings_report():
         user=me(), report=data)
 
 
+@app.route("/admin/private/student/<int:sid>/upload-cv", methods=["POST"])
+@admin_required
+def admin_upload_cv(sid):
+    cv_file = request.files.get("cv_file")
+    if cv_file and cv_file.filename:
+        r = _api("POST", f"/api/students/{sid}/cv",
+                 files={"cv_file": (cv_file.filename, cv_file.stream, cv_file.content_type)})
+        if r.status_code == 200:
+            flash("קובץ קורות החיים הועלה בהצלחה.", "success")
+        else:
+            flash(r.json().get("error", "שגיאה בהעלאה."), "danger")
+    else:
+        flash("לא נבחר קובץ.", "warning")
+    return redirect(url_for("student_file", sid=sid))
+
+
 @app.route("/admin/private/ai-tasks/<int:sid>", methods=["POST"])
 @admin_required
 def ai_tasks_for_student(sid):
@@ -521,6 +539,7 @@ def admin_schedule():
                 "scheduled_at": request.form.get("scheduled_at", ""),
                 "duration_min": request.form.get("duration_min", 60, type=int),
                 "notes":        request.form.get("notes", ""),
+                "meeting_type": request.form.get("meeting_type", "progress_review"),
             })
             if r.status_code == 201:
                 d   = r.json()
@@ -534,6 +553,11 @@ def admin_schedule():
             mid = request.form.get("meeting_id", type=int)
             r   = api_patch(f"/api/meetings/{mid}", json={"action": "cancel"})
             _flash_from_response(r, "הפגישה בוטלה.")
+
+        elif action == "mark_completed":
+            mid = request.form.get("meeting_id", type=int)
+            r   = api_patch(f"/api/meetings/{mid}", json={"action": "mark_completed"})
+            _flash_from_response(r, "הפגישה סומנה כהתקיימה ✓")
 
         elif action == "send_reminder":
             mid = request.form.get("meeting_id", type=int)

@@ -79,6 +79,24 @@
     .btn-primary-crm { background:#635bff; border-color:#635bff; }
     .btn-primary-crm:hover { background:#4f46e5; border-color:#4f46e5; }
     .progress { height:7px; }
+
+    /* ── Focus Panel ── */
+    .focus-panel { background:#fff; border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,.06); overflow:hidden; }
+    .focus-header { background:#1a1f36; color:rgba(255,255,255,.7); font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; padding:.5rem 1.25rem; }
+    .focus-cols { display:grid; grid-template-columns:1fr 1fr 1fr; }
+    .focus-col { padding:.85rem 1rem; border-left:1px solid #f0f1f5; }
+    .focus-col:last-child { border-left:none; }
+    .focus-col-alert { background:#fffbf0; }
+    .focus-col-title { font-size:.72rem; font-weight:700; color:#374151; margin-bottom:.5rem; }
+    .focus-item { display:flex; justify-content:space-between; align-items:center; gap:.5rem; padding:.25rem 0; border-bottom:1px solid #f5f5f5; text-decoration:none; color:#1a1f36; font-size:.82rem; }
+    .focus-item:last-child { border-bottom:none; }
+    .focus-item:hover { color:#635bff; }
+    .focus-item .fw-semibold { font-size:.82rem; }
+    .focus-sub { font-size:.72rem; }
+    .focus-days { font-size:.72rem; font-weight:700; border-radius:50px; padding:.1rem .45rem; background:#f3f4f6; color:#374151; white-space:nowrap; }
+    .focus-days-red { background:#fee2e2; color:#991b1b; }
+    .focus-days-yellow { background:#fef3c7; color:#92400e; }
+    .focus-empty { font-size:.78rem; color:#9ca3af; font-style:italic; }
   </style>
 </head>
 <body>
@@ -165,10 +183,71 @@
       <!-- ── Tab 1: Students 360 ── -->
       <div class="tab-pane fade show active" id="tab-students">
 
-        <!-- Toolbar: search + add student -->
-        <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+        <!-- ── Focus Panel ── -->
+        {% set needs_att  = focus.get('needs_attention', []) %}
+        {% set sub_review = focus.get('pending_submissions', []) %}
+        {% set pend_meet  = focus.get('pending_meetings', []) %}
+        {% if needs_att or sub_review or pend_meet %}
+        <div class="focus-panel mb-4">
+          <div class="focus-header">&#9889; פוקוס היום</div>
+          <div class="focus-cols">
+            <div class="focus-col {{ 'focus-col-alert' if needs_att }}">
+              <div class="focus-col-title">&#9888;&#65039; דורשים תשומת לב ({{ needs_att|length }})</div>
+              {% for s in needs_att[:5] %}
+                <a href="{{ url_for('student_file', sid=s.id) }}" class="focus-item">
+                  <span class="fw-semibold">{{ s.name }}</span>
+                  <span class="focus-days {{ 'focus-days-red' if s.days_inactive and s.days_inactive > 10 else 'focus-days-yellow' }}">
+                    {{ s.days_inactive or '∞' }} ימים
+                  </span>
+                </a>
+              {% endfor %}
+              {% if not needs_att %}<div class="focus-empty">&#10003; כולם פעילים</div>{% endif %}
+            </div>
+            <div class="focus-col">
+              <div class="focus-col-title">&#128229; הגשות לסקירה ({{ sub_review|length }})</div>
+              {% for s in sub_review[:4] %}
+                <a href="{{ url_for('student_file', sid=s.student_id) }}" class="focus-item">
+                  <span class="fw-semibold">{{ s.student_name }}</span>
+                  <span class="text-muted focus-sub">{{ s.task_title | truncate(30) }}</span>
+                </a>
+              {% endfor %}
+              {% if not sub_review %}<div class="focus-empty">אין הגשות חדשות</div>{% endif %}
+            </div>
+            <div class="focus-col">
+              <div class="focus-col-title">&#128276; ממתינות לאישור ({{ pend_meet|length }})</div>
+              {% for m in pend_meet[:4] %}
+                <a href="{{ url_for('admin_schedule') }}" class="focus-item">
+                  <span class="fw-semibold">{{ m.student_name }}</span>
+                  <span class="text-muted focus-sub">{{ m.scheduled_at | dt }}</span>
+                </a>
+              {% endfor %}
+              {% if not pend_meet %}<div class="focus-empty">אין פגישות ממתינות</div>{% endif %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Toolbar: search + filters + add student -->
+        <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
           <input type="text" id="studentSearch" class="form-control form-control-sm"
-                 style="max-width:260px;" placeholder="&#128269; חיפוש תלמיד...">
+                 style="max-width:200px;" placeholder="&#128269; חיפוש שם...">
+          <select id="filterType" class="form-select form-select-sm" style="max-width:130px;">
+            <option value="">כל הסוגים</option>
+            <option value="highschool">🏫 תיכון</option>
+            <option value="college">🎓 סטודנט</option>
+            <option value="career">💼 קריירה</option>
+          </select>
+          <select id="filterStatus" class="form-select form-select-sm" style="max-width:130px;">
+            <option value="">כל הסטטוסים</option>
+            <option value="active">פעיל</option>
+            <option value="paused">מושהה</option>
+            <option value="completed">הושלם</option>
+          </select>
+          <select id="sortBy" class="form-select form-select-sm" style="max-width:145px;">
+            <option value="name">מיין: שם</option>
+            <option value="progress">מיין: התקדמות</option>
+            <option value="activity">מיין: ימים ללא פעילות</option>
+          </select>
           <button class="btn btn-primary-crm text-white btn-sm fw-semibold ms-auto"
                   data-bs-toggle="modal" data-bs-target="#addStudentModal">
             &#10133; הוסף סטודנט
@@ -184,20 +263,27 @@
                 <tr>
                   <th>תלמיד</th>
                   <th>סוג</th>
-                  <th>כיתה / תואר</th>
-                  <th>מטרות (תקציר)</th>
+                  <th>פרטים</th>
+                  <th>מטרות</th>
                   <th>התקדמות</th>
-                  <th>WA</th>
+                  <th>סטטוס</th>
+                  <th>פעילות</th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
                 {% set avatar_colors = ['#635bff','#f72585','#4cc9f0','#2d6a4f','#e76f51','#7209b7'] %}
                 {% for s in students %}
-                  {% set p = s.profile %}
+                  {% set p    = s.profile %}
                   {% set prog = progress[s.id] %}
                   {% set acolor = avatar_colors[loop.index0 % 6] %}
-                  <tr>
+                  {% set act_days = s.last_activity_days %}
+                  {% set sts = p.student_status if p else 'active' %}
+                  <tr data-name="{{ (p.full_name or s.username) | lower }}"
+                      data-type="{{ p.education_level if p else '' }}"
+                      data-status="{{ sts }}"
+                      data-progress="{{ prog.pct }}"
+                      data-activity="{{ act_days or 9999 }}">
                     <td>
                       <div class="d-flex align-items-center gap-2">
                         <div class="avatar" style="background:{{ acolor }};">
@@ -205,7 +291,7 @@
                         </div>
                         <div>
                           <div class="fw-semibold">{{ p.full_name if p and p.full_name else s.username }}</div>
-                          <div class="text-muted" style="font-size:.75rem;">{{ s.username }}</div>
+                          <div class="text-muted" style="font-size:.72rem;">{{ s.username }}</div>
                         </div>
                       </div>
                     </td>
@@ -217,31 +303,50 @@
                       {% elif p and p.education_level == 'career' %}
                         <span class="badge rounded-pill" style="background:#ede9fe;color:#5b21b6;font-size:.7rem;">&#128188; קריירה</span>
                       {% else %}
-                        <span class="text-muted small">לא מולא</span>
+                        <span class="text-muted small">—</span>
                       {% endif %}
                     </td>
                     <td class="text-muted small">
-                      {{ (p.current_occupation_or_grade[:30] + '…') if p and p.current_occupation_or_grade and p.current_occupation_or_grade|length > 30 else (p.current_occupation_or_grade if p and p.current_occupation_or_grade else '—') }}
+                      <span title="{{ p.current_occupation_or_grade if p else '' }}">
+                        {{ (p.current_occupation_or_grade[:28] + '…') if p and p.current_occupation_or_grade and p.current_occupation_or_grade|length > 28 else (p.current_occupation_or_grade if p and p.current_occupation_or_grade else '—') }}
+                      </span>
                     </td>
-                    <td class="text-muted small" style="max-width:180px;">
-                      {{ (p.career_goals[:60] + '…') if p and p.career_goals and p.career_goals|length > 60 else (p.career_goals if p and p.career_goals else '—') }}
+                    <td class="text-muted small" style="max-width:160px;">
+                      <span title="{{ p.career_goals if p else '' }}">
+                        {{ (p.career_goals[:55] + '…') if p and p.career_goals and p.career_goals|length > 55 else (p.career_goals if p and p.career_goals else '—') }}
+                      </span>
                     </td>
-                    <td style="min-width:120px;">
+                    <td style="min-width:110px;">
                       <div class="d-flex align-items-center gap-2">
                         <div class="progress flex-grow-1">
                           <div class="progress-bar" style="background:#635bff; width:{{ prog.pct }}%;"></div>
                         </div>
-                        <span class="text-muted" style="font-size:.75rem; white-space:nowrap;">{{ prog.done }}/{{ prog.total }}</span>
+                        <span class="text-muted" style="font-size:.72rem; white-space:nowrap;">{{ prog.done }}/{{ prog.total }}</span>
                       </div>
                     </td>
                     <td>
-                      <span class="wa-dot {{ 'wa-dot-on' if p and p.phone else 'wa-dot-off' }}"
-                            title="{{ p.phone if p and p.phone else 'אין מספר' }}"></span>
+                      <span class="badge rounded-pill"
+                            style="font-size:.65rem;
+                                   {% if sts == 'active' %}background:#d1fae5;color:#065f46;
+                                   {% elif sts == 'paused' %}background:#fef3c7;color:#92400e;
+                                   {% else %}background:#f3f4f6;color:#374151;{% endif %}">
+                        {% if sts == 'active' %}פעיל{% elif sts == 'paused' %}מושהה{% else %}הושלם{% endif %}
+                      </span>
+                    </td>
+                    <td>
+                      {% if act_days is not none %}
+                        <span style="font-size:.78rem; font-weight:700;
+                                     color:{% if act_days > 7 %}#ef4444{% else %}#10b981{% endif %};">
+                          {{ act_days }}י׳
+                        </span>
+                      {% else %}
+                        <span class="text-muted" style="font-size:.72rem;">—</span>
+                      {% endif %}
                     </td>
                     <td>
                       <a href="{{ url_for('student_file', sid=s.id) }}"
                          class="btn btn-sm btn-primary-crm text-white fw-semibold">
-                        תיק תלמיד &#8592;
+                        תיק &#8592;
                       </a>
                     </td>
                   </tr>
@@ -461,12 +566,40 @@
       document.getElementById('taskbank-tab-btn').click();
     }
 
-    // Student search filter
-    document.getElementById('studentSearch')?.addEventListener('input', function() {
-      const q = this.value.toLowerCase();
-      document.querySelectorAll('#studentsTable tbody tr').forEach(row => {
-        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    // ── Student table filter + sort ────────────────────────────────────
+    function applyStudentFilters() {
+      const q      = (document.getElementById('studentSearch')?.value || '').toLowerCase();
+      const type   = document.getElementById('filterType')?.value   || '';
+      const status = document.getElementById('filterStatus')?.value || '';
+      const sort   = document.getElementById('sortBy')?.value       || 'name';
+
+      const tbody = document.querySelector('#studentsTable tbody');
+      if (!tbody) return;
+      const rows  = [...tbody.querySelectorAll('tr')];
+
+      rows.forEach(row => {
+        const name     = row.dataset.name     || '';
+        const rowType  = row.dataset.type     || '';
+        const rowSts   = row.dataset.status   || '';
+        const show = (!q      || name.includes(q)) &&
+                     (!type   || rowType  === type) &&
+                     (!status || rowSts   === status);
+        row.style.display = show ? '' : 'none';
       });
+
+      // Sort visible rows
+      const visible = rows.filter(r => r.style.display !== 'none');
+      visible.sort((a, b) => {
+        if (sort === 'progress') return parseInt(b.dataset.progress||0) - parseInt(a.dataset.progress||0);
+        if (sort === 'activity') return parseInt(a.dataset.activity||9999) - parseInt(b.dataset.activity||9999);
+        return (a.dataset.name||'').localeCompare(b.dataset.name||'', 'he');
+      });
+      visible.forEach(r => tbody.appendChild(r));
+    }
+
+    ['studentSearch','filterType','filterStatus','sortBy'].forEach(id => {
+      document.getElementById(id)?.addEventListener('change', applyStudentFilters);
+      document.getElementById(id)?.addEventListener('input',  applyStudentFilters);
     });
 
     // Task bank search filter

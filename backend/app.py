@@ -251,6 +251,7 @@ def _profile_dict(p: StudentProfile | None) -> dict:
         "process_start_date": p.process_start_date.isoformat() if p.process_start_date else None,
         "target_end_date":    p.target_end_date.isoformat()    if p.target_end_date    else None,
         "mentor_notes":   p.mentor_notes,
+        "resume_file":    p.resume_file or "",
         "student_status": p.student_status or "active",
         # type-specific fields
         "interests_hobbies":    p.interests_hobbies or "",
@@ -263,10 +264,16 @@ def _profile_dict(p: StudentProfile | None) -> dict:
 
 
 def _task_dict(t: TaskBank) -> dict:
+    assigned  = len(t.assignments)
+    completed = sum(1 for a in t.assignments if a.status == "completed")
+    rate = round(completed / assigned * 100) if assigned else 0
     return {
         "id": t.id, "title": t.title, "description": t.description,
         "category": t.category, "task_type": t.task_type,
         "resource_file": t.resource_file,
+        "assigned_count":  assigned,
+        "completed_count": completed,
+        "completion_rate": rate,
     }
 
 
@@ -289,6 +296,7 @@ def _meeting_dict(m: Meeting, include_token: bool = False) -> dict:
         "scheduled_at": m.scheduled_at.isoformat(),
         "duration_min": m.duration_min,
         "notes": m.notes, "status": m.status,
+        "meeting_type": m.meeting_type or "progress_review",
     }
     if include_token:
         d["token"] = meeting_token(m.id)
@@ -393,15 +401,32 @@ def save_onboarding():
 @require_admin
 def list_students():
     students = User.query.filter_by(role="student").order_by(User.username).all()
+    now = datetime.utcnow()
     result = []
     for s in students:
         total = AssignedTask.query.filter_by(user_id=s.id).count()
         done  = AssignedTask.query.filter_by(user_id=s.id, status="completed").count()
+
+        # last activity = max of last task completion OR last confirmed meeting
+        last_task = (AssignedTask.query.filter_by(user_id=s.id, status="completed")
+                     .order_by(AssignedTask.completed_at.desc()).first())
+        last_meeting = (Meeting.query.filter_by(student_id=s.id)
+                        .filter(Meeting.status.in_(["confirmed", "completed"]))
+                        .filter(Meeting.scheduled_at <= now)
+                        .order_by(Meeting.scheduled_at.desc()).first())
+        dates = [d for d in [
+            last_task.completed_at    if last_task    else None,
+            last_meeting.scheduled_at if last_meeting else None,
+        ] if d]
+        last_activity_dt = max(dates) if dates else None
+        last_activity_days = (now - last_activity_dt).days if last_activity_dt else None
+
         result.append({
             "id": s.id, "username": s.username,
             "profile": _profile_dict(s.profile),
             "progress": {"total": total, "done": done,
                          "pct": round(done / total * 100) if total else 0},
+            "last_activity_days": last_activity_days,
         })
     return jsonify(result)
 
@@ -524,6 +549,23 @@ def delete_note(nid):
     db.session.delete(n)
     db.session.commit()
     return jsonify({"ok": True})
+
+
+@app.route("/api/students/<int:sid>/cv", methods=["POST"])
+@require_admin
+def upload_student_cv(sid):
+    """Upload a CV file for the student."""
+    student = User.query.filter_by(id=sid, role="student").first_or_404()
+    p = student.profile
+    if not p:
+        return jsonify({"error": "No profile"}), 404
+    file = request.files.get("cv_file")
+    path = _save_file(file, str(sid), "cv")
+    if not path:
+        return jsonify({"error": "Invalid or missing file (PDF/DOC only)"}), 400
+    p.resume_file = path
+    db.session.commit()
+    return jsonify({"ok": True, "path": path})
 
 
 @app.route("/api/students/<int:sid>/assignments", methods=["POST"])
@@ -802,7 +844,9 @@ def create_meeting():
 
     student = User.query.filter_by(id=sid, role="student").first_or_404()
     m = Meeting(student_id=sid, scheduled_at=scheduled_at,
-                duration_min=body.get("duration_min", 60), notes=body.get("notes", ""))
+                duration_min=body.get("duration_min", 60),
+                notes=body.get("notes", ""),
+                meeting_type=body.get("meeting_type", "progress_review"))
     db.session.add(m)
     db.session.commit()
 
@@ -852,6 +896,11 @@ def update_meeting(mid):
         if ok:
             return jsonify({"ok": True})
         return jsonify({"error": reason}), 400 if reason == "no_config" else 500
+
+    if action == "mark_completed":
+        m.status = "completed"
+        db.session.commit()
+        return jsonify({"ok": True})
 
     return jsonify({"error": "Unknown action"}), 400
 
@@ -1163,6 +1212,91 @@ def delete_activity(aid):
 
 
 # ─────────────────────────────────────────────
+# Dashboard Focus
+# ─────────────────────────────────────────────
+
+@app.route("/api/dashboard/focus")
+@require_admin
+def dashboard_focus():
+    """At-a-glance: students needing attention, pending submissions, pending meetings."""
+    now = datetime.utcnow()
+    threshold = int(os.environ.get("INACTIVITY_DAYS", 7))
+    cutoff    = now - timedelta(days=threshold)
+
+    students = User.query.filter_by(role="student").all()
+    needs_attention = []
+    for s in students:
+        p = s.profile
+        if not p or p.student_status == "completed":
+            continue
+        last_task = (AssignedTask.query.filter_by(user_id=s.id, status="completed")
+                     .order_by(AssignedTask.completed_at.desc()).first())
+        last_meeting = (Meeting.query.filter_by(student_id=s.id)
+                        .filter(Meeting.status.in_(["confirmed", "completed"]))
+                        .filter(Meeting.scheduled_at <= now)
+                        .order_by(Meeting.scheduled_at.desc()).first())
+        dates = [d for d in [
+            last_task.completed_at    if last_task    else None,
+            last_meeting.scheduled_at if last_meeting else None,
+        ] if d]
+        last_activity = max(dates) if dates else None
+        if not last_activity or last_activity < cutoff:
+            pending_count = AssignedTask.query.filter_by(user_id=s.id, status="pending").count()
+            if pending_count:
+                days = (now - last_activity).days if last_activity else None
+                needs_attention.append({
+                    "id": s.id,
+                    "name": (p.full_name or s.username),
+                    "days_inactive": days,
+                    "pending_tasks": pending_count,
+                })
+
+    # Recent submissions waiting review (completed in last 7 days with note/file)
+    week_ago = now - timedelta(days=7)
+    recent = (AssignedTask.query
+              .filter(AssignedTask.status == "completed")
+              .filter(AssignedTask.completed_at >= week_ago)
+              .filter(
+                  (AssignedTask.submission_note != "") |
+                  (AssignedTask.submission_file != "")
+              ).all())
+    pending_submissions = []
+    for at in recent:
+        s = db.session.get(User, at.user_id)
+        p = s.profile if s else None
+        name = (p.full_name if p and p.full_name else (s.username if s else "?"))
+        pending_submissions.append({
+            "student_id":   at.user_id,
+            "student_name": name,
+            "task_title":   at.task.title if at.task else "?",
+            "completed_at": at.completed_at.isoformat() if at.completed_at else None,
+        })
+
+    # Meetings awaiting student confirmation
+    pending_confirmations = (Meeting.query
+                             .filter_by(status="pending")
+                             .filter(Meeting.scheduled_at >= now)
+                             .order_by(Meeting.scheduled_at).all())
+    pending_meetings = []
+    for m in pending_confirmations:
+        s = db.session.get(User, m.student_id)
+        p = s.profile if s else None
+        name = (p.full_name if p and p.full_name else (s.username if s else "?"))
+        pending_meetings.append({
+            "meeting_id":   m.id,
+            "student_id":   m.student_id,
+            "student_name": name,
+            "scheduled_at": m.scheduled_at.isoformat(),
+        })
+
+    return jsonify({
+        "needs_attention":  sorted(needs_attention, key=lambda x: -(x["days_inactive"] or 999)),
+        "pending_submissions": pending_submissions[:5],
+        "pending_meetings": pending_meetings[:5],
+    })
+
+
+# ─────────────────────────────────────────────
 # Reports
 # ─────────────────────────────────────────────
 
@@ -1336,6 +1470,8 @@ with app.app_context():
             "ALTER TABLE student_profiles ADD COLUMN current_job TEXT DEFAULT ''",
             "ALTER TABLE student_profiles ADD COLUMN years_experience INTEGER",
             "ALTER TABLE student_profiles ADD COLUMN reason_for_guidance TEXT DEFAULT ''",
+            "ALTER TABLE meetings ADD COLUMN meeting_type TEXT DEFAULT 'progress_review'",
+            "ALTER TABLE student_profiles ADD COLUMN resume_file TEXT DEFAULT ''",
         ]:
             try:
                 _conn.execute(db.text(_stmt))

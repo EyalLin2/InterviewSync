@@ -48,6 +48,7 @@ class StudentProfile(db.Model):
     process_start_date          = db.Column(db.Date, nullable=True)
     target_end_date             = db.Column(db.Date, nullable=True)
     mentor_notes                = db.Column(db.Text, default="")
+    resume_file                 = db.Column(db.String(512), default="")   # uploaded CV file path
     student_status              = db.Column(db.String(20), default="active")
     # active | paused | completed
     # ── Type-specific fields ──────────────────────────────────────────
@@ -96,6 +97,9 @@ class Meeting(db.Model):
     duration_min = db.Column(db.Integer, default=60)
     notes        = db.Column(db.Text, default="")
     status       = db.Column(db.String(20), default="pending")
+    # pending | confirmed | cancelled | completed
+    meeting_type = db.Column(db.String(30), default="progress_review")
+    # intake | progress_review | support | other
     created_at   = db.Column(db.DateTime, default=datetime.utcnow)
 
 
