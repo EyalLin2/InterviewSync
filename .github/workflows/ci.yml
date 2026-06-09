@@ -3,13 +3,13 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
+      - main
       - "feature/**"
-      - master
     tags:
       - "v*.*.*"
   pull_request:
     branches:
-      - master
+      - main
 
 env:
   AWS_REGION:     eu-west-1
@@ -18,7 +18,7 @@ env:
   FRONTEND_IMAGE: interviewsync-frontend
 
 # ──────────────────────────────────────────────
-# JOB 1 — Lint + Test (all branches)
+# JOB 1 — Lint + Test (all branches + PRs)
 # ──────────────────────────────────────────────
 jobs:
   lint-and-test:
@@ -72,7 +72,7 @@ jobs:
         run: pytest frontend/tests/ -v --tb=short
 
   # ──────────────────────────────────────────────
-  # JOB 2 — Docker Build (no push, validates Dockerfiles)
+  # JOB 2 — Docker Build (validates Dockerfiles, no push)
   # ──────────────────────────────────────────────
   build:
     name: Docker Build
@@ -103,13 +103,14 @@ jobs:
           cache-to: type=gha,mode=max
 
   # ──────────────────────────────────────────────
-  # JOB 3 — Push to ECR + deploy STAGING (master only)
+  # JOB 3 — Push to ECR + deploy STAGING (main only)
+  # Skipped gracefully if AWS secrets are not configured.
   # ──────────────────────────────────────────────
   deploy-staging:
     name: Deploy → Staging
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
       - uses: actions/checkout@v4
@@ -147,24 +148,30 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Trigger ArgoCD staging sync
-        if: secrets.ARGOCD_SERVER != ''
+        # Expose secrets as env vars — secrets cannot be compared directly in `if:`
+        env:
+          ARGOCD_SERVER:     ${{ secrets.ARGOCD_SERVER }}
+          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
         run: |
-          curl -sf -X POST \
-            -H "Authorization: Bearer ${{ secrets.ARGOCD_AUTH_TOKEN }}" \
-            "${{ secrets.ARGOCD_SERVER }}/api/v1/applications/interviewsync-backend-staging/sync" || true
-          curl -sf -X POST \
-            -H "Authorization: Bearer ${{ secrets.ARGOCD_AUTH_TOKEN }}" \
-            "${{ secrets.ARGOCD_SERVER }}/api/v1/applications/interviewsync-frontend-staging/sync" || true
+          if [ -n "$ARGOCD_SERVER" ]; then
+            curl -sf -X POST \
+              -H "Authorization: Bearer ${ARGOCD_AUTH_TOKEN}" \
+              "${ARGOCD_SERVER}/api/v1/applications/interviewsync-backend-staging/sync" || true
+            curl -sf -X POST \
+              -H "Authorization: Bearer ${ARGOCD_AUTH_TOKEN}" \
+              "${ARGOCD_SERVER}/api/v1/applications/interviewsync-frontend-staging/sync" || true
+          fi
 
       - name: Notify Slack — staging deployed
-        if: secrets.SLACK_WEBHOOK_URL != ''
-        uses: slackapi/slack-github-action@v2.0.0
-        with:
-          payload: |
-            {"text": "✅ *InterviewSync* deployed to *staging* — `${{ github.sha }}` by ${{ github.actor }}"}
+        if: success()
         env:
-          SLACK_WEBHOOK_URL:  ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -n "$SLACK_WEBHOOK_URL" ]; then
+            curl -sf -X POST -H 'Content-type: application/json' \
+              --data "{\"text\": \"✅ *InterviewSync* deployed to *staging* — \`${{ github.sha }}\` by ${{ github.actor }}\"}" \
+              "$SLACK_WEBHOOK_URL" || true
+          fi
 
   # ──────────────────────────────────────────────
   # JOB 4 — Push versioned tag + deploy PRODUCTION
@@ -172,7 +179,7 @@ jobs:
   deploy-production:
     name: Deploy → Production
     runs-on: ubuntu-latest
-    needs: lint-and-test
+    needs: build
     if: startsWith(github.ref, 'refs/tags/v')
 
     steps:
@@ -215,31 +222,37 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Trigger ArgoCD production sync
-        if: secrets.ARGOCD_SERVER != ''
+        env:
+          ARGOCD_SERVER:     ${{ secrets.ARGOCD_SERVER }}
+          ARGOCD_AUTH_TOKEN: ${{ secrets.ARGOCD_AUTH_TOKEN }}
         run: |
-          curl -sf -X POST \
-            -H "Authorization: Bearer ${{ secrets.ARGOCD_AUTH_TOKEN }}" \
-            "${{ secrets.ARGOCD_SERVER }}/api/v1/applications/interviewsync-backend-prod/sync" || true
-          curl -sf -X POST \
-            -H "Authorization: Bearer ${{ secrets.ARGOCD_AUTH_TOKEN }}" \
-            "${{ secrets.ARGOCD_SERVER }}/api/v1/applications/interviewsync-frontend-prod/sync" || true
+          if [ -n "$ARGOCD_SERVER" ]; then
+            curl -sf -X POST \
+              -H "Authorization: Bearer ${ARGOCD_AUTH_TOKEN}" \
+              "${ARGOCD_SERVER}/api/v1/applications/interviewsync-backend-prod/sync" || true
+            curl -sf -X POST \
+              -H "Authorization: Bearer ${ARGOCD_AUTH_TOKEN}" \
+              "${ARGOCD_SERVER}/api/v1/applications/interviewsync-frontend-prod/sync" || true
+          fi
 
       - name: Notify Slack — production deployed
-        if: secrets.SLACK_WEBHOOK_URL != ''
-        uses: slackapi/slack-github-action@v2.0.0
-        with:
-          payload: |
-            {"text": "🚀 *InterviewSync ${{ steps.version.outputs.tag }}* deployed to *production* by ${{ github.actor }}"}
+        if: success()
         env:
-          SLACK_WEBHOOK_URL:  ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -n "$SLACK_WEBHOOK_URL" ]; then
+            curl -sf -X POST -H 'Content-type: application/json' \
+              --data "{\"text\": \"🚀 *InterviewSync ${{ steps.version.outputs.tag }}* deployed to *production* by ${{ github.actor }}\"}" \
+              "$SLACK_WEBHOOK_URL" || true
+          fi
 
       - name: Notify Slack — build failure
-        if: ${{ failure() && secrets.SLACK_WEBHOOK_URL != '' }}
-        uses: slackapi/slack-github-action@v2.0.0
-        with:
-          payload: |
-            {"text": "❌ *InterviewSync* CI failed on `${{ github.ref }}` — <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>"}
+        if: failure()
         env:
-          SLACK_WEBHOOK_URL:  ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          if [ -n "$SLACK_WEBHOOK_URL" ]; then
+            curl -sf -X POST -H 'Content-type: application/json' \
+              --data "{\"text\": \"❌ *InterviewSync* CI failed on \`${{ github.ref }}\` — ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+              "$SLACK_WEBHOOK_URL" || true
+          fi

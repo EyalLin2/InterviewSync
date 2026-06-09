@@ -746,7 +746,6 @@ def student_billing_history_proxy(sid):
 @app.route("/admin/private/assignment/<int:at_id>/complete", methods=["POST"])
 @admin_required
 def admin_complete_task(at_id):
-    from flask import jsonify as _j
     note = request.form.get("note","").strip()
     r = api_patch(f"/api/admin/assignments/{at_id}/complete",
                   json={"note": note})
