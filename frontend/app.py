@@ -80,6 +80,7 @@ class _FakeResponse:
         self.status_code = status_code
         self._data = data
     def json(self): return self._data
+    @property
     def ok(self):   return False
 
 
@@ -401,7 +402,6 @@ def student_file(sid):
             r = api_patch(f"/api/students/{sid}/profile", json={
                 "process_start_date": request.form.get("process_start_date") or None,
                 "target_end_date":    request.form.get("target_end_date")    or None,
-                "mentor_notes":       request.form.get("mentor_notes", ""),
                 "student_status":     request.form.get("student_status", "active"),
             })
             _flash_from_response(r, "הגדרות התהליך נשמרו.")
@@ -470,6 +470,20 @@ def student_file(sid):
         billing_info=billing_info,
         services=services,
     )
+
+
+@app.route("/admin/private/student/<int:sid>/delete", methods=["POST"])
+@admin_required
+def admin_delete_student(sid):
+    r = api_delete(f"/api/students/{sid}")
+    if r.status_code == 200:
+        flash("הסטודנט נמחק.", "success")
+    else:
+        try:
+            flash(r.json().get("error", "שגיאה."), "danger")
+        except Exception:
+            flash("שגיאה במחיקה.", "danger")
+    return redirect(url_for("admin_dashboard"))
 
 
 @app.route("/admin/private/student/<int:sid>/report")
@@ -597,9 +611,10 @@ def services_settings_post():
 @app.route("/admin/private/student/<int:sid>/billing-settings", methods=["POST"])
 @admin_required
 def student_billing_set(sid):
+    _cp = request.form.get("custom_price", "").strip()
     r = api_post(f"/api/students/{sid}/billing", json={
         "service_id":   request.form.get("service_id", type=int),
-        "custom_price": float(request.form.get("custom_price",0) or 0) or None,
+        "custom_price": float(_cp) if _cp else None,
     })
     _flash_from_response(r, "הגדרות חיוב עודכנו.")
     return redirect(url_for("student_file", sid=sid))
@@ -685,27 +700,7 @@ def admin_intake(sid):
     student = r_student.json()
 
     if request.method == "POST":
-        r = api_post("/api/auth/onboarding",
-            json={
-                "full_name":                   request.form.get("full_name","").strip(),
-                "email":                       request.form.get("email","").strip(),
-                "phone":                       request.form.get("phone","").strip(),
-                "education_level":             request.form.get("education_level","").strip(),
-                "current_occupation_or_grade": request.form.get("current_occupation_or_grade","").strip(),
-                "career_goals":                request.form.get("career_goals","").strip(),
-                "fears_weaknesses":            request.form.get("fears_weaknesses","").strip(),
-                "interests_hobbies":           request.form.get("interests_hobbies","").strip(),
-                "institution_name":            request.form.get("institution_name","").strip(),
-                "graduation_year":             request.form.get("graduation_year") or None,
-                "current_job":                 request.form.get("current_job","").strip(),
-                "years_experience":            request.form.get("years_experience") or None,
-                "reason_for_guidance":         request.form.get("reason_for_guidance","").strip(),
-            },
-            # Override user_id in token to be student's id
-        )
-        # Actually we need to call PATCH /api/students/<sid>/profile instead
-        # since this is admin editing on behalf of student
-        r2 = api_patch(f"/api/students/{sid}/profile", json={
+        r = api_patch(f"/api/students/{sid}/profile", json={
             "full_name":                   request.form.get("full_name","").strip(),
             "email":                       request.form.get("email","").strip(),
             "phone":                       request.form.get("phone","").strip(),
@@ -720,16 +715,14 @@ def admin_intake(sid):
             "years_experience":            request.form.get("years_experience") or None,
             "reason_for_guidance":         request.form.get("reason_for_guidance","").strip(),
         })
-        if r2.status_code == 200:
-            # Save intake notes as mentor note
+        if r.status_code == 200:
             intake_note = request.form.get("intake_notes","").strip()
             if intake_note:
                 api_post(f"/api/students/{sid}/notes", json={"text": f"[שאלון קבלה] {intake_note}"})
-            # Regenerate AI strategy
             api_post(f"/api/ai/coaching-strategy/{sid}")
             flash("השאלון נשמר ואסטרטגיית הדרכה עודכנה. ✓", "success")
         else:
-            flash(r2.json().get("error","שגיאה."), "danger")
+            flash(r.json().get("error","שגיאה."), "danger")
         return redirect(url_for("student_file", sid=sid))
 
     return render_template("admin_intake.html",

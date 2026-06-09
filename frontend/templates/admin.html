@@ -118,7 +118,7 @@
           <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-warning text-dark" style="font-size:.58rem;">{{ upcoming_count }}</span>
         {% endif %}
       </a>
-      <span class="text-white-50 small">{{ user.username }}</span>
+      <span class="text-white-50 small">{{ user.name }}</span>
       <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">התנתקות</a>
     </div>
   </nav>
@@ -351,11 +351,15 @@
                         <span class="text-muted" style="font-size:.72rem;">—</span>
                       {% endif %}
                     </td>
-                    <td>
+                    <td class="d-flex gap-1">
                       <a href="{{ url_for('student_file', sid=s.id) }}"
                          class="btn btn-sm btn-primary-crm text-white fw-semibold">
                         תיק &#8592;
                       </a>
+                      <form method="POST" action="{{ url_for('admin_delete_student', sid=s.id) }}"
+                            onsubmit="return confirm('למחוק סטודנט זה לצמיתות? לא ניתן לשחזר.')">
+                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1" style="font-size:.7rem;" title="מחק סטודנט">&#128465;</button>
+                      </form>
                     </td>
                   </tr>
                 {% endfor %}

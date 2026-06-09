@@ -285,8 +285,9 @@ def _task_dict(t: TaskBank) -> dict:
 
 
 def _assignment_dict(at: AssignedTask) -> dict:
+    task = at.task  # may be None if task was deleted
     return {
-        "id": at.id, "task_id": at.task_id, "task": _task_dict(at.task),
+        "id": at.id, "task_id": at.task_id, "task": _task_dict(task) if task else {"id": at.task_id, "title": "משימה מחוקה", "description": "", "category": "כללי", "task_type": "task", "resource_file": "", "assigned_count": 0, "completed_count": 0, "completion_rate": 0},
         "status": at.status,
         "assigned_at":  at.assigned_at.isoformat()  if at.assigned_at  else None,
         "completed_at": at.completed_at.isoformat() if at.completed_at else None,
@@ -438,6 +439,24 @@ def list_students():
     return jsonify(result)
 
 
+@app.route("/api/students/<int:sid>", methods=["DELETE"])
+@require_admin
+def delete_student(sid):
+    """Delete a student and all their data."""
+    student = User.query.filter_by(id=sid, role="student").first_or_404()
+    # Cascade delete related data
+    AssignedTask.query.filter_by(user_id=sid).delete()
+    Meeting.query.filter_by(student_id=sid).delete()
+    MentorNote.query.filter_by(student_id=sid).delete()
+    BillingRecord.query.filter_by(student_id=sid).delete()
+    StudentBilling.query.filter_by(student_id=sid).delete()
+    if student.profile:
+        db.session.delete(student.profile)
+    db.session.delete(student)
+    db.session.commit()
+    return jsonify({"ok": True})
+
+
 @app.route("/api/students", methods=["POST"])
 @require_admin
 def create_student():
@@ -506,9 +525,11 @@ def update_student_profile(sid):
     # Text fields editable by mentor
     for field in ("mentor_notes", "student_status",
                   "career_goals", "fears_weaknesses", "full_name",
-                  "email", "phone", "education_level", "current_occupation_or_grade"):
+                  "email", "education_level", "current_occupation_or_grade"):
         if field in body:
             setattr(p, field, body[field])
+    if "phone" in body:
+        p.phone = normalize_phone(body["phone"]) if body["phone"] else ""
     db.session.commit()
     return jsonify({"ok": True, "profile": _profile_dict(p)})
 
@@ -885,6 +906,8 @@ def list_meetings():
                                Workshop.status != "cancelled")
                        .order_by(Workshop.scheduled_at).all())
     for w in month_workshops:
+        if not w.scheduled_at:
+            continue  # guard: scheduled_at is nullable
         by_day.setdefault(w.scheduled_at.day, []).append({
             "id": w.id, "name": w.title,
             "time": w.scheduled_at.strftime("%H:%M"),
@@ -901,7 +924,7 @@ def list_meetings():
     upcoming_workshops = [
         {"id": w.id, "name": w.title,
          "scheduled_at": w.scheduled_at.isoformat(),
-         "duration_min": 60,
+         "duration_min": w.duration_min if hasattr(w, "duration_min") and w.duration_min else 60,
          "status": w.status, "notes": w.notes or "",
          "event_type": "workshop",
          "topic": w.topic_category or ""}
@@ -909,6 +932,7 @@ def list_meetings():
             .filter(Workshop.scheduled_at >= datetime.utcnow())
             .filter(Workshop.status != "cancelled")
             .order_by(Workshop.scheduled_at).limit(5).all()
+        if w.scheduled_at
     ]
 
     cal_weeks = _cal.Calendar(firstweekday=6).monthdayscalendar(year, month)
@@ -1444,12 +1468,16 @@ def _build_student_context(sid: int) -> str:
         lines.append("\nמשימות פעילות:")
         for a in active:
             t = a.task
+            if not t:
+                continue  # task was deleted
             age = (datetime.utcnow() - a.assigned_at).days if a.assigned_at else 0
             lines.append(f"  • {t.title} [{t.category}] — מחכה {age} ימים")
 
     if completed:
         lines.append("\nמשימות שהושלמו לאחרונה:")
         for a in completed:
+            if not a.task:
+                continue
             note = f" | הגשה: {a.submission_note[:80]}" if a.submission_note else ""
             lines.append(f"  ✓ {a.task.title}{note}")
 
@@ -1739,15 +1767,20 @@ def generate_billing(month):
 
         if svc.unit == "per_session":
             amount = meeting_count * price
+            if amount == 0:
+                continue  # no meetings → no charge record for per-session
         else:
             amount = price  # monthly / fixed
 
-        # Upsert
+        # Upsert — do NOT overwrite already-paid records
         rec = BillingRecord.query.filter_by(
             student_id=student.id, month=month).first()
         if not rec:
             rec = BillingRecord(student_id=student.id, month=month)
             db.session.add(rec)
+        elif rec.paid_at:
+            created += 1
+            continue  # already paid — skip recalculation
         rec.service_id     = sb.service_id
         rec.meetings_count = meeting_count
         rec.amount_due     = amount
@@ -1883,21 +1916,21 @@ def meetings_report():
 # Inactivity reminder (APScheduler daily job)
 # ─────────────────────────────────────────────
 
-# In-memory set to avoid duplicate sends on the same calendar day
-_notified_today: set = set()
-
-
 def check_inactive_students():
     """Daily: send WhatsApp to students who haven't been active in X days."""
     threshold = int(os.environ.get("INACTIVITY_DAYS", 7))
     cutoff    = datetime.utcnow() - timedelta(days=threshold)
-    today_key = datetime.utcnow().strftime("%Y-%m-%d")
+    today     = date.today()
 
     with app.app_context():
         students = User.query.filter_by(role="student").all()
         for s in students:
-            if f"{today_key}:{s.id}" in _notified_today:
-                continue  # already notified today
+            p = s.profile
+            if not p or not p.phone:
+                continue
+
+            if p.last_reminder_sent == today:
+                continue  # already notified today (survives restarts and multi-worker)
 
             last_task = (AssignedTask.query
                          .filter_by(user_id=s.id, status="completed")
@@ -1917,21 +1950,21 @@ def check_inactive_students():
             if last_activity and last_activity > cutoff:
                 continue  # active
 
-            p = s.profile
-            if not p or not p.phone:
-                continue
-
             pending = AssignedTask.query.filter_by(user_id=s.id, status="pending").count()
             if pending == 0:
                 continue
 
             name = p.full_name or s.username
-            ok, _ = send_whatsapp(p.phone,
-                f"שלום {name}! לא ראינו אותך פעיל/ה בתוכנית לאחרונה. "
-                f"יש לך {pending} משימות ממתינות — היכנס/י ותמשיך/י 💪")
-            if ok:
-                _notified_today.add(f"{today_key}:{s.id}")
-                app.logger.info("Inactivity reminder sent to student %s", s.username)
+            try:
+                ok, _ = send_whatsapp(p.phone,
+                    f"שלום {name}! לא ראינו אותך פעיל/ה בתוכנית לאחרונה. "
+                    f"יש לך {pending} משימות ממתינות — היכנס/י ותמשיך/י 💪")
+                if ok:
+                    p.last_reminder_sent = today
+                    db.session.commit()
+                    app.logger.info("Inactivity reminder sent to student %s", s.username)
+            except Exception as e:
+                app.logger.error("Inactivity reminder failed for %s: %s", s.username, e)
 
 
 # Start scheduler (only in production/gunicorn, not in pytest)
@@ -2009,6 +2042,7 @@ with app.app_context():
             "ALTER TABLE meetings ADD COLUMN meeting_type TEXT DEFAULT 'progress_review'",
             "ALTER TABLE student_profiles ADD COLUMN resume_file TEXT DEFAULT ''",
             "ALTER TABLE student_profiles ADD COLUMN ai_strategy_updated_at TIMESTAMP",
+            "ALTER TABLE student_profiles ADD COLUMN last_reminder_sent DATE",
         ]:
             try:
                 _conn.execute(db.text(_stmt))

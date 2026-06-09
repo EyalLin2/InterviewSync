@@ -51,7 +51,7 @@
     <span class="navbar-brand-text">&#127891; InterviewSync</span>
     <div class="ms-auto d-flex align-items-center gap-3">
       <a href="{{ url_for('student_schedule') }}" class="btn btn-outline-light btn-sm">&#128197; פגישות</a>
-      <span class="text-white-50 small">שלום, <strong class="text-white">{{ profile.full_name.split()[0] if profile and profile.full_name else user.username }}</strong></span>
+      <span class="text-white-50 small">שלום, <strong class="text-white">{{ profile.full_name.split()[0] if profile and profile.full_name else user.name }}</strong></span>
       <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">התנתקות</a>
     </div>
   </nav>

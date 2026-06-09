@@ -248,7 +248,7 @@
     <div class="ms-auto d-flex align-items-center gap-3">
       <a href="{{ url_for('admin_hub') }}" class="btn btn-outline-light btn-sm">&#8592; לוח הבית</a>
       <a href="{{ url_for('admin_schedule') }}" class="btn btn-outline-light btn-sm">&#128197; לוז</a>
-      <span class="text-white-50 small">{{ user.username }}</span>
+      <span class="text-white-50 small">{{ user.name }}</span>
       <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">התנתקות</a>
     </div>
   </nav>
@@ -312,7 +312,6 @@
                  value="{{ profile.process_start_date if profile and profile.process_start_date else '' }}">
           <input type="hidden" name="target_end_date"
                  value="{{ profile.target_end_date if profile and profile.target_end_date else '' }}">
-          <input type="hidden" name="mentor_notes" value="">
           <select name="student_status" class="status-select st-{{ cur_status }}"
                   id="statusSel" onchange="this.className='status-select st-'+this.value; this.form.submit()">
             <option value="active"    {{ 'selected' if cur_status=='active' }}>&#9889; פעיל</option>
@@ -324,6 +323,11 @@
           <button class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:.78rem;"
                   data-bs-toggle="modal" data-bs-target="#editModal">&#9998; ערוך</button>
         {% endif %}
+        <form method="POST" action="{{ url_for('admin_delete_student', sid=student.id) }}"
+              onsubmit="return confirm('למחוק לצמיתות? לא ניתן לשחזר.')"
+              class="no-print">
+          <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:.75rem;">&#128465; מחק</button>
+        </form>
       </div>
     </div>
 
@@ -527,7 +531,6 @@
                   <form method="POST" class="row g-2 align-items-end">
                     <input type="hidden" name="action" value="save_profile_settings">
                     <input type="hidden" name="student_status" value="{{ cur_status }}">
-                    <input type="hidden" name="mentor_notes" value="">
                     <div class="col-sm-4">
                       <label class="form-label fw-semibold" style="font-size:.72rem;">תחילת ליווי</label>
                       <input type="date" name="process_start_date" class="form-control form-control-sm"

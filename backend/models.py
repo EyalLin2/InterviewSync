@@ -62,6 +62,7 @@ class StudentProfile(db.Model):
     current_job                 = db.Column(db.String(200), default="")
     years_experience            = db.Column(db.Integer, nullable=True)
     reason_for_guidance         = db.Column(db.Text, default="")
+    last_reminder_sent          = db.Column(db.Date, nullable=True)
     created_at                  = db.Column(db.DateTime, default=datetime.utcnow)
 
 
