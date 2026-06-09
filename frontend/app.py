@@ -757,6 +757,27 @@ def admin_complete_task(at_id):
     return redirect(url_for("student_file", sid=sid) if sid else url_for("admin_dashboard"))
 
 
+@app.route("/admin/private/assignment/<int:at_id>/feedback", methods=["POST"])
+@admin_required
+def admin_task_feedback(at_id):
+    feedback = request.form.get("feedback", "").strip()
+    r = api_patch(f"/api/admin/assignments/{at_id}/feedback",
+                  json={"feedback": feedback})
+    if r.status_code == 200:
+        flash("הפידבק נשמר ✓", "success")
+    else:
+        flash("שגיאה בשמירת הפידבק.", "danger")
+    sid = request.form.get("student_id", "")
+    return redirect(url_for("student_file", sid=sid) if sid else url_for("admin_dashboard"))
+
+
+@app.route("/my/tasks/<int:tid>/feedback-seen", methods=["POST"])
+@login_required
+def task_feedback_seen(tid):
+    api_post(f"/api/my/tasks/{tid}/feedback-seen")
+    return ("", 204)
+
+
 @app.route("/admin/private/student/<int:sid>/upload-cv", methods=["POST"])
 @admin_required
 def admin_upload_cv(sid):

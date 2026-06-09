@@ -88,6 +88,9 @@ class AssignedTask(db.Model):
     completed_at    = db.Column(db.DateTime, nullable=True)
     submission_note = db.Column(db.Text, default="")
     submission_file = db.Column(db.String(512), default="")
+    feedback        = db.Column(db.Text, default="")
+    feedback_at     = db.Column(db.DateTime, nullable=True)
+    feedback_seen   = db.Column(db.Boolean, default=False)
     __table_args__  = (db.UniqueConstraint("user_id", "task_id", name="uq_assigned_task"),)
 
 

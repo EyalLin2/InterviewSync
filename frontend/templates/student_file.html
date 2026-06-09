@@ -793,6 +793,27 @@
                           &#128206; קובץ מצורף
                         </a>
                       {% endif %}
+                      {# Feedback block #}
+                      <div class="mt-2 pt-2 border-top" style="border-color:#f0f1f5!important;">
+                        <form method="POST"
+                              action="{{ url_for('admin_task_feedback', at_id=at.id) }}"
+                              class="d-flex gap-2 align-items-start">
+                          <input type="hidden" name="student_id" value="{{ sid }}">
+                          <textarea name="feedback" rows="2"
+                                    class="form-control form-control-sm flex-grow-1"
+                                    style="font-size:.78rem; resize:vertical;"
+                                    placeholder="פידבק למנטור (יישלח ל-WhatsApp לתלמיד)...">{{ at.feedback or '' }}</textarea>
+                          <button type="submit" class="btn btn-sm btn-outline-success fw-semibold flex-shrink-0"
+                                  style="font-size:.75rem; white-space:nowrap;">
+                            {% if at.feedback %}עדכן{% else %}שמור{% endif %} פידבק
+                          </button>
+                        </form>
+                        {% if at.feedback_at %}
+                          <div class="text-muted" style="font-size:.7rem;">
+                            נשלח {{ at.feedback_at | dt }} {% if not at.feedback_seen %}<span class="badge bg-warning text-dark" style="font-size:.65rem;">טרם נצפה</span>{% endif %}
+                          </div>
+                        {% endif %}
+                      </div>
                     </div>
                   </div>
                 {% endfor %}

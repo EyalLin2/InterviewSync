@@ -292,6 +292,9 @@ def _assignment_dict(at: AssignedTask) -> dict:
         "assigned_at":  at.assigned_at.isoformat()  if at.assigned_at  else None,
         "completed_at": at.completed_at.isoformat() if at.completed_at else None,
         "submission_note": at.submission_note, "submission_file": at.submission_file,
+        "feedback": at.feedback or "",
+        "feedback_at": at.feedback_at.isoformat() if at.feedback_at else None,
+        "feedback_seen": bool(at.feedback_seen),
     }
 
 
@@ -847,6 +850,41 @@ def admin_complete_task(at_id):
         at.submission_note = note
     db.session.commit()
     return jsonify({"ok": True, "completed_at": at.completed_at.isoformat()})
+
+
+@app.route("/api/admin/assignments/<int:at_id>/feedback", methods=["PATCH"])
+@require_admin
+def set_task_feedback(at_id):
+    """Admin leaves feedback on a student's completed task."""
+    at = AssignedTask.query.get_or_404(at_id)
+    body = request.get_json() or {}
+    feedback_text = body.get("feedback", "").strip()
+    if not feedback_text:
+        return jsonify({"error": "feedback required"}), 400
+    at.feedback      = feedback_text
+    at.feedback_at   = datetime.utcnow()
+    at.feedback_seen = False
+    db.session.commit()
+
+    student = db.session.get(User, at.user_id)
+    p = student.profile if student else None
+    if p and p.phone and at.task:
+        send_whatsapp(p.phone,
+            f"המנטור שלך השאיר/ה פידבק על המשימה '{at.task.title}' — התחבר/י לצפות 👇")
+
+    return jsonify({"ok": True, "feedback_at": at.feedback_at.isoformat()})
+
+
+@app.route("/api/my/tasks/<int:tid>/feedback-seen", methods=["POST"])
+@require_auth
+def mark_feedback_seen(tid):
+    """Student marks feedback on a task as seen."""
+    at = (AssignedTask.query
+          .filter_by(task_id=tid, user_id=request.user_id)
+          .first_or_404())
+    at.feedback_seen = True
+    db.session.commit()
+    return jsonify({"ok": True})
 
 
 @app.route("/api/my/meetings")
@@ -2043,6 +2081,9 @@ with app.app_context():
             "ALTER TABLE student_profiles ADD COLUMN resume_file TEXT DEFAULT ''",
             "ALTER TABLE student_profiles ADD COLUMN ai_strategy_updated_at TIMESTAMP",
             "ALTER TABLE student_profiles ADD COLUMN last_reminder_sent DATE",
+            "ALTER TABLE assigned_tasks ADD COLUMN feedback TEXT DEFAULT ''",
+            "ALTER TABLE assigned_tasks ADD COLUMN feedback_at TIMESTAMP",
+            "ALTER TABLE assigned_tasks ADD COLUMN feedback_seen BOOLEAN DEFAULT FALSE",
         ]:
             try:
                 _conn.execute(db.text(_stmt))

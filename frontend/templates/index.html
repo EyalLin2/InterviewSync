@@ -173,14 +173,32 @@
       <div class="section-hdr">&#10003; משימות שהושלמו ({{ completed|length }})</div>
       {% for at in completed %}
         {% set t = at.task %}
-        <div class="task-done d-flex align-items-start gap-3">
+        {% set has_new_feedback = at.feedback and not at.feedback_seen %}
+        <div class="task-done d-flex align-items-start gap-3"
+             style="{{ 'border-right: 3px solid #f59e0b; padding-right:.75rem;' if has_new_feedback else '' }}">
           <span class="text-success fw-bold fs-5 flex-shrink-0">&#10003;</span>
           <div class="flex-grow-1">
-            <div class="task-title">{{ t.title }}</div>
-            <div class="text-muted" style="font-size:.75rem;">הושלם {{ at.completed_at| dt if at.completed_at else '' }}</div>
+            <div class="d-flex align-items-center gap-2">
+              <div class="task-title">{{ t.title }}</div>
+              {% if has_new_feedback %}
+                <span class="badge bg-warning text-dark" style="font-size:.68rem;">פידבק חדש! &#9660;</span>
+              {% endif %}
+            </div>
+            <div class="text-muted" style="font-size:.75rem;">הושלם {{ at.completed_at | dt if at.completed_at else '' }}</div>
             {% if at.submission_file %}
               <a href="{{ '/files/' + at.submission_file if at.submission_file else '' }}" target="_blank"
                  class="resource-link mt-1" style="font-size:.75rem;">&#128206; קובץ שהגשת</a>
+            {% endif %}
+            {# Feedback from mentor #}
+            {% if at.feedback %}
+              <div class="mt-2 p-2 rounded-3"
+                   style="background:#fffbeb; border:1px solid #fde68a; font-size:.8rem;"
+                   {% if has_new_feedback %}data-feedback-seen="{{ url_for('task_feedback_seen', tid=at.task_id) }}"{% endif %}>
+                <div class="fw-semibold text-warning-emphasis mb-1" style="font-size:.72rem;">&#128172; פידבק מהמנטור</div>
+                {{ at.feedback }}
+              </div>
+            {% else %}
+              <div class="text-muted mt-1" style="font-size:.73rem; font-style:italic;">ממתין לפידבק מהמנטור...</div>
             {% endif %}
           </div>
         </div>
@@ -190,5 +208,11 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Mark new feedback as seen when it appears on screen
+    document.querySelectorAll('[data-feedback-seen]').forEach(el => {
+      fetch(el.dataset.feedbackSeen, {method: 'POST'}).catch(() => {});
+    });
+  </script>
 </body>
 </html>
