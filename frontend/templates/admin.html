@@ -47,6 +47,12 @@
     .wa-dot-on  { background:#25d366; }
     .wa-dot-off { background:#d1d5db; }
 
+    /* Risk dots */
+    .risk-dot { width:10px; height:10px; border-radius:50%; display:inline-block; flex-shrink:0; cursor:default; }
+    .risk-red    { background:#ef4444; box-shadow:0 0 0 2px #fee2e2; }
+    .risk-yellow { background:#f59e0b; box-shadow:0 0 0 2px #fef3c7; }
+    .risk-green  { background:#10b981; box-shadow:0 0 0 2px #d1fae5; }
+
     /* Task bank cards */
     .task-bank-card {
       background:#fff; border-radius:12px;
@@ -305,6 +311,8 @@
                   {% set acolor = avatar_colors[loop.index0 % 6] %}
                   {% set act_days = s.last_activity_days %}
                   {% set sts = p.student_status if p else 'active' %}
+                  {% set risk_info = risk_map.get(s.id, {}) %}
+                  {% set risk_level = risk_info.get('risk', 'green') %}
                   <tr data-name="{{ (p.full_name or s.username) | lower }}"
                       data-type="{{ p.education_level if p else '' }}"
                       data-status="{{ sts }}"
@@ -319,7 +327,15 @@
                           {{ (p.full_name if p and p.full_name else s.username)[0].upper() }}
                         </div>
                         <div>
-                          <div class="fw-semibold">{{ p.full_name if p and p.full_name else s.username }}</div>
+                          <div class="fw-semibold d-flex align-items-center gap-1">
+                            {{ p.full_name if p and p.full_name else s.username }}
+                            {% if sts == 'active' %}
+                              <span class="risk-dot risk-{{ risk_level }}"
+                                    title="{{ risk_info.get('reason', '') }}"
+                                    data-bs-toggle="tooltip" data-bs-placement="top"
+                                    data-bs-title="{{ risk_info.get('reason', '') }}"></span>
+                            {% endif %}
+                          </div>
                           <div class="text-muted" style="font-size:.72rem;">{{ s.username }}</div>
                         </div>
                       </div>
@@ -609,6 +625,13 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+    // Init Bootstrap tooltips (risk dots + any data-bs-toggle="tooltip")
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+        new bootstrap.Tooltip(el, { trigger: 'hover' });
+      });
+    });
+
     // Auto-open taskbank tab if URL hash matches
     if (window.location.hash === '#tab-taskbank') {
       document.getElementById('taskbank-tab-btn').click();

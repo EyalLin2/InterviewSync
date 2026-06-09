@@ -1650,6 +1650,84 @@ def list_submissions(uid: int = Depends(require_admin_user), db: Session = Depen
     return items
 
 
+@app.get("/api/dashboard/risk")
+def dashboard_risk(uid: int = Depends(require_admin_user), db: Session = Depends(get_db)):
+    """Risk score for every active student — computed from DB, no AI calls."""
+    now      = datetime.utcnow()
+    today_d  = date.today()
+    fortnight = now - timedelta(days=14)
+
+    students = db.query(User).filter_by(role="student").all()
+    result   = []
+
+    for s in students:
+        p = s.profile
+        if not p or p.student_status in ("completed", "paused"):
+            continue
+
+        # Last activity
+        last_task = (db.query(AssignedTask).filter_by(user_id=s.id, status="completed")
+                     .order_by(AssignedTask.completed_at.desc()).first())
+        last_meeting = (db.query(Meeting).filter_by(student_id=s.id)
+                        .filter(Meeting.status.in_(["confirmed", "completed"]))
+                        .filter(Meeting.scheduled_at <= now)
+                        .order_by(Meeting.scheduled_at.desc()).first())
+        dates = [d for d in [
+            last_task.completed_at    if last_task    else None,
+            last_meeting.scheduled_at if last_meeting else None,
+        ] if d]
+        last_activity = max(dates) if dates else None
+        inactive_days = (now - last_activity).days if last_activity else None
+
+        # Overdue + velocity
+        active_tasks  = db.query(AssignedTask).filter_by(user_id=s.id, status="pending").all()
+        overdue_count = sum(1 for a in active_tasks if a.due_date and a.due_date < today_d)
+        recent_done   = db.query(AssignedTask).filter_by(user_id=s.id, status="completed") \
+                          .filter(AssignedTask.completed_at >= fortnight).count()
+        has_pending   = len(active_tasks) > 0
+
+        # Scoring
+        reasons = []
+        if inactive_days is not None and inactive_days > 10:
+            reasons.append(f"לא פעיל {inactive_days} ימים")
+        elif inactive_days is None and has_pending:
+            reasons.append("אף פעם לא היה פעיל")
+
+        if overdue_count > 2:
+            reasons.append(f"{overdue_count} משימות באיחור")
+        elif overdue_count > 0:
+            reasons.append(f"{overdue_count} משימה/ות באיחור")
+
+        if has_pending and recent_done == 0 and (inactive_days is None or inactive_days > 7):
+            reasons.append("0 השלמות ב-14 יום")
+
+        # Determine level
+        is_red    = (inactive_days is not None and inactive_days > 10) \
+                    or (inactive_days is None and has_pending) \
+                    or overdue_count > 2 \
+                    or (has_pending and recent_done == 0 and (inactive_days is None or inactive_days > 10))
+        is_yellow = not is_red and (
+                    (inactive_days is not None and inactive_days >= 7)
+                    or overdue_count >= 1
+                    or (has_pending and recent_done == 0))
+
+        risk = "red" if is_red else ("yellow" if is_yellow else "green")
+
+        if risk == "green":
+            reason = f"פעיל לפני {inactive_days} ימים" if inactive_days is not None else "פעיל"
+        else:
+            reason = " | ".join(reasons) if reasons else "דורש מעקב"
+
+        result.append({
+            "id":     s.id,
+            "name":   p.full_name or s.username,
+            "risk":   risk,
+            "reason": reason,
+        })
+
+    return result
+
+
 @app.post("/api/students/bulk-status")
 def bulk_student_status(body: dict = Body(default={}), uid: int = Depends(require_admin_user), db: Session = Depends(get_db)):
     ids    = body.get("ids", [])
