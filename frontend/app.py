@@ -984,6 +984,16 @@ def serve_file(filepath):
                     content_type=r.headers.get("Content-Type", "application/octet-stream"))
 
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template("404.html", user=me()), 404
+
+
+@app.errorhandler(500)
+def internal_error(e):
+    return render_template("500.html", user=me()), 500
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000,
             debug=os.environ.get("FLASK_DEBUG", "false").lower() == "true")

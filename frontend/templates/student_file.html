@@ -574,12 +574,12 @@
                   </div>
                 </div>
                 {% set strategy = profile.ai_coaching_strategy if profile else '' %}
-                {% set is_error = strategy and ('API_KEY' in strategy or 'נכשל' in strategy or 'Gemini' in strategy) %}
+                {% set is_error = strategy and ('API_KEY' in strategy or 'נכשל' in strategy or 'Groq' in strategy or 'Gemini' in strategy) %}
                 {% if strategy and not is_error %}
                   <div class="strategy-box mb-2">{{ strategy }}</div>
                 {% else %}
                   <div class="strategy-box strategy-empty mb-2">
-                    {% if is_error %}&#9888;&#65039; הגדר <code>GROQ_API_KEY</code> ב-docker-compose.yml ולחץ "רענן". מפתח חינמי: console.groq.com
+                    {% if is_error %}&#9888;&#65039; הגדר <code>GROQ_API_KEY</code> ב-docker-compose.yml ולחץ "רענן". מפתח חינמי: <a href="https://console.groq.com" target="_blank" rel="noopener">console.groq.com</a>
                     {% else %}לחץ/י "רענן" לייצור אסטרטגיית הדרכה מותאמת.{% endif %}
                   </div>
                 {% endif %}

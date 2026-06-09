@@ -18,9 +18,12 @@ uploads/
 
 # Environment & secrets (never commit)
 .env
-.env.*
+.env.local
+.env.production
+.env.staging
 values-secret.yaml
 *-secret.yaml
+# .env.example is intentionally tracked (contains no real secrets)
 
 # OS
 .DS_Store

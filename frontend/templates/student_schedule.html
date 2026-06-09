@@ -75,7 +75,7 @@
               {% endif %}
               {% if m.status == 'pending' %}
                 <div class="mt-2">
-                  <a href="{{ url_for('meeting_confirm', meeting_id=m.id, token=m.id | string) }}"
+                  <a href="{{ url_for('meeting_confirm', meeting_id=m.id, token=m.token) }}"
                      class="btn btn-sm btn-success py-0 px-3 fw-semibold" style="font-size:.8rem;">
                     אשר/י פגישה ✓
                   </a>
