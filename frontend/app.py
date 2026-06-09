@@ -209,12 +209,16 @@ def index():
 
     r    = api_get("/api/my/tasks")
     data = r.json() if r.status_code == 200 else {"active": [], "completed": [], "total": 0, "upcoming_meetings": []}
+    from datetime import timedelta
+    _today = _date.today()
     return render_template("index.html",
         user=me(),
         active=data["active"],
         completed=data["completed"],
         total=data["total"],
         upcoming_meetings=data["upcoming_meetings"],
+        today=_today.isoformat(),
+        near_due=(_today + timedelta(days=3)).isoformat(),
     )
 
 
@@ -231,6 +235,42 @@ def complete_task(tid):
              files=files if files else None)
     _flash_from_response(r, "המשימה הושלמה! כל הכבוד ✓")
     return redirect(url_for("index"))
+
+
+@app.route("/settings", methods=["GET", "POST"])
+@login_required
+def student_settings():
+    if session.get("role") == "admin":
+        return redirect(url_for("admin_dashboard"))
+
+    if request.method == "POST":
+        action = request.form.get("action")
+        if action == "update_profile":
+            r = api_patch("/api/my/profile", json={
+                "full_name":        request.form.get("full_name", "").strip(),
+                "email":            request.form.get("email", "").strip(),
+                "phone":            request.form.get("phone", "").strip(),
+                "career_goals":     request.form.get("career_goals", "").strip(),
+                "fears_weaknesses": request.form.get("fears_weaknesses", "").strip(),
+            })
+            _flash_from_response(r, "הפרופיל עודכן בהצלחה ✓")
+        elif action == "change_password":
+            r = api_post("/api/my/password", json={
+                "current_password": request.form.get("current_password", ""),
+                "new_password":     request.form.get("new_password", ""),
+            })
+            if r.status_code == 200:
+                flash("הסיסמה שונתה בהצלחה ✓", "success")
+            else:
+                flash(r.json().get("error", "שגיאה בשינוי הסיסמה."), "danger")
+        return redirect(url_for("student_settings"))
+
+    r_me = api_get("/api/auth/me")
+    data = r_me.json() if r_me.status_code == 200 else {}
+    return render_template("student_settings.html",
+        user=me(),
+        profile=data.get("profile", {}),
+    )
 
 
 @app.route("/schedule")
@@ -384,7 +424,12 @@ def student_file(sid):
 
         if action == "assign_tasks":
             task_ids = request.form.getlist("task_ids", type=int)
-            r = api_post(f"/api/students/{sid}/assignments", json={"task_ids": task_ids})
+            due_dates = {}
+            for tid in task_ids:
+                dd = request.form.get(f"due_date_{tid}", "").strip()
+                if dd:
+                    due_dates[str(tid)] = dd
+            r = api_post(f"/api/students/{sid}/assignments", json={"task_ids": task_ids, "due_dates": due_dates})
             if r.status_code == 200:
                 d = r.json()
                 msg = f"שויכו {d['assigned']} משימות"
@@ -450,6 +495,11 @@ def student_file(sid):
     taskbank   = r_tasks.json()  if r_tasks.status_code  == 200 else []
     notes      = r_notes.json()  if r_notes.status_code  == 200 else []
     categories = sorted({t["category"] for t in taskbank})
+    assigned_due_dates = {
+        at["task_id"]: at["due_date"]
+        for at in student.get("active", []) + student.get("completed", [])
+        if at.get("due_date")
+    }
 
     r_billing = api_get(f"/api/students/{sid}/billing")
     r_svcs    = api_get("/api/services")
@@ -462,6 +512,7 @@ def student_file(sid):
         profile=student.get("profile", {}),
         taskbank=taskbank,
         assigned_ids=set(student.get("assigned_ids", [])),
+        assigned_due_dates=assigned_due_dates,
         active=student.get("active", []),
         completed=student.get("completed", []),
         categories=categories,

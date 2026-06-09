@@ -51,6 +51,7 @@
     <span class="navbar-brand-text">&#127891; InterviewSync</span>
     <div class="ms-auto d-flex align-items-center gap-3">
       <a href="{{ url_for('student_schedule') }}" class="btn btn-outline-light btn-sm">&#128197; פגישות</a>
+      <a href="{{ url_for('student_settings') }}" class="btn btn-outline-light btn-sm">&#9881;&#65039; הגדרות</a>
       <span class="text-white-50 small">שלום, <strong class="text-white">{{ profile.full_name.split()[0] if profile and profile.full_name else user.name }}</strong></span>
       <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">התנתקות</a>
     </div>
@@ -117,6 +118,15 @@
               <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
                 <span class="badge {{ cat_class.get(t.category,'cat-general') }} rounded-pill">{{ t.category }}</span>
                 <span class="badge {{ type_class.get(t.task_type,'type-task') }} rounded-pill">{{ type_label.get(t.task_type,t.task_type) }}</span>
+                {% if at.due_date %}
+                  {% if at.due_date < today %}
+                    <span class="badge rounded-pill" style="background:#fee2e2;color:#991b1b;font-size:.68rem;">באיחור ⚠</span>
+                  {% elif at.due_date <= near_due %}
+                    <span class="badge rounded-pill" style="background:#fef3c7;color:#92400e;font-size:.68rem;">עד {{ at.due_date[8:] }}/{{ at.due_date[5:7] }}</span>
+                  {% else %}
+                    <span class="badge rounded-pill" style="background:#f3f4f6;color:#6b7280;font-size:.68rem;">עד {{ at.due_date[8:] }}/{{ at.due_date[5:7] }}</span>
+                  {% endif %}
+                {% endif %}
               </div>
               <div class="task-title">{{ t.title }}</div>
               {% if t.description %}<div class="task-desc mt-1">{{ t.description }}</div>{% endif %}

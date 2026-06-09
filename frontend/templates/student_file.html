@@ -735,7 +735,13 @@
                 <div class="flex-grow-1">
                   <div class="d-flex align-items-center gap-1 flex-wrap">
                     <div class="task-title">{{ t.title }}</div>
-                    {% if age_days is not none and age_days >= 3 %}
+                    {% if at.due_date %}
+                      {% if at.due_date < now_date.isoformat() %}
+                        <span style="font-size:.65rem;font-weight:700;border-radius:50px;padding:.1rem .45rem;background:#fee2e2;color:#991b1b;">באיחור ⚠</span>
+                      {% else %}
+                        <span style="font-size:.65rem;font-weight:700;border-radius:50px;padding:.1rem .45rem;background:#fef3c7;color:#92400e;">עד {{ at.due_date[8:] }}/{{ at.due_date[5:7] }}</span>
+                      {% endif %}
+                    {% elif age_days is not none and age_days >= 3 %}
                       <span style="font-size:.65rem; font-weight:700; border-radius:50px; padding:.1rem .45rem;
                                    {% if age_days > 7 %}background:#fee2e2; color:#991b1b;
                                    {% else %}background:#fef3c7; color:#92400e;{% endif %}">
@@ -1030,13 +1036,20 @@
                   <div class="assign-cat mb-3">
                     <div class="section-title mb-1">{{ cat }}</div>
                     {% for t in cat_tasks %}
-                      <div class="form-check assign-item mb-1" data-title="{{ t.title | lower }}">
-                        <input class="form-check-input" type="checkbox" name="task_ids" value="{{ t.id }}"
-                               id="mt{{ t.id }}" {{ 'checked' if t.id in assigned_ids }}>
-                        <label class="form-check-label" style="font-size:.84rem;" for="mt{{ t.id }}">
+                      {% set is_checked = t.id in assigned_ids %}
+                      <div class="assign-item mb-1 d-flex align-items-center gap-2" data-title="{{ t.title | lower }}">
+                        <input class="form-check-input flex-shrink-0" type="checkbox" name="task_ids" value="{{ t.id }}"
+                               id="mt{{ t.id }}" {{ 'checked' if is_checked }}
+                               onchange="toggleDueDate(this, {{ t.id }})">
+                        <label class="form-check-label flex-grow-1" style="font-size:.84rem;" for="mt{{ t.id }}">
                           {{ t.title }}
                           {% if t.resource_file %}<span style="color:#9ca3af;font-size:.7rem;"> 📎</span>{% endif %}
                         </label>
+                        <input type="date" name="due_date_{{ t.id }}"
+                               class="form-control form-control-sm flex-shrink-0"
+                               style="max-width:140px;{{ ' display:none;' if not is_checked }}"
+                               value="{{ assigned_due_dates.get(t.id, '') }}"
+                               title="תאריך יעד">
                       </div>
                     {% endfor %}
                   </div>
@@ -1260,6 +1273,11 @@
     }
 
     // ── Task assign filter ───────────────────────────────────────────
+    function toggleDueDate(cb, tid) {
+      const dd = document.querySelector(`[name="due_date_${tid}"]`);
+      if (dd) dd.style.display = cb.checked ? '' : 'none';
+    }
+
     function filterAssign(q) {
       q = q.toLowerCase();
       document.querySelectorAll('#assignList .assign-item').forEach(i => {

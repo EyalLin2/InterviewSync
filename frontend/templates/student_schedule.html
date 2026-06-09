@@ -36,6 +36,7 @@
     <span class="navbar-brand-text">&#127891; InterviewSync</span>
     <div class="ms-auto d-flex align-items-center gap-3">
       <a href="{{ url_for('index') }}" class="btn btn-outline-light btn-sm">&#8592; משימות</a>
+      <a href="{{ url_for('student_settings') }}" class="btn btn-outline-light btn-sm">&#9881;&#65039; הגדרות</a>
       <span class="text-white-50 small">{{ profile.full_name if profile else user.name }}</span>
       <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">התנתקות</a>
     </div>

@@ -91,6 +91,7 @@ class AssignedTask(db.Model):
     feedback        = db.Column(db.Text, default="")
     feedback_at     = db.Column(db.DateTime, nullable=True)
     feedback_seen   = db.Column(db.Boolean, default=False)
+    due_date        = db.Column(db.Date, nullable=True)
     __table_args__  = (db.UniqueConstraint("user_id", "task_id", name="uq_assigned_task"),)
 
 

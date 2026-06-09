@@ -295,6 +295,7 @@ def _assignment_dict(at: AssignedTask) -> dict:
         "feedback": at.feedback or "",
         "feedback_at": at.feedback_at.isoformat() if at.feedback_at else None,
         "feedback_seen": bool(at.feedback_seen),
+        "due_date": at.due_date.isoformat() if at.due_date else None,
     }
 
 
@@ -604,10 +605,11 @@ def upload_student_cv(sid):
 @app.route("/api/students/<int:sid>/assignments", methods=["POST"])
 @require_admin
 def assign_tasks(sid):
-    student  = User.query.filter_by(id=sid, role="student").first_or_404()
-    body     = request.get_json() or {}
-    task_ids = body.get("task_ids", [])
-    existing = {at.task_id: at for at in AssignedTask.query.filter_by(user_id=sid).all()}
+    student   = User.query.filter_by(id=sid, role="student").first_or_404()
+    body      = request.get_json() or {}
+    task_ids  = body.get("task_ids", [])
+    due_dates = body.get("due_dates", {})  # {"task_id_str": "YYYY-MM-DD"}
+    existing  = {at.task_id: at for at in AssignedTask.query.filter_by(user_id=sid).all()}
 
     for tid, at in existing.items():
         if tid not in task_ids and at.status == "pending":
@@ -615,7 +617,25 @@ def assign_tasks(sid):
 
     new_ids = [tid for tid in task_ids if tid not in existing]
     for tid in new_ids:
-        db.session.add(AssignedTask(user_id=sid, task_id=tid))
+        dd_str = due_dates.get(str(tid), "")
+        try:
+            dd = date.fromisoformat(dd_str) if dd_str else None
+        except ValueError:
+            dd = None
+        db.session.add(AssignedTask(user_id=sid, task_id=tid, due_date=dd))
+
+    # Update due_date for already-assigned tasks if a new date is provided
+    for tid in task_ids:
+        if tid in existing:
+            dd_str = due_dates.get(str(tid), "")
+            if dd_str:
+                try:
+                    existing[tid].due_date = date.fromisoformat(dd_str)
+                except ValueError:
+                    pass
+            elif dd_str == "":
+                existing[tid].due_date = None
+
     db.session.commit()
 
     notified = False
@@ -883,6 +903,42 @@ def mark_feedback_seen(tid):
           .filter_by(task_id=tid, user_id=request.user_id)
           .first_or_404())
     at.feedback_seen = True
+    db.session.commit()
+    return jsonify({"ok": True})
+
+
+@app.route("/api/my/profile", methods=["PATCH"])
+@require_auth
+def update_my_profile():
+    """Student updates own profile fields."""
+    p = StudentProfile.query.filter_by(user_id=request.user_id).first()
+    if not p:
+        return jsonify({"error": "profile not found"}), 404
+    body = request.get_json() or {}
+    allowed = ("full_name", "email", "phone", "career_goals", "fears_weaknesses")
+    for field in allowed:
+        if field in body:
+            val = body[field].strip() if isinstance(body[field], str) else body[field]
+            if field == "phone":
+                val = normalize_phone(val) if val else ""
+            setattr(p, field, val)
+    db.session.commit()
+    return jsonify({"ok": True})
+
+
+@app.route("/api/my/password", methods=["POST"])
+@require_auth
+def change_my_password():
+    """Student changes own password."""
+    user = db.session.get(User, request.user_id)
+    body = request.get_json() or {}
+    current_pw = body.get("current_password", "")
+    new_pw     = body.get("new_password", "")
+    if not check_password_hash(user.password, current_pw):
+        return jsonify({"error": "הסיסמה הנוכחית שגויה"}), 400
+    if len(new_pw) < 6:
+        return jsonify({"error": "הסיסמה החדשה חייבת להכיל לפחות 6 תווים"}), 400
+    user.password = generate_password_hash(new_pw)
     db.session.commit()
     return jsonify({"ok": True})
 
@@ -1460,10 +1516,29 @@ def dashboard_focus():
             "scheduled_at": m.scheduled_at.isoformat(),
         })
 
+    # Overdue tasks: pending tasks with due_date < today
+    today = date.today()
+    overdue_ats = (AssignedTask.query
+                  .filter(AssignedTask.status == "pending")
+                  .filter(AssignedTask.due_date != None)
+                  .filter(AssignedTask.due_date < today)
+                  .all())
+    overdue_tasks = []
+    for at in overdue_ats:
+        s = db.session.get(User, at.user_id)
+        p = s.profile if s else None
+        overdue_tasks.append({
+            "student_id":   at.user_id,
+            "student_name": (p.full_name if p and p.full_name else (s.username if s else "?")),
+            "task_title":   at.task.title if at.task else "?",
+            "due_date":     at.due_date.isoformat(),
+        })
+
     return jsonify({
         "needs_attention":  sorted(needs_attention, key=lambda x: -(x["days_inactive"] or 999)),
         "pending_submissions": pending_submissions[:5],
         "pending_meetings": pending_meetings[:5],
+        "overdue_tasks": overdue_tasks[:5],
     })
 
 
@@ -2084,6 +2159,7 @@ with app.app_context():
             "ALTER TABLE assigned_tasks ADD COLUMN feedback TEXT DEFAULT ''",
             "ALTER TABLE assigned_tasks ADD COLUMN feedback_at TIMESTAMP",
             "ALTER TABLE assigned_tasks ADD COLUMN feedback_seen BOOLEAN DEFAULT FALSE",
+            "ALTER TABLE assigned_tasks ADD COLUMN due_date DATE",
         ]:
             try:
                 _conn.execute(db.text(_stmt))

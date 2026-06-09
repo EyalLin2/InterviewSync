@@ -83,7 +83,7 @@
     /* ── Focus Panel ── */
     .focus-panel { background:#fff; border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,.06); overflow:hidden; }
     .focus-header { background:#1a1f36; color:rgba(255,255,255,.7); font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; padding:.5rem 1.25rem; }
-    .focus-cols { display:grid; grid-template-columns:1fr 1fr 1fr; }
+    .focus-cols { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; }
     .focus-col { padding:.85rem 1rem; border-left:1px solid #f0f1f5; }
     .focus-col:last-child { border-left:none; }
     .focus-col-alert { background:#fffbf0; }
@@ -186,10 +186,11 @@
       <div class="tab-pane fade show active" id="tab-students">
 
         <!-- ── Focus Panel ── -->
-        {% set needs_att  = focus.get('needs_attention', []) %}
-        {% set sub_review = focus.get('pending_submissions', []) %}
-        {% set pend_meet  = focus.get('pending_meetings', []) %}
-        {% if needs_att or sub_review or pend_meet %}
+        {% set needs_att    = focus.get('needs_attention', []) %}
+        {% set sub_review   = focus.get('pending_submissions', []) %}
+        {% set pend_meet    = focus.get('pending_meetings', []) %}
+        {% set overdue_tasks = focus.get('overdue_tasks', []) %}
+        {% if needs_att or sub_review or pend_meet or overdue_tasks %}
         <div class="focus-panel mb-4">
           <div class="focus-header">&#9889; פוקוס היום</div>
           <div class="focus-cols">
@@ -224,6 +225,16 @@
                 </a>
               {% endfor %}
               {% if not pend_meet %}<div class="focus-empty">אין פגישות ממתינות</div>{% endif %}
+            </div>
+            <div class="focus-col {{ 'focus-col-alert' if overdue_tasks }}">
+              <div class="focus-col-title">&#9201;&#65039; משימות באיחור ({{ overdue_tasks|length }})</div>
+              {% for ot in overdue_tasks[:4] %}
+                <a href="{{ url_for('student_file', sid=ot.student_id) }}" class="focus-item">
+                  <span class="fw-semibold">{{ ot.student_name }}</span>
+                  <span class="text-muted focus-sub" style="font-size:.7rem;">{{ ot.task_title | truncate(22) }}</span>
+                </a>
+              {% endfor %}
+              {% if not overdue_tasks %}<div class="focus-empty">&#10003; אין איחורים</div>{% endif %}
             </div>
           </div>
         </div>
