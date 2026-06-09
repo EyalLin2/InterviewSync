@@ -343,6 +343,8 @@ def admin_dashboard():
         if s.get("progress", {}).get("total", 0) > s.get("progress", {}).get("done", 0)
     )
 
+    new_submissions_count = focus.get("new_submissions_count", 0)
+
     return render_template("admin.html",
         user=me(),
         students=students,
@@ -351,6 +353,7 @@ def admin_dashboard():
         progress=progress,
         upcoming_count=upcoming_count,
         focus=focus,
+        new_submissions_count=new_submissions_count,
     )
 
 
@@ -534,6 +537,41 @@ def admin_delete_student(sid):
             flash(r.json().get("error", "שגיאה."), "danger")
         except Exception:
             flash("שגיאה במחיקה.", "danger")
+    return redirect(url_for("admin_dashboard"))
+
+
+@app.route("/admin/private/submissions")
+@admin_required
+def admin_submissions():
+    r = api_get("/api/submissions")
+    submissions = r.json() if r.status_code == 200 else []
+    return render_template("admin_submissions.html", user=me(), submissions=submissions)
+
+
+@app.route("/admin/private/submissions/<int:at_id>/feedback", methods=["POST"])
+@admin_required
+def admin_submission_feedback(at_id):
+    feedback = request.form.get("feedback", "").strip()
+    sid = request.form.get("student_id", "")
+    r = api_patch(f"/api/admin/assignments/{at_id}/feedback", json={"feedback": feedback})
+    if r.status_code == 200:
+        flash("הפידבק נשמר ✓", "success")
+    else:
+        flash("שגיאה בשמירת הפידבק.", "danger")
+    return redirect(url_for("admin_submissions"))
+
+
+@app.route("/admin/private/students/bulk-status", methods=["POST"])
+@admin_required
+def admin_bulk_status():
+    ids = [int(i) for i in request.form.getlist("student_ids") if i.isdigit()]
+    status = request.form.get("status", "")
+    if ids and status:
+        r = api_post("/api/students/bulk-status", json={"ids": ids, "status": status})
+        if r.status_code == 200:
+            flash(f"עודכן סטטוס ל-{r.json().get('updated', 0)} תלמידים.", "success")
+        else:
+            flash("שגיאה בעדכון הסטטוס.", "danger")
     return redirect(url_for("admin_dashboard"))
 
 

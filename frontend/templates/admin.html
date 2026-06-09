@@ -109,6 +109,12 @@
     </div>
     <div class="ms-auto d-flex align-items-center gap-3">
       <a href="{{ url_for('admin_hub') }}" class="btn btn-outline-light btn-sm">&#8592; לוח הבית</a>
+      <a href="{{ url_for('admin_submissions') }}" class="btn btn-outline-light btn-sm position-relative">
+        &#128229; הגשות
+        {% if new_submissions_count > 0 %}
+          <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-danger" style="font-size:.58rem;">{{ new_submissions_count }}</span>
+        {% endif %}
+      </a>
       <a href="{{ url_for('billing_dashboard') }}" class="btn btn-outline-light btn-sm">&#128176; חיוב</a>
       <a href="{{ url_for('services_settings') }}" class="btn btn-outline-light btn-sm">&#128200; מחירון</a>
       <a href="{{ url_for('meetings_report') }}" target="_blank" class="btn btn-outline-light btn-sm">&#128438; דוח פגישות</a>
@@ -280,6 +286,7 @@
             <table class="table table-hover mb-0" id="studentsTable">
               <thead>
                 <tr>
+                  <th style="width:36px;"><input type="checkbox" id="selectAll" class="form-check-input" title="בחר הכל"></th>
                   <th>תלמיד</th>
                   <th>סוג</th>
                   <th>פרטים</th>
@@ -303,6 +310,9 @@
                       data-status="{{ sts }}"
                       data-progress="{{ prog.pct }}"
                       data-activity="{{ act_days or 9999 }}">
+                    <td>
+                      <input type="checkbox" class="form-check-input student-cb" value="{{ s.id }}" onchange="updateBulkBar()">
+                    </td>
                     <td>
                       <div class="d-flex align-items-center gap-2">
                         <div class="avatar" style="background:{{ acolor }};">
@@ -378,6 +388,21 @@
             </table>
           </div>
         {% endif %}
+
+        <!-- Floating bulk action bar -->
+        <form method="POST" action="{{ url_for('admin_bulk_status') }}" id="bulkForm">
+          <div id="bulkBar" style="display:none; position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%); z-index:1050;
+                                    background:#1a1f36; color:#fff; border-radius:12px; padding:.75rem 1.5rem;
+                                    box-shadow:0 4px 20px rgba(0,0,0,.3); display:none; align-items:center; gap:1rem; white-space:nowrap;">
+            <span id="bulkCount" style="font-size:.88rem; font-weight:600;">0 נבחרו</span>
+            <input type="hidden" name="status" id="bulkStatusInput" value="">
+            <div id="bulkIds"></div>
+            <button type="submit" class="btn btn-sm fw-semibold" style="background:#10b981;color:#fff;" onclick="setBulkStatus('active')">&#9889; הפעל</button>
+            <button type="submit" class="btn btn-sm fw-semibold" style="background:#f59e0b;color:#fff;" onclick="setBulkStatus('paused')">&#9208;&#65039; השהה</button>
+            <button type="submit" class="btn btn-sm fw-semibold" style="background:#6b7280;color:#fff;" onclick="setBulkStatus('completed')">&#10003; סיים</button>
+            <button type="button" class="btn btn-sm" style="background:transparent;color:#adb5bd;border:1px solid #4a5568;" onclick="clearSelection()">&#10005;</button>
+          </div>
+        </form>
       </div>
 
       <!-- ── Tab 2: Task Bank ── -->
@@ -633,6 +658,37 @@
           card.textContent.toLowerCase().includes(q) ? '' : 'none';
       });
     });
+
+    // ── Bulk student selection ────────────────────────────────────────
+    document.getElementById('selectAll')?.addEventListener('change', function() {
+      document.querySelectorAll('.student-cb').forEach(cb => {
+        cb.checked = this.checked;
+      });
+      updateBulkBar();
+    });
+
+    function updateBulkBar() {
+      const checked = [...document.querySelectorAll('.student-cb:checked')];
+      const bar = document.getElementById('bulkBar');
+      document.getElementById('bulkCount').textContent = checked.length + ' נבחרו';
+      bar.style.display = checked.length ? 'flex' : 'none';
+      const idsContainer = document.getElementById('bulkIds');
+      idsContainer.innerHTML = '';
+      checked.forEach(cb => {
+        const inp = document.createElement('input');
+        inp.type = 'hidden'; inp.name = 'student_ids'; inp.value = cb.value;
+        idsContainer.appendChild(inp);
+      });
+    }
+
+    function setBulkStatus(status) {
+      document.getElementById('bulkStatusInput').value = status;
+    }
+
+    function clearSelection() {
+      document.querySelectorAll('.student-cb, #selectAll').forEach(cb => cb.checked = false);
+      document.getElementById('bulkBar').style.display = 'none';
+    }
   </script>
 </body>
 </html>
