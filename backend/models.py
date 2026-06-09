@@ -1,12 +1,13 @@
 import os
-from datetime import datetime, date  # noqa: F401  # date used by SQLAlchemy Date column
-from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime, date  # noqa: F401
+from sqlalchemy import (
+    Column, Integer, String, Text, Boolean, Date, DateTime, Float,
+    ForeignKey, UniqueConstraint, create_engine
+)
+from sqlalchemy.orm import DeclarativeBase, relationship, sessionmaker
 
-db = SQLAlchemy()
 
-
-def get_database_url():
-    """Build PostgreSQL URL from environment variables."""
+def get_database_url() -> str:
     if url := os.environ.get("DATABASE_URL"):
         return url
     return (
@@ -20,102 +21,102 @@ def get_database_url():
     )
 
 
-class User(db.Model):
+class Base(DeclarativeBase):
+    pass
+
+
+engine = create_engine(get_database_url(), pool_pre_ping=True)
+SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+
+
+class User(Base):
     __tablename__ = "users"
-    id       = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    password = db.Column(db.String(256), nullable=False)
-    role     = db.Column(db.String(10), nullable=False, default="student")
-    profile  = db.relationship("StudentProfile", backref="user", uselist=False, lazy=True)
-    tasks    = db.relationship("AssignedTask", backref="student", lazy=True)
-    meetings = db.relationship("Meeting", foreign_keys="Meeting.student_id",
-                               backref="student", lazy=True)
+    id       = Column(Integer, primary_key=True)
+    username = Column(String(80), unique=True, nullable=False)
+    password = Column(String(256), nullable=False)
+    role     = Column(String(10), nullable=False, default="student")
+    profile  = relationship("StudentProfile", backref="user", uselist=False, lazy="select")
+    tasks    = relationship("AssignedTask", backref="student", lazy="select")
+    meetings = relationship("Meeting", foreign_keys="Meeting.student_id",
+                            backref="student", lazy="select")
 
 
-class StudentProfile(db.Model):
+class StudentProfile(Base):
     __tablename__ = "student_profiles"
-    id                          = db.Column(db.Integer, primary_key=True)
-    user_id                     = db.Column(db.Integer, db.ForeignKey("users.id"), unique=True, nullable=False)
-    full_name                   = db.Column(db.String(120), default="")
-    email                       = db.Column(db.String(120), default="")
-    phone                       = db.Column(db.String(30), default="")
-    education_level             = db.Column(db.String(20), default="")
-    current_occupation_or_grade = db.Column(db.String(200), default="")
-    career_goals                = db.Column(db.Text, default="")
-    fears_weaknesses            = db.Column(db.Text, default="")
-    ai_coaching_strategy        = db.Column(db.Text, default="")
-    resume_content              = db.Column(db.Text, default="")
-    process_start_date          = db.Column(db.Date, nullable=True)
-    target_end_date             = db.Column(db.Date, nullable=True)
-    mentor_notes                = db.Column(db.Text, default="")
-    resume_file                 = db.Column(db.String(512), default="")   # uploaded CV file path
-    student_status              = db.Column(db.String(20), default="active")
-    ai_strategy_updated_at      = db.Column(db.DateTime, nullable=True)
-    # active | paused | completed
-    # ── Type-specific fields ──────────────────────────────────────────
-    # highschool
-    interests_hobbies           = db.Column(db.Text, default="")
-    # college
-    institution_name            = db.Column(db.String(200), default="")
-    graduation_year             = db.Column(db.Integer, nullable=True)
-    # career
-    current_job                 = db.Column(db.String(200), default="")
-    years_experience            = db.Column(db.Integer, nullable=True)
-    reason_for_guidance         = db.Column(db.Text, default="")
-    last_reminder_sent          = db.Column(db.Date, nullable=True)
-    created_at                  = db.Column(db.DateTime, default=datetime.utcnow)
+    id                          = Column(Integer, primary_key=True)
+    user_id                     = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
+    full_name                   = Column(String(120), default="")
+    email                       = Column(String(120), default="")
+    phone                       = Column(String(30), default="")
+    education_level             = Column(String(20), default="")
+    current_occupation_or_grade = Column(String(200), default="")
+    career_goals                = Column(Text, default="")
+    fears_weaknesses            = Column(Text, default="")
+    ai_coaching_strategy        = Column(Text, default="")
+    resume_content              = Column(Text, default="")
+    process_start_date          = Column(Date, nullable=True)
+    target_end_date             = Column(Date, nullable=True)
+    mentor_notes                = Column(Text, default="")
+    resume_file                 = Column(String(512), default="")
+    student_status              = Column(String(20), default="active")
+    ai_strategy_updated_at      = Column(DateTime, nullable=True)
+    interests_hobbies           = Column(Text, default="")
+    institution_name            = Column(String(200), default="")
+    graduation_year             = Column(Integer, nullable=True)
+    current_job                 = Column(String(200), default="")
+    years_experience            = Column(Integer, nullable=True)
+    reason_for_guidance         = Column(Text, default="")
+    last_reminder_sent          = Column(Date, nullable=True)
+    created_at                  = Column(DateTime, default=datetime.utcnow)
 
 
-class TaskBank(db.Model):
+class TaskBank(Base):
     __tablename__ = "task_bank"
-    id            = db.Column(db.Integer, primary_key=True)
-    title         = db.Column(db.String(512), nullable=False)
-    description   = db.Column(db.Text, default="")
-    category      = db.Column(db.String(100), default="כללי")
-    task_type     = db.Column(db.String(30), default="task")
-    resource_file = db.Column(db.String(512), default="")
-    created_at    = db.Column(db.DateTime, default=datetime.utcnow)
-    assignments   = db.relationship("AssignedTask", backref="task", lazy=True)
+    id            = Column(Integer, primary_key=True)
+    title         = Column(String(512), nullable=False)
+    description   = Column(Text, default="")
+    category      = Column(String(100), default="כללי")
+    task_type     = Column(String(30), default="task")
+    resource_file = Column(String(512), default="")
+    created_at    = Column(DateTime, default=datetime.utcnow)
+    assignments   = relationship("AssignedTask", backref="task", lazy="select")
 
 
-class AssignedTask(db.Model):
+class AssignedTask(Base):
     __tablename__ = "assigned_tasks"
-    id              = db.Column(db.Integer, primary_key=True)
-    user_id         = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    task_id         = db.Column(db.Integer, db.ForeignKey("task_bank.id"), nullable=False)
-    status          = db.Column(db.String(20), default="pending")
-    assigned_at     = db.Column(db.DateTime, default=datetime.utcnow)
-    completed_at    = db.Column(db.DateTime, nullable=True)
-    submission_note = db.Column(db.Text, default="")
-    submission_file = db.Column(db.String(512), default="")
-    feedback        = db.Column(db.Text, default="")
-    feedback_at     = db.Column(db.DateTime, nullable=True)
-    feedback_seen   = db.Column(db.Boolean, default=False)
-    due_date        = db.Column(db.Date, nullable=True)
-    __table_args__  = (db.UniqueConstraint("user_id", "task_id", name="uq_assigned_task"),)
+    id              = Column(Integer, primary_key=True)
+    user_id         = Column(Integer, ForeignKey("users.id"), nullable=False)
+    task_id         = Column(Integer, ForeignKey("task_bank.id"), nullable=False)
+    status          = Column(String(20), default="pending")
+    assigned_at     = Column(DateTime, default=datetime.utcnow)
+    completed_at    = Column(DateTime, nullable=True)
+    submission_note = Column(Text, default="")
+    submission_file = Column(String(512), default="")
+    feedback        = Column(Text, default="")
+    feedback_at     = Column(DateTime, nullable=True)
+    feedback_seen   = Column(Boolean, default=False)
+    due_date        = Column(Date, nullable=True)
+    __table_args__  = (UniqueConstraint("user_id", "task_id", name="uq_assigned_task"),)
 
 
-class Meeting(db.Model):
+class Meeting(Base):
     __tablename__ = "meetings"
-    id           = db.Column(db.Integer, primary_key=True)
-    student_id   = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    scheduled_at = db.Column(db.DateTime, nullable=False)
-    duration_min = db.Column(db.Integer, default=60)
-    notes        = db.Column(db.Text, default="")
-    status       = db.Column(db.String(20), default="pending")
-    # pending | confirmed | cancelled | completed
-    meeting_type = db.Column(db.String(30), default="progress_review")
-    # intake | progress_review | support | other
-    created_at   = db.Column(db.DateTime, default=datetime.utcnow)
+    id           = Column(Integer, primary_key=True)
+    student_id   = Column(Integer, ForeignKey("users.id"), nullable=False)
+    scheduled_at = Column(DateTime, nullable=False)
+    duration_min = Column(Integer, default=60)
+    notes        = Column(Text, default="")
+    status       = Column(String(20), default="pending")
+    meeting_type = Column(String(30), default="progress_review")
+    created_at   = Column(DateTime, default=datetime.utcnow)
 
 
-class MentorNote(db.Model):
-    """Timestamped mentor notes — replaces the overwriting textarea."""
+class MentorNote(Base):
     __tablename__ = "mentor_notes_log"
-    id         = db.Column(db.Integer, primary_key=True)
-    student_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    text       = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    id         = Column(Integer, primary_key=True)
+    student_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    text       = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
 
 # ── Business-side models ───────────────────────────────────────────────────
@@ -130,102 +131,87 @@ TOPIC_CATEGORIES = [
 ]
 
 
-class Workshop(db.Model):
+class Workshop(Base):
     __tablename__ = "workshops"
-    id               = db.Column(db.Integer, primary_key=True)
-    title            = db.Column(db.String(255), nullable=False)
-    description      = db.Column(db.Text, default="")
-    topic_category   = db.Column(db.String(100), default="כללי")
-    workshop_type    = db.Column(db.String(20), default="one_time")
-    # one_time | recurring | custom
-    status           = db.Column(db.String(20), default="planned")
-    # planned | active | completed | cancelled
-    scheduled_at     = db.Column(db.DateTime, nullable=True)
-    location         = db.Column(db.String(255), default="")
-    max_participants = db.Column(db.Integer, nullable=True)
-    notes            = db.Column(db.Text, default="")
-    created_at       = db.Column(db.DateTime, default=datetime.utcnow)
-    inquiries        = db.relationship("Inquiry", backref="workshop", lazy=True)
-    activities       = db.relationship("ActivityLog", backref="workshop", lazy=True)
+    id               = Column(Integer, primary_key=True)
+    title            = Column(String(255), nullable=False)
+    description      = Column(Text, default="")
+    topic_category   = Column(String(100), default="כללי")
+    workshop_type    = Column(String(20), default="one_time")
+    status           = Column(String(20), default="planned")
+    scheduled_at     = Column(DateTime, nullable=True)
+    location         = Column(String(255), default="")
+    max_participants = Column(Integer, nullable=True)
+    notes            = Column(Text, default="")
+    created_at       = Column(DateTime, default=datetime.utcnow)
+    inquiries        = relationship("Inquiry", backref="workshop", lazy="select")
+    activities       = relationship("ActivityLog", backref="workshop", lazy="select")
 
 
-class Inquiry(db.Model):
+class Inquiry(Base):
     __tablename__ = "inquiries"
-    id          = db.Column(db.Integer, primary_key=True)
-    full_name   = db.Column(db.String(120), nullable=False)
-    phone       = db.Column(db.String(30), default="")
-    email       = db.Column(db.String(120), default="")
-    topic       = db.Column(db.Text, default="")
-    source      = db.Column(db.String(30), default="")
-    # whatsapp | email | referral | other
-    notes       = db.Column(db.Text, default="")
-    status      = db.Column(db.String(20), default="new")
-    # new | in_contact | assigned | closed
-    workshop_id = db.Column(db.Integer, db.ForeignKey("workshops.id"), nullable=True)
-    created_at  = db.Column(db.DateTime, default=datetime.utcnow)
+    id          = Column(Integer, primary_key=True)
+    full_name   = Column(String(120), nullable=False)
+    phone       = Column(String(30), default="")
+    email       = Column(String(120), default="")
+    topic       = Column(Text, default="")
+    source      = Column(String(30), default="")
+    notes       = Column(Text, default="")
+    status      = Column(String(20), default="new")
+    workshop_id = Column(Integer, ForeignKey("workshops.id"), nullable=True)
+    created_at  = Column(DateTime, default=datetime.utcnow)
 
 
-class ActivityLog(db.Model):
+class ActivityLog(Base):
     __tablename__ = "activity_logs"
-    id                 = db.Column(db.Integer, primary_key=True)
-    title              = db.Column(db.String(255), nullable=False)
-    activity_type      = db.Column(db.String(30), default="other")
-    # workshop | lecture | meeting | other
-    topic_category     = db.Column(db.String(100), default="")
-    activity_date      = db.Column(db.Date, nullable=False)
-    duration_min       = db.Column(db.Integer, nullable=True)
-    participants_count = db.Column(db.Integer, nullable=True)
-    description        = db.Column(db.Text, default="")
-    workshop_id        = db.Column(db.Integer, db.ForeignKey("workshops.id"), nullable=True)
-    created_at         = db.Column(db.DateTime, default=datetime.utcnow)
+    id                 = Column(Integer, primary_key=True)
+    title              = Column(String(255), nullable=False)
+    activity_type      = Column(String(30), default="other")
+    topic_category     = Column(String(100), default="")
+    activity_date      = Column(Date, nullable=False)
+    duration_min       = Column(Integer, nullable=True)
+    participants_count = Column(Integer, nullable=True)
+    description        = Column(Text, default="")
+    workshop_id        = Column(Integer, ForeignKey("workshops.id"), nullable=True)
+    created_at         = Column(DateTime, default=datetime.utcnow)
 
 
 # ── Billing models ─────────────────────────────────────────────────────────
 
-class Service(db.Model):
-    """Admin-defined service catalog with pricing tiers."""
+class Service(Base):
     __tablename__ = "services"
-    id                = db.Column(db.Integer, primary_key=True)
-    name              = db.Column(db.String(120), nullable=False)
-    description       = db.Column(db.Text, default="")
-    unit              = db.Column(db.String(20), default="per_session")
-    # per_session | monthly | fixed
-    price_highschool  = db.Column(db.Float, default=0)
-    price_college     = db.Column(db.Float, default=0)
-    price_career      = db.Column(db.Float, default=0)
-    is_active         = db.Column(db.Boolean, default=True)
-    created_at        = db.Column(db.DateTime, default=datetime.utcnow)
+    id                = Column(Integer, primary_key=True)
+    name              = Column(String(120), nullable=False)
+    description       = Column(Text, default="")
+    unit              = Column(String(20), default="per_session")
+    price_highschool  = Column(Float, default=0)
+    price_college     = Column(Float, default=0)
+    price_career      = Column(Float, default=0)
+    is_active         = Column(Boolean, default=True)
+    created_at        = Column(DateTime, default=datetime.utcnow)
+    student_billings  = relationship("StudentBilling", backref="service", lazy="select")
 
 
-class StudentBilling(db.Model):
-    """Links a student to a service with optional custom price."""
+class StudentBilling(Base):
     __tablename__ = "student_billing"
-    id                  = db.Column(db.Integer, primary_key=True)
-    student_id          = db.Column(db.Integer, db.ForeignKey("users.id"),
-                                    unique=True, nullable=False)
-    service_id          = db.Column(db.Integer, db.ForeignKey("services.id"),
-                                    nullable=True)
-    custom_price        = db.Column(db.Float, nullable=True)
-    sessions_per_month  = db.Column(db.Integer, nullable=True)
-    started_at          = db.Column(db.Date, nullable=True)
-    is_active           = db.Column(db.Boolean, default=True)
-    service             = db.relationship("Service", backref="student_billings",
-                                          lazy=True)
+    id                  = Column(Integer, primary_key=True)
+    student_id          = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
+    service_id          = Column(Integer, ForeignKey("services.id"), nullable=True)
+    custom_price        = Column(Float, nullable=True)
+    sessions_per_month  = Column(Integer, nullable=True)
+    started_at          = Column(Date, nullable=True)
+    is_active           = Column(Boolean, default=True)
 
 
-class BillingRecord(db.Model):
-    """Monthly billing record per student."""
+class BillingRecord(Base):
     __tablename__ = "billing_records"
-    id              = db.Column(db.Integer, primary_key=True)
-    student_id      = db.Column(db.Integer, db.ForeignKey("users.id"),
-                                nullable=False)
-    service_id      = db.Column(db.Integer, db.ForeignKey("services.id"),
-                                nullable=True)
-    month           = db.Column(db.String(7), nullable=False)  # YYYY-MM
-    meetings_count  = db.Column(db.Integer, default=0)
-    amount_due      = db.Column(db.Float, default=0)
-    paid_at         = db.Column(db.DateTime, nullable=True)
-    payment_note    = db.Column(db.Text, default="")
-    created_at      = db.Column(db.DateTime, default=datetime.utcnow)
-    __table_args__  = (db.UniqueConstraint("student_id", "month",
-                                           name="uq_billing_student_month"),)
+    id              = Column(Integer, primary_key=True)
+    student_id      = Column(Integer, ForeignKey("users.id"), nullable=False)
+    service_id      = Column(Integer, ForeignKey("services.id"), nullable=True)
+    month           = Column(String(7), nullable=False)
+    meetings_count  = Column(Integer, default=0)
+    amount_due      = Column(Float, default=0)
+    paid_at         = Column(DateTime, nullable=True)
+    payment_note    = Column(Text, default="")
+    created_at      = Column(DateTime, default=datetime.utcnow)
+    __table_args__  = (UniqueConstraint("student_id", "month", name="uq_billing_student_month"),)
