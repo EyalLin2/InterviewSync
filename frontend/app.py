@@ -591,7 +591,6 @@ def admin_submissions():
 @admin_required
 def admin_submission_feedback(at_id):
     feedback = request.form.get("feedback", "").strip()
-    sid = request.form.get("student_id", "")
     r = api_patch(f"/api/admin/assignments/{at_id}/feedback", json={"feedback": feedback})
     if r.status_code == 200:
         flash("הפידבק נשמר ✓", "success")
