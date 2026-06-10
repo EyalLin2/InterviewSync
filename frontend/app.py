@@ -207,18 +207,23 @@ def index():
     if session.get("role") == "admin":
         return redirect(url_for("admin_dashboard"))
 
+    user_data = me()
     r    = api_get("/api/my/tasks")
     data = r.json() if r.status_code == 200 else {"active": [], "completed": [], "total": 0, "upcoming_meetings": []}
+    rp   = api_get("/api/my/progress")
+    progress = rp.json() if rp.status_code == 200 else None
     from datetime import timedelta
     _today = _date.today()
     return render_template("index.html",
-        user=me(),
+        user=user_data,
+        profile=user_data.get("profile") if user_data else {},
         active=data["active"],
         completed=data["completed"],
         total=data["total"],
         upcoming_meetings=data["upcoming_meetings"],
         today=_today.isoformat(),
         near_due=(_today + timedelta(days=3)).isoformat(),
+        progress=progress,
     )
 
 
