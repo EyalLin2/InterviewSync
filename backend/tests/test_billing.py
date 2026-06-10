@@ -17,7 +17,6 @@ def test_create_service(client, admin_token):
     assert r.status_code == 201
     data = r.json()
     assert data["name"] == "שירות בדיקה"
-    return data["id"]
 
 
 def test_update_service(client, admin_token):

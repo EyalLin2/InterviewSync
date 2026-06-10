@@ -79,7 +79,8 @@ def test_assign_task_to_student(client, admin_token, student_id):
 def test_student_sees_own_tasks(client, student_token):
     r = client.get("/api/my/tasks", headers={"Authorization": f"Bearer {student_token}"})
     assert r.status_code == 200
-    assert isinstance(r.json(), list)
+    data = r.json()
+    assert "active" in data and "completed" in data
 
 
 def test_update_student_profile(client, admin_token, student_id):

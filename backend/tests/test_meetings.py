@@ -25,7 +25,7 @@ def test_create_meeting_missing_fields(client, admin_token):
 def test_meeting_list(client, admin_token):
     r = client.get("/api/meetings", headers={"Authorization": f"Bearer {admin_token}"})
     assert r.status_code == 200
-    assert isinstance(r.json(), list)
+    assert "meetings_by_day" in r.json()
 
 
 def test_student_sees_own_meetings(client, student_token):
