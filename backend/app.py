@@ -386,16 +386,73 @@ def check_inactive_students():
                 continue
 
             name = p.full_name or s.username
+            oldest = (db.query(AssignedTask)
+                      .filter_by(user_id=s.id, status="pending")
+                      .join(TaskBank).order_by(AssignedTask.id).first())
+            task_hint = (f"המשימה '{oldest.task.title}' מחכה לך"
+                         if oldest and oldest.task
+                         else f"יש לך {pending} משימות ממתינות")
             try:
                 ok, _ = send_whatsapp(p.phone,
                     f"שלום {name}! לא ראינו אותך פעיל/ה בתוכנית לאחרונה. "
-                    f"יש לך {pending} משימות ממתינות — היכנס/י ותמשיך/י 💪")
+                    f"{task_hint} — היכנס/י ותמשיך/י 💪")
                 if ok:
                     p.last_reminder_sent = today
                     db.commit()
                     logger.info("Inactivity reminder sent to student %s", s.username)
             except Exception as e:
                 logger.error("Inactivity reminder failed for %s: %s", s.username, e)
+
+
+def check_overdue_tasks():
+    today = date.today()
+    with SessionLocal() as db:
+        overdue = (db.query(AssignedTask)
+                   .filter_by(status="pending")
+                   .filter(AssignedTask.due_date.isnot(None))
+                   .filter(AssignedTask.due_date < today)
+                   .all())
+        notified = set()
+        for at in overdue:
+            if at.user_id in notified:
+                continue
+            s = db.get(User, at.user_id)
+            p = s.profile if s else None
+            if not p or not p.phone:
+                continue
+            name = p.full_name or s.username
+            title = at.task.title if at.task else ""
+            try:
+                ok, _ = send_whatsapp(p.phone,
+                    f"שלום {name}! המשימה '{title}' עברה את הדדליין — "
+                    f"נסה/י לסיים אותה היום 💪")
+                if ok:
+                    notified.add(at.user_id)
+                    logger.info("Overdue alert sent to student %s", s.username)
+            except Exception as e:
+                logger.error("Overdue alert failed for %s: %s", s.username, e)
+
+
+def _notify_category_milestone(uid: int, category: str, db: Session):
+    all_in_cat = (db.query(AssignedTask)
+                  .join(TaskBank)
+                  .filter(AssignedTask.user_id == uid)
+                  .filter(TaskBank.category == category)
+                  .all())
+    if not all_in_cat or not all(t.status == "completed" for t in all_in_cat):
+        return
+    s = db.get(User, uid)
+    p = s.profile if s else None
+    if not p or not p.phone:
+        return
+    name = p.full_name or s.username
+    try:
+        send_whatsapp(p.phone,
+            f"כל הכבוד {name}! סיימת את כל משימות ה{category} 🎉 "
+            f"המנטור שלך יצור קשר בקרוב לגבי הצעדים הבאים.")
+        logger.info("Category milestone sent to student %s for %s", s.username, category)
+    except Exception as e:
+        logger.error("Category milestone failed for %s: %s", s.username, e)
 
 
 # ─────────────────────────────────────────────
@@ -490,6 +547,7 @@ async def lifespan(app: FastAPI):
 
 _scheduler = BackgroundScheduler(timezone="UTC", daemon=True)
 _scheduler.add_job(check_inactive_students, "cron", hour=9, minute=0)
+_scheduler.add_job(check_overdue_tasks, "cron", hour=9, minute=30)
 
 app = FastAPI(title="InterviewSync API", version="2.0.0", lifespan=lifespan)
 app.add_middleware(
@@ -999,6 +1057,8 @@ def submit_task(
         if path:
             at.submission_file = path
         db.commit()
+        if at.task and at.task.category:
+            _notify_category_milestone(uid, at.task.category, db)
     return {"ok": True}
 
 
