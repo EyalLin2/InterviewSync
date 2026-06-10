@@ -21,7 +21,7 @@ from werkzeug.utils import secure_filename
 from groq import Groq
 
 from models import (
-    get_database_url, Base,
+    Base,
     User, StudentProfile, TaskBank, AssignedTask, Meeting,
     MentorNote, TaskComment,
     Workshop, Inquiry, ActivityLog, TOPIC_CATEGORIES,
@@ -429,21 +429,6 @@ def _run_migrations():
                 conn.commit()
             except Exception:
                 conn.rollback()
-
-        try:
-            conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS task_comments (
-                    id SERIAL PRIMARY KEY,
-                    assigned_task_id INTEGER REFERENCES assigned_tasks(id) ON DELETE CASCADE,
-                    author_role VARCHAR(10) NOT NULL,
-                    message TEXT NOT NULL,
-                    is_read BOOLEAN DEFAULT FALSE,
-                    created_at TIMESTAMP DEFAULT NOW()
-                )
-            """))
-            conn.commit()
-        except Exception:
-            conn.rollback()
 
 
 # ─────────────────────────────────────────────
@@ -1726,8 +1711,8 @@ def dashboard_focus(uid: int = Depends(require_admin_user), db: Session = Depend
                 .filter(AssignedTask.completed_at >= week_ago)
                 .filter(
                     (AssignedTask.submission_note != "") |
-                    (AssignedTask.submission_file != "")
-                ).all())
+                    (AssignedTask.submission_file != ""))
+                .all())
     pending_submissions = []
     for at in recent:
         s = db.get(User, at.user_id)
@@ -1759,7 +1744,7 @@ def dashboard_focus(uid: int = Depends(require_admin_user), db: Session = Depend
     today_d = date.today()
     overdue_ats = (db.query(AssignedTask)
                   .filter(AssignedTask.status == "pending")
-                  .filter(AssignedTask.due_date != None)
+                  .filter(AssignedTask.due_date.isnot(None))
                   .filter(AssignedTask.due_date < today_d)
                   .all())
     overdue_tasks = []
@@ -1776,7 +1761,7 @@ def dashboard_focus(uid: int = Depends(require_admin_user), db: Session = Depend
     new_submissions_count = (db.query(AssignedTask)
                              .filter(AssignedTask.status == "completed")
                              .filter((AssignedTask.submission_note != "") | (AssignedTask.submission_file != ""))
-                             .filter((AssignedTask.feedback == "") | (AssignedTask.feedback == None))
+                             .filter((AssignedTask.feedback == "") | (AssignedTask.feedback.is_(None)))
                              .count())
 
     return {
@@ -1865,9 +1850,9 @@ def dashboard_risk(uid: int = Depends(require_admin_user), db: Session = Depends
                     or overdue_count > 2 \
                     or (has_pending and recent_done == 0 and (inactive_days is None or inactive_days > 10))
         is_yellow = not is_red and (
-                    (inactive_days is not None and inactive_days >= 7)
-                    or overdue_count >= 1
-                    or (has_pending and recent_done == 0))
+            (inactive_days is not None and inactive_days >= 7)
+            or overdue_count >= 1
+            or (has_pending and recent_done == 0))
 
         risk = "red" if is_red else ("yellow" if is_yellow else "green")
 
