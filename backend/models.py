@@ -78,6 +78,7 @@ class TaskBank(Base):
     category      = Column(String(100), default="כללי")
     task_type     = Column(String(30), default="task")
     resource_file = Column(String(512), default="")
+    is_global     = Column(Boolean, default=True)
     created_at    = Column(DateTime, default=datetime.utcnow)
     assignments   = relationship("AssignedTask", backref="task", lazy="select")
 
@@ -96,19 +97,33 @@ class AssignedTask(Base):
     feedback_at     = Column(DateTime, nullable=True)
     feedback_seen   = Column(Boolean, default=False)
     due_date        = Column(Date, nullable=True)
+    comments        = relationship("TaskComment", backref="assigned_task", lazy="select",
+                                   cascade="all, delete-orphan")
     __table_args__  = (UniqueConstraint("user_id", "task_id", name="uq_assigned_task"),)
 
 
 class Meeting(Base):
     __tablename__ = "meetings"
-    id           = Column(Integer, primary_key=True)
-    student_id   = Column(Integer, ForeignKey("users.id"), nullable=False)
-    scheduled_at = Column(DateTime, nullable=False)
-    duration_min = Column(Integer, default=60)
-    notes        = Column(Text, default="")
-    status       = Column(String(20), default="pending")
-    meeting_type = Column(String(30), default="progress_review")
-    created_at   = Column(DateTime, default=datetime.utcnow)
+    id            = Column(Integer, primary_key=True)
+    student_id    = Column(Integer, ForeignKey("users.id"), nullable=False)
+    scheduled_at  = Column(DateTime, nullable=False)
+    duration_min  = Column(Integer, default=60)
+    notes         = Column(Text, default="")
+    status        = Column(String(20), default="pending")
+    meeting_type  = Column(String(30), default="progress_review")
+    outcome_notes = Column(Text, default="")
+    action_items  = Column(Text, default="")
+    created_at    = Column(DateTime, default=datetime.utcnow)
+
+
+class TaskComment(Base):
+    __tablename__ = "task_comments"
+    id               = Column(Integer, primary_key=True)
+    assigned_task_id = Column(Integer, ForeignKey("assigned_tasks.id"), nullable=False)
+    author_role      = Column(String(10), nullable=False)
+    message          = Column(Text, nullable=False)
+    is_read          = Column(Boolean, default=False)
+    created_at       = Column(DateTime, default=datetime.utcnow)
 
 
 class MentorNote(Base):
