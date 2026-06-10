@@ -279,8 +279,43 @@ def student_schedule():
     if session.get("role") == "admin":
         return redirect(url_for("admin_dashboard"))
     r        = api_get("/api/my/meetings")
+    r_me     = api_get("/api/auth/me")
     meetings = r.json() if r.status_code == 200 else []
-    return render_template("student_schedule.html", user=me(), meetings=meetings)
+    me_data  = r_me.json() if r_me.status_code == 200 else {}
+    return render_template("student_schedule.html", user=me(), meetings=meetings,
+                           profile=me_data.get("profile", {}))
+
+
+@app.route("/api/tasks/<int:tid>/comments", methods=["GET"])
+@login_required
+def task_comments_get(tid):
+    from flask import jsonify as _j
+    r = api_get(f"/api/my/tasks/{tid}/comments")
+    return _j(r.json() if r.status_code == 200 else []), r.status_code if r.status_code != 200 else 200
+
+
+@app.route("/api/tasks/<int:tid>/comments", methods=["POST"])
+@login_required
+def task_comments_post(tid):
+    from flask import jsonify as _j
+    r = api_post(f"/api/my/tasks/{tid}/comments", json=request.get_json() or {})
+    return _j(r.json()), r.status_code
+
+
+@app.route("/api/progress")
+@login_required
+def student_progress():
+    from flask import jsonify as _j
+    r = api_get("/api/my/progress")
+    return _j(r.json() if r.status_code == 200 else {}), r.status_code
+
+
+@app.route("/api/student-chat", methods=["POST"])
+@login_required
+def student_ai_chat():
+    from flask import jsonify as _j
+    r = api_post("/api/my/ai-chat", json=request.get_json() or {})
+    return _j(r.json()), r.status_code
 
 
 @app.route("/meeting/<int:mid>/confirm")
@@ -927,7 +962,11 @@ def admin_schedule():
 
         elif action == "mark_completed":
             mid = request.form.get("meeting_id", type=int)
-            r   = api_patch(f"/api/meetings/{mid}", json={"action": "mark_completed"})
+            r   = api_patch(f"/api/meetings/{mid}", json={
+                "action":        "mark_completed",
+                "outcome_notes": request.form.get("outcome_notes", "").strip(),
+                "action_items":  request.form.get("action_items", "").strip(),
+            })
             _flash_from_response(r, "הפגישה סומנה כהתקיימה ✓")
 
         elif action == "send_reminder":

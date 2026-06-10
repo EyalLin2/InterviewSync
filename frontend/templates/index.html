@@ -43,6 +43,68 @@
     .submit-collapse { background: #f8f9ff; border-radius: 10px; padding: 1rem; margin-top: .75rem; border: 1px solid #e0e8ff; }
 
     .meeting-banner { background: #f0fdf4; border: 1px solid #6ee7b7; border-radius: 12px; padding: .75rem 1rem; margin-bottom: 1rem; font-size: .88rem; }
+
+    /* ── Q&A Thread ── */
+    .qa-area { background: #f8f9ff; border-radius: 10px; padding: .85rem 1rem; margin-top: .75rem; border: 1px solid #e0e8ff; }
+    .qa-msg { display: flex; gap: .6rem; margin-bottom: .5rem; }
+    .qa-msg.student { flex-direction: row-reverse; }
+    .qa-bubble { max-width: 80%; padding: .5rem .75rem; border-radius: 12px; font-size: .83rem; line-height: 1.4; }
+    .qa-bubble.student { background: #4361ee; color: #fff; border-radius: 12px 0 12px 12px; }
+    .qa-bubble.admin   { background: #fff; border: 1px solid #e0e8ff; color: #1a1f36; border-radius: 0 12px 12px 12px; }
+    .qa-bubble .qa-time { font-size: .68rem; opacity: .65; margin-top: .2rem; }
+    .qa-input { display: flex; gap: .5rem; margin-top: .5rem; }
+    .qa-input input { flex-grow: 1; border-radius: 20px; border: 1px solid #d1d5db; padding: .35rem .85rem; font-size: .83rem; font-family: 'Heebo', sans-serif; }
+    .qa-input button { border-radius: 20px; background: #4361ee; color: #fff; border: none; padding: .35rem .9rem; font-size: .82rem; font-family: 'Heebo', sans-serif; }
+    .qa-input button:hover { background: #3451cc; }
+    .qa-toggle { font-size: .75rem; color: #4361ee; cursor: pointer; text-decoration: none; background: none; border: none; padding: 0; }
+    .qa-toggle:hover { text-decoration: underline; }
+
+    /* ── Progress Bars ── */
+    .progress-section { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(67,97,238,.08); padding: 1.25rem 1.5rem; margin-bottom: .75rem; }
+    .cat-bar-label { display: flex; justify-content: space-between; font-size: .83rem; margin-bottom: .2rem; }
+    .cat-bar { height: 8px; background: #e5e7eb; border-radius: 8px; overflow: hidden; margin-bottom: .6rem; }
+    .cat-bar-fill { height: 100%; border-radius: 8px; background: linear-gradient(90deg, #4361ee, #7209b7); transition: width .4s ease; }
+    .stat-pill { background: #f0f4ff; border-radius: 20px; padding: .35rem .85rem; font-size: .78rem; font-weight: 600; color: #4361ee; display: inline-block; }
+    .stat-pill.warning { background: #fef3c7; color: #92400e; }
+    .stat-pill.success { background: #d1fae5; color: #065f46; }
+
+    /* ── AI Chat ── */
+    .chat-bubble-btn {
+      position: fixed; bottom: 1.5rem; left: 1.5rem; width: 54px; height: 54px;
+      border-radius: 50%; background: linear-gradient(135deg,#4361ee,#7209b7);
+      border: none; color: #fff; font-size: 1.4rem;
+      box-shadow: 0 4px 18px rgba(67,97,238,.4);
+      cursor: pointer; z-index: 900; display: flex; align-items: center; justify-content: center;
+      transition: transform .15s;
+    }
+    .chat-bubble-btn:hover { transform: scale(1.08); }
+    .chat-unread {
+      position: absolute; top: 4px; right: 4px; width: 16px; height: 16px;
+      background: #ef4444; border-radius: 50%; font-size: .62rem; color: #fff;
+      display: flex; align-items: center; justify-content: center; font-weight: 700;
+    }
+    .chat-panel {
+      position: fixed; bottom: 5rem; left: 1.5rem; width: 320px; max-height: 460px;
+      background: #fff; border-radius: 18px; box-shadow: 0 8px 36px rgba(0,0,0,.18);
+      display: none; flex-direction: column; z-index: 910; overflow: hidden;
+    }
+    .chat-panel.open { display: flex; }
+    .chat-panel-header { background: linear-gradient(135deg,#4361ee,#7209b7); color:#fff; padding:.8rem 1rem; display:flex; align-items:center; justify-content:space-between; }
+    .chat-panel-header .title { font-weight: 700; font-size:.88rem; }
+    .chat-panel-header .subtitle { font-size:.7rem; opacity:.8; }
+    .chat-panel-close { background: rgba(255,255,255,.2); border: none; color: #fff; border-radius: 6px; padding:.1rem .45rem; cursor:pointer; font-size:.85rem; }
+    .chat-panel-msgs { flex: 1; overflow-y: auto; padding: .75rem 1rem; display: flex; flex-direction: column; gap: .5rem; }
+    .chat-msg { max-width: 82%; padding: .5rem .75rem; border-radius: 12px; font-size: .82rem; line-height: 1.45; }
+    .chat-msg.user   { background: #4361ee; color: #fff; align-self: flex-end; border-radius: 12px 0 12px 12px; }
+    .chat-msg.ai     { background: #f0f4ff; color: #1a1f36; align-self: flex-start; border-radius: 0 12px 12px 12px; }
+    .chat-msg.typing { background: #f0f4ff; color: #9ca3af; font-style: italic; }
+    .chat-panel-input { display: flex; gap: .4rem; padding: .65rem .85rem; border-top: 1px solid #f0f0f0; }
+    .chat-panel-input input { flex:1; border: 1px solid #e5e7eb; border-radius: 20px; padding: .35rem .85rem; font-size: .82rem; font-family:'Heebo',sans-serif; }
+    .chat-panel-input button { background: #4361ee; color:#fff; border:none; border-radius: 20px; padding: .35rem .9rem; font-size: .82rem; font-family:'Heebo',sans-serif; cursor:pointer; }
+    .chat-panel-input button:hover { background: #3451cc; }
+    .chat-quick-chips { display: flex; flex-wrap: wrap; gap: .35rem; padding: .4rem .85rem; border-bottom: 1px solid #f0f0f0; }
+    .chat-chip { background: #eef0ff; border: none; border-radius: 20px; padding: .22rem .65rem; font-size: .72rem; color: #4361ee; cursor: pointer; font-family:'Heebo',sans-serif; }
+    .chat-chip:hover { background: #dde1ff; }
   </style>
 </head>
 <body>
@@ -72,7 +134,7 @@
       {% if loop.first %}
         <div class="meeting-banner">
           &#128197; <strong>פגישה קרובה:</strong>
-          {{ m.scheduled_at.strftime('%d/%m/%Y בשעה %H:%M') }}
+          {{ m.scheduled_at | dt('%d/%m/%Y בשעה %H:%M') }}
           {% if m.status == 'pending' %}
             — <a href="{{ url_for('student_schedule') }}" style="color:#065f46;">אשר/י &#8592;</a>
           {% else %}
@@ -127,6 +189,9 @@
                     <span class="badge rounded-pill" style="background:#f3f4f6;color:#6b7280;font-size:.68rem;">עד {{ at.due_date[8:] }}/{{ at.due_date[5:7] }}</span>
                   {% endif %}
                 {% endif %}
+                {% if at.has_admin_reply %}
+                  <span class="badge rounded-pill" style="background:#fef9c3;color:#854d0e;font-size:.68rem;">&#128172; תשובה חדשה מהמנטור</span>
+                {% endif %}
               </div>
               <div class="task-title">{{ t.title }}</div>
               {% if t.description %}<div class="task-desc mt-1">{{ t.description }}</div>{% endif %}
@@ -137,13 +202,17 @@
                   </a>
                 </div>
               {% endif %}
-              <div class="text-muted mt-1" style="font-size:.75rem;">שויך {{ at.assigned_at| dt }}</div>
+              <div class="text-muted mt-1" style="font-size:.75rem;">שויך {{ at.assigned_at | dt }}</div>
             </div>
-            <div class="flex-shrink-0">
+            <div class="flex-shrink-0 d-flex flex-column gap-1 align-items-end">
               <button class="btn-complete"
                       data-bs-toggle="collapse"
                       data-bs-target="#submit-{{ at.task_id }}">
                 סיימתי ✓
+              </button>
+              <button class="qa-toggle mt-1"
+                      onclick="toggleQA({{ at.task_id }}, this)">
+                &#128172; {% if at.comment_count > 0 %}{{ at.comment_count }} הודעות{% else %}שאל/י שאלה{% endif %}
               </button>
             </div>
           </div>
@@ -151,8 +220,7 @@
           <!-- Expandable submission form -->
           <div class="collapse" id="submit-{{ at.task_id }}">
             <div class="submit-collapse">
-              <form method="POST" action="{{ url_for('index') }}" enctype="multipart/form-data">
-                <input type="hidden" name="task_id" value="{{ at.task_id }}">
+              <form method="POST" action="{{ url_for('complete_task', tid=at.task_id) }}" enctype="multipart/form-data">
                 <div class="mb-2">
                   <label class="form-label fw-semibold small">
                     {% if t.task_type == 'reflection' %}כתוב/י את תשובתך (שאלון עצמי)
@@ -172,6 +240,17 @@
                 <button type="button" class="btn btn-outline-secondary btn-sm ms-2"
                         data-bs-toggle="collapse" data-bs-target="#submit-{{ at.task_id }}">ביטול</button>
               </form>
+            </div>
+          </div>
+
+          <!-- Q&A Thread -->
+          <div class="qa-area" id="qa-{{ at.task_id }}" style="display:none;">
+            <div id="qa-msgs-{{ at.task_id }}" class="d-flex flex-column gap-1 mb-2" style="max-height:180px;overflow-y:auto;"></div>
+            <div class="qa-input">
+              <input type="text" id="qa-input-{{ at.task_id }}"
+                     placeholder="שאל/י את המנטור שאלה..."
+                     onkeydown="if(event.key==='Enter') sendQA({{ at.task_id }})">
+              <button onclick="sendQA({{ at.task_id }})">שלח/י</button>
             </div>
           </div>
         </div>
@@ -199,7 +278,6 @@
               <a href="{{ '/files/' + at.submission_file if at.submission_file else '' }}" target="_blank"
                  class="resource-link mt-1" style="font-size:.75rem;">&#128206; קובץ שהגשת</a>
             {% endif %}
-            {# Feedback from mentor #}
             {% if at.feedback %}
               <div class="mt-2 p-2 rounded-3"
                    style="background:#fffbeb; border:1px solid #fde68a; font-size:.8rem;"
@@ -215,14 +293,223 @@
       {% endfor %}
     {% endif %}
 
+    <!-- Progress Section -->
+    <div class="section-hdr" id="progressHdr" style="display:none;">&#128200; ההתקדמות שלי</div>
+    <div class="progress-section" id="progressSection" style="display:none;">
+      <div class="d-flex gap-2 flex-wrap mb-3" id="progressStats"></div>
+      <div id="progressCats"></div>
+    </div>
+    <div class="text-center mt-3 mb-4">
+      <button class="btn btn-outline-primary btn-sm fw-semibold px-4" onclick="loadProgress()">
+        &#128200; הצג את ההתקדמות שלי
+      </button>
+    </div>
+
+  </div>
+
+  <!-- AI Chat Widget -->
+  <button class="chat-bubble-btn" onclick="toggleChat()" title="AI עוזר אישי">
+    &#129302;
+    <span class="chat-unread" id="chatUnread" style="display:none;">!</span>
+  </button>
+
+  <div class="chat-panel" id="chatPanel">
+    <div class="chat-panel-header">
+      <div>
+        <div class="title">&#129302; עוזר AI אישי</div>
+        <div class="subtitle">שאל/י אותי על התקדמות, משימות, וצעדים הבאים</div>
+      </div>
+      <div class="d-flex gap-1">
+        <button class="chat-panel-close" onclick="clearChat()" title="אפס שיחה">&#128260;</button>
+        <button class="chat-panel-close" onclick="toggleChat()">&#10005;</button>
+      </div>
+    </div>
+    <div class="chat-quick-chips">
+      {% for q in ['מה הצעד הבא שלי?', 'מה מצב ההתקדמות שלי?', 'איפה אני חלש?', 'כמה זמן נשאר?'] %}
+        <button class="chat-chip" onclick="quickSend({{ q | tojson }})">{{ q }}</button>
+      {% endfor %}
+    </div>
+    <div class="chat-panel-msgs" id="chatMsgs"></div>
+    <div class="chat-panel-input">
+      <input type="text" id="chatInput" placeholder="שאל/י כל שאלה..."
+             onkeydown="if(event.key==='Enter') sendChat()">
+      <button onclick="sendChat()">שלח</button>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // Mark new feedback as seen when it appears on screen
+    // ── Mark feedback as seen ──────────────────────────────────
     document.querySelectorAll('[data-feedback-seen]').forEach(el => {
       fetch(el.dataset.feedbackSeen, {method: 'POST'}).catch(() => {});
     });
+
+    // ── Q&A Thread ────────────────────────────────────────────
+    const qaLoaded = {};
+
+    function fmtTime(iso) {
+      const d = new Date(iso);
+      return d.toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'}) + ' ' +
+             d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
+    }
+
+    function renderMsg(box, role, msg, time) {
+      const div = document.createElement('div');
+      div.className = 'qa-msg ' + role;
+      div.innerHTML = `
+        <div class="qa-bubble ${role}">
+          <div>${msg}</div>
+          <div class="qa-time">${role === 'admin' ? '👨‍💼 מנטור' : 'אני'} · ${fmtTime(time)}</div>
+        </div>`;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    async function toggleQA(tid, btn) {
+      const area = document.getElementById('qa-' + tid);
+      if (area.style.display === 'none') {
+        area.style.display = '';
+        if (!qaLoaded[tid]) {
+          await loadQA(tid);
+          qaLoaded[tid] = true;
+        }
+        btn.textContent = '✕ סגור שיחה';
+      } else {
+        area.style.display = 'none';
+        btn.textContent = '💬 שאל/י שאלה';
+      }
+    }
+
+    async function loadQA(tid) {
+      const box = document.getElementById('qa-msgs-' + tid);
+      box.innerHTML = '<span class="text-muted small">טוען...</span>';
+      try {
+        const r = await fetch(`/api/tasks/${tid}/comments`);
+        const msgs = await r.json();
+        box.innerHTML = '';
+        if (!msgs.length) {
+          box.innerHTML = '<span class="text-muted small">אין הודעות עדיין. שאל/י שאלה ↓</span>';
+        } else {
+          msgs.forEach(m => renderMsg(box, m.author_role, m.message, m.created_at));
+        }
+      } catch(e) {
+        box.innerHTML = '<span class="text-danger small">שגיאת תקשורת</span>';
+      }
+    }
+
+    async function sendQA(tid) {
+      const inp = document.getElementById('qa-input-' + tid);
+      const msg = inp.value.trim();
+      if (!msg) return;
+      inp.value = '';
+      const box = document.getElementById('qa-msgs-' + tid);
+      renderMsg(box, 'student', msg, new Date().toISOString());
+      try {
+        await fetch(`/api/tasks/${tid}/comments`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({message: msg}),
+        });
+      } catch(e) {}
+    }
+
+    // ── Progress ──────────────────────────────────────────────
+    async function loadProgress() {
+      const section = document.getElementById('progressSection');
+      const hdr     = document.getElementById('progressHdr');
+      const stats   = document.getElementById('progressStats');
+      const cats    = document.getElementById('progressCats');
+      hdr.style.display = '';
+      section.style.display = '';
+      stats.innerHTML = '<span class="text-muted small">טוען...</span>';
+
+      const r = await fetch('/api/progress');
+      const d = await r.json();
+      stats.innerHTML = `
+        <span class="stat-pill">${d.done}/${d.total} משימות הושלמו</span>
+        ${d.overdue > 0 ? `<span class="stat-pill warning">${d.overdue} באיחור ⚠</span>` : ''}
+        ${d.recent_done > 0 ? `<span class="stat-pill success">${d.recent_done} הושלמו ב-14 יום 🔥</span>` : ''}
+        ${d.meetings_done > 0 ? `<span class="stat-pill">${d.meetings_done} פגישות הושלמו</span>` : ''}
+        ${d.days_in_process != null ? `<span class="stat-pill">${d.days_in_process} ימים בתהליך</span>` : ''}
+      `;
+      cats.innerHTML = '';
+      (d.categories || []).sort((a,b) => b.total-a.total).forEach(c => {
+        cats.innerHTML += `
+          <div class="cat-bar-label">
+            <span class="fw-semibold" style="font-size:.83rem;">${c.name}</span>
+            <span class="text-muted" style="font-size:.78rem;">${c.done}/${c.total} (${c.pct}%)</span>
+          </div>
+          <div class="cat-bar"><div class="cat-bar-fill" style="width:${c.pct}%"></div></div>`;
+      });
+    }
+
+    // ── AI Chat ───────────────────────────────────────────────
+    let chatHistory = [];
+    let chatOpen = false;
+
+    function toggleChat() {
+      chatOpen = !chatOpen;
+      document.getElementById('chatPanel').classList.toggle('open', chatOpen);
+      document.getElementById('chatUnread').style.display = 'none';
+      if (chatOpen && !chatHistory.length) {
+        addBotMsg('שלום! אני ה-AI האישי שלך. שאל/י אותי כל שאלה על המשימות, ההתקדמות, או מה לעשות הלאה 💡');
+      }
+    }
+
+    function clearChat() {
+      chatHistory = [];
+      document.getElementById('chatMsgs').innerHTML = '';
+    }
+
+    function addUserMsg(text) {
+      const msgs = document.getElementById('chatMsgs');
+      const d = document.createElement('div');
+      d.className = 'chat-msg user';
+      d.textContent = text;
+      msgs.appendChild(d);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    function addBotMsg(text) {
+      const msgs = document.getElementById('chatMsgs');
+      const d = document.createElement('div');
+      d.className = 'chat-msg ai';
+      d.textContent = text;
+      msgs.appendChild(d);
+      msgs.scrollTop = msgs.scrollHeight;
+      return d;
+    }
+
+    async function sendChat() {
+      const inp = document.getElementById('chatInput');
+      const msg = inp.value.trim();
+      if (!msg) return;
+      inp.value = '';
+      addUserMsg(msg);
+      const typing = addBotMsg('...');
+      typing.classList.add('typing');
+      chatHistory.push({role:'user', content: msg});
+      try {
+        const r = await fetch('/api/student-chat', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({message: msg, messages: chatHistory.slice(-8)}),
+        });
+        const data = await r.json();
+        const reply = data.reply || (data.error === 'no_api_key' ? '(AI לא מוגדר)' : 'שגיאה, נסה שוב.');
+        typing.textContent = reply;
+        typing.classList.remove('typing');
+        chatHistory.push({role:'assistant', content: reply});
+      } catch(e) {
+        typing.textContent = 'שגיאת תקשורת, נסה שוב.';
+        typing.classList.remove('typing');
+      }
+    }
+
+    function quickSend(text) {
+      document.getElementById('chatInput').value = text;
+      sendChat();
+    }
   </script>
 </body>
 </html>

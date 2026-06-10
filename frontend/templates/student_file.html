@@ -999,15 +999,16 @@
           </div>
         </div>
         <div class="modal-footer flex-column align-items-stretch gap-2" id="aiSuggestFooter" style="display:none!important;">
+          <div class="text-muted small mb-1" style="font-size:.72rem;">המשימות ישויכו ישירות לסטודנט. לשמירה בבנק הכלל לשימוש עתידי — בחר/י את האופציה השנייה.</div>
           <div class="d-flex gap-2 justify-content-end">
             <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ביטול</button>
             <button type="button" class="btn btn-outline-primary btn-sm fw-semibold"
-                    onclick="confirmAiTasks({{ student.id }}, false)">
-              &#128203; הוסף לבנק בלבד
+                    onclick="confirmAiTasks({{ student.id }}, true)">
+              &#128203; שייך + שמור לבנק
             </button>
             <button type="button" class="btn btn-crm btn-sm fw-semibold"
-                    onclick="confirmAiTasks({{ student.id }}, true)">
-              &#10003; הוסף לבנק + שייך לסטודנט
+                    onclick="confirmAiTasks({{ student.id }}, false)">
+              &#10003; שייך לסטודנט
             </button>
           </div>
         </div>
@@ -1030,32 +1031,48 @@
                    placeholder="&#128269; חיפוש משימה..." id="assignSearch"
                    oninput="filterAssign(this.value)">
             <div id="assignList">
+              {% set type_labels = {'reflection':'שאלון', 'exercise':'תרגיל', 'task':'משימה'} %}
+              {% set type_colors = {'reflection':'#ede9fe;color:#5b21b6', 'exercise':'#d1fae5;color:#065f46', 'task':'#dbeafe;color:#1e40af'} %}
               {% for cat in categories %}
                 {% set cat_tasks = taskbank | selectattr('category','equalto',cat) | list %}
                 {% if cat_tasks %}
                   <div class="assign-cat mb-3">
-                    <div class="section-title mb-1">{{ cat }}</div>
+                    <div class="section-title mb-2">{{ cat }}</div>
                     {% for t in cat_tasks %}
                       {% set is_checked = t.id in assigned_ids %}
-                      <div class="assign-item mb-1 d-flex align-items-center gap-2" data-title="{{ t.title | lower }}">
-                        <input class="form-check-input flex-shrink-0" type="checkbox" name="task_ids" value="{{ t.id }}"
-                               id="mt{{ t.id }}" {{ 'checked' if is_checked }}
-                               onchange="toggleDueDate(this, {{ t.id }})">
-                        <label class="form-check-label flex-grow-1" style="font-size:.84rem;" for="mt{{ t.id }}">
-                          {{ t.title }}
-                          {% if t.resource_file %}<span style="color:#9ca3af;font-size:.7rem;"> 📎</span>{% endif %}
-                        </label>
-                        <input type="date" name="due_date_{{ t.id }}"
-                               class="form-control form-control-sm flex-shrink-0"
-                               style="max-width:140px;{{ ' display:none;' if not is_checked }}"
-                               value="{{ assigned_due_dates.get(t.id, '') }}"
-                               title="תאריך יעד">
+                      <div class="assign-item mb-2 rounded-2 p-2 {{ 'border border-primary-subtle bg-primary-subtle' if is_checked else 'border border-light' }}"
+                           data-title="{{ t.title | lower }}" style="cursor:pointer;"
+                           onclick="document.getElementById('mt{{ t.id }}').click()">
+                        <div class="d-flex align-items-start gap-2">
+                          <input class="form-check-input flex-shrink-0 mt-1" type="checkbox" name="task_ids" value="{{ t.id }}"
+                                 id="mt{{ t.id }}" {{ 'checked' if is_checked }}
+                                 onchange="toggleDueDate(this, {{ t.id }}); this.closest('.assign-item').classList.toggle('border-primary-subtle',this.checked); this.closest('.assign-item').classList.toggle('bg-primary-subtle',this.checked);"
+                                 onclick="event.stopPropagation()">
+                          <div class="flex-grow-1">
+                            <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                              <span class="fw-semibold" style="font-size:.85rem;">{{ t.title }}</span>
+                              {% if t.resource_file %}<span style="font-size:.7rem; color:#9ca3af;">📎</span>{% endif %}
+                              <span class="badge rounded-pill" style="font-size:.65rem; background:{{ type_colors.get(t.task_type,'#dbeafe;color:#1e40af') }};">{{ type_labels.get(t.task_type, t.task_type) }}</span>
+                            </div>
+                            {% if t.description %}
+                              <div class="text-muted" style="font-size:.77rem; line-height:1.35;">{{ t.description | truncate(80) }}</div>
+                            {% endif %}
+                          </div>
+                          <div class="flex-shrink-0" onclick="event.stopPropagation()">
+                            <input type="date" name="due_date_{{ t.id }}"
+                                   class="form-control form-control-sm"
+                                   style="max-width:130px;font-size:.78rem;{{ ' display:none;' if not is_checked }}"
+                                   value="{{ assigned_due_dates.get(t.id, '') }}"
+                                   placeholder="תאריך יעד"
+                                   title="תאריך יעד">
+                          </div>
+                        </div>
                       </div>
                     {% endfor %}
                   </div>
                 {% endif %}
               {% endfor %}
-              {% if not taskbank %}<p class="text-muted small">אין משימות בבנק.</p>{% endif %}
+              {% if not taskbank %}<p class="text-muted small">אין משימות בבנק. השתמש/י ב-AI ליצירת משימות.</p>{% endif %}
             </div>
           </div>
           <div class="modal-footer">
@@ -1216,7 +1233,7 @@
       }
     }
 
-    async function confirmAiTasks(studentId, assign) {
+    async function confirmAiTasks(studentId, saveToBank) {
       const checked = [...document.querySelectorAll('.ai-task-check:checked')]
                         .map(cb => aiSuggestions[parseInt(cb.dataset.idx)])
                         .filter(Boolean);
@@ -1230,11 +1247,11 @@
         const resp = await fetch(`/admin/private/student/${studentId}/ai-confirm`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tasks: checked, assign }),
+          body: JSON.stringify({ tasks: checked, save_to_bank: saveToBank }),
         });
         const data = await resp.json();
         bootstrap.Modal.getInstance(document.getElementById('aiSuggestModal')).hide();
-        alert(`✅ נוצרו ${data.created} משימות${assign ? ' ושויכו לסטודנט' : ' בבנק'}.`);
+        alert(`✅ שויכו ${data.created} משימות לסטודנט${saveToBank ? ' (ונשמרו גם בבנק)' : ''}.`);
         location.reload();
       } catch(e) {
         btn.disabled = false;

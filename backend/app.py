@@ -23,7 +23,7 @@ from groq import Groq
 from models import (
     get_database_url, Base,
     User, StudentProfile, TaskBank, AssignedTask, Meeting,
-    MentorNote,
+    MentorNote, TaskComment,
     Workshop, Inquiry, ActivityLog, TOPIC_CATEGORIES,
     Service, StudentBilling, BillingRecord,
     SessionLocal, engine,
@@ -305,6 +305,8 @@ def _task_dict(t: TaskBank) -> dict:
 
 def _assignment_dict(at: AssignedTask) -> dict:
     task = at.task
+    comments = at.comments if at.comments is not None else []
+    has_admin_reply = any(c.author_role == "admin" and not c.is_read for c in comments)
     return {
         "id": at.id, "task_id": at.task_id,
         "task": _task_dict(task) if task else {
@@ -320,6 +322,8 @@ def _assignment_dict(at: AssignedTask) -> dict:
         "feedback_at": at.feedback_at.isoformat() if at.feedback_at else None,
         "feedback_seen": bool(at.feedback_seen),
         "due_date": at.due_date.isoformat() if at.due_date else None,
+        "comment_count": len(comments),
+        "has_admin_reply": has_admin_reply,
     }
 
 
@@ -333,6 +337,8 @@ def _meeting_dict(m: Meeting, db: Session, include_token: bool = False) -> dict:
         "duration_min": m.duration_min,
         "notes": m.notes, "status": m.status,
         "meeting_type": m.meeting_type or "progress_review",
+        "outcome_notes": m.outcome_notes or "",
+        "action_items":  m.action_items  or "",
     }
     if include_token:
         d["token"] = meeting_token(m.id)
@@ -414,12 +420,30 @@ def _run_migrations():
             "ALTER TABLE assigned_tasks ADD COLUMN feedback_at TIMESTAMP",
             "ALTER TABLE assigned_tasks ADD COLUMN feedback_seen BOOLEAN DEFAULT FALSE",
             "ALTER TABLE assigned_tasks ADD COLUMN due_date DATE",
+            "ALTER TABLE meetings ADD COLUMN outcome_notes TEXT DEFAULT ''",
+            "ALTER TABLE meetings ADD COLUMN action_items TEXT DEFAULT ''",
+            "ALTER TABLE task_bank ADD COLUMN is_global BOOLEAN DEFAULT TRUE",
         ]:
             try:
                 conn.execute(text(stmt))
                 conn.commit()
             except Exception:
                 conn.rollback()
+
+        try:
+            conn.execute(text("""
+                CREATE TABLE IF NOT EXISTS task_comments (
+                    id SERIAL PRIMARY KEY,
+                    assigned_task_id INTEGER REFERENCES assigned_tasks(id) ON DELETE CASCADE,
+                    author_role VARCHAR(10) NOT NULL,
+                    message TEXT NOT NULL,
+                    is_read BOOLEAN DEFAULT FALSE,
+                    created_at TIMESTAMP DEFAULT NOW()
+                )
+            """))
+            conn.commit()
+        except Exception:
+            conn.rollback()
 
 
 # ─────────────────────────────────────────────
@@ -834,31 +858,33 @@ def suggest_ai_tasks(sid: int, uid: int = Depends(require_admin_user), db: Sessi
 
 @app.post("/api/ai/tasks/{sid}/confirm")
 def confirm_ai_tasks(sid: int, body: dict = Body(default={}), uid: int = Depends(require_admin_user), db: Session = Depends(get_db)):
-    student = _or_404(db.query(User).filter_by(id=sid, role="student").first())
-    p       = student.profile
-    tasks   = body.get("tasks", [])
-    assign  = body.get("assign", False)
+    student      = _or_404(db.query(User).filter_by(id=sid, role="student").first())
+    p            = student.profile
+    tasks        = body.get("tasks", [])
+    save_to_bank = body.get("save_to_bank", False)
 
     created = []
     for s in tasks:
         title = s.get("title", "").strip()
         if not title:
             continue
-        task = TaskBank(title=title, description=s.get("description", ""),
-                        category=s.get("category", "כללי"), task_type=s.get("task_type", "task"))
+        task = TaskBank(
+            title=title, description=s.get("description", ""),
+            category=s.get("category", "כללי"), task_type=s.get("task_type", "task"),
+            is_global=save_to_bank,
+        )
         db.add(task)
         db.flush()
-        if assign:
-            db.add(AssignedTask(user_id=sid, task_id=task.id))
+        db.add(AssignedTask(user_id=sid, task_id=task.id))
         created.append(_task_dict(task))
 
     db.commit()
 
-    if assign and p and p.phone and created:
+    if p and p.phone and created:
         name = p.full_name or student.username
         send_whatsapp(p.phone, f"שלום {name}! המנטור הוסיף {len(created)} משימות חדשות. 📋")
 
-    return {"created": len(created), "tasks": created, "assigned": assign}
+    return {"created": len(created), "tasks": created, "saved_to_bank": save_to_bank}
 
 
 @app.post("/api/ai/tasks/{sid}")
@@ -899,7 +925,8 @@ def gen_ai_tasks(sid: int, uid: int = Depends(require_admin_user), db: Session =
 
 @app.get("/api/tasks")
 def list_tasks(uid: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
-    tasks = db.query(TaskBank).order_by(TaskBank.category, TaskBank.title).all()
+    tasks = (db.query(TaskBank).filter(TaskBank.is_global.isnot(False))
+             .order_by(TaskBank.category, TaskBank.title).all())
     return [_task_dict(t) for t in tasks]
 
 
@@ -1028,6 +1055,135 @@ def mark_feedback_seen(tid: int, uid: int = Depends(get_current_user_id), db: Se
     at.feedback_seen = True
     db.commit()
     return {"ok": True}
+
+
+@app.get("/api/my/tasks/{tid}/comments")
+def get_my_task_comments(tid: int, uid: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
+    at = _or_404(db.query(AssignedTask).filter_by(task_id=tid, user_id=uid).first())
+    for c in at.comments:
+        if c.author_role == "admin" and not c.is_read:
+            c.is_read = True
+    db.commit()
+    return [{"id": c.id, "author_role": c.author_role, "message": c.message,
+             "created_at": c.created_at.isoformat()} for c in at.comments]
+
+
+@app.post("/api/my/tasks/{tid}/comments")
+def post_my_task_comment(tid: int, body: dict = Body(default={}), uid: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
+    at = _or_404(db.query(AssignedTask).filter_by(task_id=tid, user_id=uid).first())
+    msg = body.get("message", "").strip()
+    if not msg:
+        raise HTTPException(status_code=400, detail="message required")
+    c = TaskComment(assigned_task_id=at.id, author_role="student", message=msg)
+    db.add(c)
+    db.commit()
+    return {"ok": True, "id": c.id, "created_at": c.created_at.isoformat()}
+
+
+@app.get("/api/students/{sid}/tasks/{tid}/comments")
+def admin_get_task_comments(sid: int, tid: int, uid: int = Depends(require_admin_user), db: Session = Depends(get_db)):
+    at = _or_404(db.query(AssignedTask).filter_by(task_id=tid, user_id=sid).first())
+    return [{"id": c.id, "author_role": c.author_role, "message": c.message,
+             "created_at": c.created_at.isoformat(), "is_read": c.is_read}
+            for c in at.comments]
+
+
+@app.post("/api/students/{sid}/tasks/{tid}/comments")
+def admin_post_task_comment(sid: int, tid: int, body: dict = Body(default={}), uid: int = Depends(require_admin_user), db: Session = Depends(get_db)):
+    at = _or_404(db.query(AssignedTask).filter_by(task_id=tid, user_id=sid).first())
+    msg = body.get("message", "").strip()
+    if not msg:
+        raise HTTPException(status_code=400, detail="message required")
+    c = TaskComment(assigned_task_id=at.id, author_role="admin", message=msg)
+    db.add(c)
+    for existing in at.comments:
+        if existing.author_role == "student" and not existing.is_read:
+            existing.is_read = True
+    db.commit()
+    student = db.get(User, sid)
+    p = student.profile if student else None
+    if p and p.phone:
+        task = db.get(TaskBank, tid)
+        send_whatsapp(p.phone,
+            f"המנטור שלך הגיב/ה על '{task.title if task else 'משימה'}' — התחבר/י לראות 👇")
+    return {"ok": True, "id": c.id}
+
+
+@app.get("/api/my/progress")
+def my_progress(uid: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
+    all_tasks = db.query(AssignedTask).filter_by(user_id=uid).all()
+    today     = date.today()
+    fortnight = datetime.utcnow() - timedelta(days=14)
+    total     = len(all_tasks)
+    done      = sum(1 for t in all_tasks if t.status == "completed")
+    overdue   = sum(1 for t in all_tasks if t.status == "pending" and t.due_date and t.due_date < today)
+    recent_done = sum(1 for t in all_tasks if t.status == "completed" and t.completed_at and t.completed_at >= fortnight)
+
+    categories: dict[str, dict] = {}
+    for at in all_tasks:
+        cat = at.task.category if at.task else "כללי"
+        if cat not in categories:
+            categories[cat] = {"total": 0, "done": 0}
+        categories[cat]["total"] += 1
+        if at.status == "completed":
+            categories[cat]["done"] += 1
+
+    meetings        = db.query(Meeting).filter_by(student_id=uid).all()
+    meetings_done   = sum(1 for m in meetings if m.status == "completed")
+    meetings_upcoming = sum(1 for m in meetings if m.scheduled_at >= datetime.utcnow() and m.status != "cancelled")
+
+    profile = db.query(StudentProfile).filter_by(user_id=uid).first()
+    days_in_process = None
+    if profile and profile.process_start_date:
+        days_in_process = (today - profile.process_start_date).days
+
+    return {
+        "total": total, "done": done,
+        "pct": int(done / total * 100) if total > 0 else 0,
+        "overdue": overdue, "recent_done": recent_done,
+        "categories": [{"name": k, "total": v["total"], "done": v["done"],
+                         "pct": int(v["done"] / v["total"] * 100) if v["total"] > 0 else 0}
+                        for k, v in categories.items()],
+        "meetings_done": meetings_done,
+        "meetings_upcoming": meetings_upcoming,
+        "days_in_process": days_in_process,
+    }
+
+
+@app.post("/api/my/ai-chat")
+def student_ai_chat(body: dict = Body(default={}), uid: int = Depends(get_current_user_id), db: Session = Depends(get_db)):
+    client = _ai_client()
+    if not client:
+        raise HTTPException(status_code=503, detail="no_api_key")
+    history = body.get("messages", [])
+    new_msg = body.get("message", "").strip()
+    if not new_msg:
+        raise HTTPException(status_code=400, detail="message required")
+
+    context = _build_student_context(uid, db)
+    system_prompt = (
+        "אתה עוזר AI אישי לסטודנט בתהליך ייעוץ קריירה. "
+        "יש לך גישה לנתוני הסטודנט:\n\n"
+        f"{context}\n\n"
+        "ענה לסטודנט ישירות בגוף שני. תן עצות מעשיות ומעודדות. "
+        "עזור לו/ה להבין את מצבו/ה ומה הצעדים הבאים. "
+        "ענה בעברית קצרה וממוקדת."
+    )
+    messages = [{"role": "system", "content": system_prompt}]
+    for msg in history[-8:]:
+        if msg.get("role") in ("user", "assistant"):
+            messages.append({"role": msg["role"], "content": msg["content"]})
+    messages.append({"role": "user", "content": new_msg})
+
+    try:
+        r = client.chat.completions.create(
+            model="llama-3.3-70b-versatile", messages=messages,
+            max_tokens=400, temperature=0.7,
+        )
+        return {"reply": r.choices[0].message.content.strip()}
+    except Exception as e:
+        logger.error("Student chat error: %s", e)
+        raise HTTPException(status_code=500, detail=f"שגיאה: {str(e)[:100]}")
 
 
 @app.patch("/api/my/profile")
@@ -1238,7 +1394,9 @@ def update_meeting(mid: int, body: dict = Body(default={}), uid: int = Depends(r
         raise HTTPException(status_code=400 if reason == "no_config" else 500, detail=reason)
 
     if action == "mark_completed":
-        m.status = "completed"
+        m.status        = "completed"
+        m.outcome_notes = body.get("outcome_notes", "").strip()
+        m.action_items  = body.get("action_items", "").strip()
         db.commit()
         return {"ok": True}
 

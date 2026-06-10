@@ -286,11 +286,9 @@
                     </span>
                   </div>
                   <div class="d-flex flex-column gap-1 flex-shrink-0">
-                    <form method="POST" action="{{ url_for('admin_schedule') }}">
-                      <input type="hidden" name="action" value="mark_completed">
-                      <input type="hidden" name="meeting_id" value="{{ m.id }}">
-                      <button type="submit" class="btn btn-sm btn-outline-success py-0 px-2" style="font-size:.7rem;" title="סמן כהתקיימה">✓</button>
-                    </form>
+                    <button type="button" class="btn btn-sm btn-outline-success py-0 px-2"
+                            style="font-size:.7rem;" title="סמן כהתקיימה + סיכום"
+                            onclick="openOutcomeModal({{ m.id }})">✓</button>
                     <form method="POST" action="{{ url_for('admin_schedule') }}">
                       <input type="hidden" name="action" value="send_reminder">
                       <input type="hidden" name="meeting_id" value="{{ m.id }}">
@@ -385,6 +383,46 @@
       const todayCell = document.querySelector('.cal-cell.today.has-meetings');
       if (todayCell) todayCell.click();
     });
+
+    function openOutcomeModal(mid) {
+      document.getElementById('outcomeModalMid').value = mid;
+      document.getElementById('outcomeNotes').value    = '';
+      document.getElementById('actionItems').value     = '';
+      new bootstrap.Modal(document.getElementById('outcomeModal')).show();
+    }
   </script>
+
+  <!-- Outcome Modal -->
+  <div class="modal fade" id="outcomeModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="POST" action="{{ url_for('admin_schedule') }}">
+          <input type="hidden" name="action" value="mark_completed">
+          <input type="hidden" name="meeting_id" id="outcomeModalMid">
+          <div class="modal-header">
+            <h6 class="modal-title fw-bold">&#128221; סיכום פגישה</h6>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label fw-semibold small">סיכום הפגישה</label>
+              <textarea name="outcome_notes" id="outcomeNotes" class="form-control" rows="4"
+                        placeholder="מה דנו? מה הושג? תובנות עיקריות..."></textarea>
+            </div>
+            <div class="mb-2">
+              <label class="form-label fw-semibold small">משימות ופעולות להמשך</label>
+              <textarea name="action_items" id="actionItems" class="form-control" rows="3"
+                        placeholder="1. לעדכן קורות חיים&#10;2. לחזור על שאלות HR..."></textarea>
+              <div class="form-text">הסטודנט יראה זאת תחת הפגישה בלוח הזמנים שלו/ה</div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ביטול</button>
+            <button type="submit" class="btn btn-success btn-sm fw-semibold">&#10003; סמן כהתקיימה ושמור סיכום</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

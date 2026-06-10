@@ -19,15 +19,30 @@
     }
     .meeting-card.confirmed { border-right: 4px solid #10b981; }
     .meeting-card.pending   { border-right: 4px solid #f59e0b; }
+    .meeting-card.completed { border-right: 4px solid #6b7280; background: #fafafa; }
 
     .date-block {
       background: #eef0ff; border-radius: 10px;
       padding: .5rem .75rem; text-align: center; min-width: 60px;
     }
+    .meeting-card.completed .date-block { background: #f3f4f6; }
     .date-day  { font-size: 1.5rem; font-weight: 800; color: #4361ee; line-height: 1; }
+    .meeting-card.completed .date-day { color: #9ca3af; }
     .date-mon  { font-size: .72rem; color: #6b7280; }
     .badge-conf { background: #d1fae5; color: #065f46; }
     .badge-pend { background: #fef3c7; color: #92400e; }
+    .badge-done { background: #e5e7eb; color: #4b5563; }
+
+    .outcome-box {
+      background: #f0fdf4; border: 1px solid #86efac; border-radius: 10px;
+      padding: .75rem 1rem; margin-top: .75rem; font-size: .84rem;
+    }
+    .action-box {
+      background: #eff6ff; border: 1px solid #93c5fd; border-radius: 10px;
+      padding: .75rem 1rem; margin-top: .5rem; font-size: .84rem;
+    }
+    .section-hdr { font-size: .72rem; font-weight: 700; text-transform: uppercase;
+                   color: #adb5bd; letter-spacing: .5px; margin-bottom: .75rem; margin-top: 1.5rem; }
   </style>
 </head>
 <body>
@@ -37,7 +52,7 @@
     <div class="ms-auto d-flex align-items-center gap-3">
       <a href="{{ url_for('index') }}" class="btn btn-outline-light btn-sm">&#8592; משימות</a>
       <a href="{{ url_for('student_settings') }}" class="btn btn-outline-light btn-sm">&#9881;&#65039; הגדרות</a>
-      <span class="text-white-50 small">{{ profile.full_name if profile else user.name }}</span>
+      <span class="text-white-50 small">{{ profile.full_name if profile and profile.full_name else (user.name if user else '') }}</span>
       <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">התנתקות</a>
     </div>
   </nav>
@@ -54,39 +69,90 @@
       </div>
     {% else %}
       {% set MONTHS_HE = ['','ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'] %}
-      {% for m in meetings %}
-        <div class="meeting-card {{ m.status }}">
-          <div class="d-flex align-items-center gap-3">
-            <div class="date-block">
-              <div class="date-day">{{ m.scheduled_at.strftime('%d') }}</div>
-              <div class="date-mon">{{ MONTHS_HE[m.scheduled_at.month] }}</div>
-            </div>
-            <div class="flex-grow-1">
-              <div class="fw-bold">
-                פגישה עם המנטור
-                <span class="badge {{ 'badge-conf' if m.status == 'confirmed' else 'badge-pend' }} rounded-pill ms-2" style="font-size:.7rem;">
-                  {{ 'מאושר ✓' if m.status == 'confirmed' else 'ממתין לאישורך' }}
-                </span>
+
+      {% set upcoming = meetings | selectattr('status', 'ne', 'completed') | list %}
+      {% set past     = meetings | selectattr('status', 'equalto', 'completed') | list %}
+
+      {% if upcoming %}
+        <div class="section-hdr">&#128197; פגישות קרובות</div>
+        {% for m in upcoming %}
+          <div class="meeting-card {{ m.status }}">
+            <div class="d-flex align-items-center gap-3">
+              <div class="date-block">
+                <div class="date-day">{{ m.scheduled_at | dt('%d') }}</div>
+                <div class="date-mon">{{ MONTHS_HE[m.scheduled_at | dt('%m') | int] }}</div>
               </div>
-              <div class="text-muted small mt-1">
-                &#9202; {{ m.scheduled_at | dt('%H:%M') }} &nbsp;·&nbsp; {{ m.duration_min }} דקות
-              </div>
-              {% if m.notes %}
-                <div class="text-muted small mt-1">{{ m.notes }}</div>
-              {% endif %}
-              {% if m.status == 'pending' %}
-                <div class="mt-2">
-                  <a href="{{ url_for('meeting_confirm', meeting_id=m.id, token=m.token) }}"
-                     class="btn btn-sm btn-success py-0 px-3 fw-semibold" style="font-size:.8rem;">
-                    אשר/י פגישה ✓
-                  </a>
-                  <span class="text-muted small me-2">או לחץ/י על הקישור שנשלח ב-WhatsApp</span>
+              <div class="flex-grow-1">
+                <div class="fw-bold">
+                  פגישה עם המנטור
+                  <span class="badge {{ 'badge-conf' if m.status == 'confirmed' else 'badge-pend' }} rounded-pill ms-2" style="font-size:.7rem;">
+                    {{ 'מאושר ✓' if m.status == 'confirmed' else 'ממתין לאישורך' }}
+                  </span>
                 </div>
-              {% endif %}
+                <div class="text-muted small mt-1">
+                  &#9202; {{ m.scheduled_at | dt('%H:%M') }} &nbsp;·&nbsp; {{ m.duration_min }} דקות
+                </div>
+                {% if m.notes %}
+                  <div class="text-muted small mt-1">{{ m.notes }}</div>
+                {% endif %}
+                {% if m.status == 'pending' %}
+                  <div class="mt-2">
+                    <a href="{{ url_for('meeting_confirm', mid=m.id, token=m.token) }}"
+                       class="btn btn-sm btn-success py-0 px-3 fw-semibold" style="font-size:.8rem;">
+                      אשר/י פגישה ✓
+                    </a>
+                    <span class="text-muted small me-2">או לחץ/י על הקישור שנשלח ב-WhatsApp</span>
+                  </div>
+                {% endif %}
+              </div>
             </div>
           </div>
-        </div>
-      {% endfor %}
+        {% endfor %}
+      {% endif %}
+
+      {% if past %}
+        <div class="section-hdr">&#10003; פגישות שהתקיימו</div>
+        {% for m in past %}
+          <div class="meeting-card completed">
+            <div class="d-flex align-items-start gap-3">
+              <div class="date-block">
+                <div class="date-day">{{ m.scheduled_at | dt('%d') }}</div>
+                <div class="date-mon">{{ MONTHS_HE[m.scheduled_at | dt('%m') | int] }}</div>
+              </div>
+              <div class="flex-grow-1">
+                <div class="fw-bold text-secondary">
+                  פגישה עם המנטור
+                  <span class="badge badge-done rounded-pill ms-2" style="font-size:.7rem;">התקיימה ✓</span>
+                </div>
+                <div class="text-muted small mt-1">
+                  &#9202; {{ m.scheduled_at | dt('%H:%M') }} &nbsp;·&nbsp; {{ m.duration_min }} דקות
+                </div>
+                {% if m.notes %}
+                  <div class="text-muted small mt-1">{{ m.notes }}</div>
+                {% endif %}
+
+                {% if m.outcome_notes %}
+                  <div class="outcome-box mt-2">
+                    <div class="fw-semibold mb-1" style="color:#065f46; font-size:.72rem;">&#128221; סיכום פגישה מהמנטור</div>
+                    <div style="white-space: pre-wrap;">{{ m.outcome_notes }}</div>
+                  </div>
+                {% endif %}
+
+                {% if m.action_items %}
+                  <div class="action-box">
+                    <div class="fw-semibold mb-1" style="color:#1d4ed8; font-size:.72rem;">&#128203; מה הבא — משימות שנקבעו</div>
+                    <div style="white-space: pre-wrap;">{{ m.action_items }}</div>
+                  </div>
+                {% endif %}
+
+                {% if not m.outcome_notes and not m.action_items %}
+                  <div class="text-muted mt-1" style="font-size:.75rem; font-style:italic;">המנטור טרם הוסיף סיכום פגישה</div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      {% endif %}
     {% endif %}
   </div>
 
