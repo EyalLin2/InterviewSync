@@ -1,0 +1,81 @@
+{% set _role = nav_role | default('student') %}
+<nav class="navbar navbar-expand-lg navbar-{{ _role }} px-4 py-2">
+  <span class="navbar-brand-text"><i data-lucide="graduation-cap" class="icon"></i> InterviewSync</span>
+
+  {% if _role == 'admin' %}
+    <span class="badge ms-3" style="background:var(--color-primary); font-size:.65rem;">מנהל</span>
+  {% elif _role == 'business' %}
+    <span class="badge ms-3" style="background:var(--color-primary); font-size:.65rem;">עסקי</span>
+  {% endif %}
+
+  <div class="ms-auto d-flex align-items-center gap-2 flex-wrap">
+    {% if _role == 'student' %}
+      {% if current_page %}
+        <a href="{{ url_for('index') }}" class="btn btn-outline-light btn-sm">
+          <i data-lucide="arrow-right" class="icon"></i> לוח הבית
+        </a>
+      {% endif %}
+      <a href="{{ url_for('student_schedule') }}" class="btn btn-outline-light btn-sm {{ 'active' if current_page == 'schedule' }}">
+        <i data-lucide="calendar" class="icon"></i> פגישות
+      </a>
+      <a href="{{ url_for('student_settings') }}" class="btn btn-outline-light btn-sm {{ 'active' if current_page == 'settings' }}">
+        <i data-lucide="settings" class="icon"></i> הגדרות
+      </a>
+
+    {% elif _role == 'admin' or _role == 'hub' %}
+      {% if _role == 'admin' %}
+        <a href="{{ url_for('admin_hub') }}" class="btn btn-outline-light btn-sm">
+          <i data-lucide="arrow-right" class="icon"></i> לוח הבית
+        </a>
+      {% endif %}
+      <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-light btn-sm {{ 'active' if current_page == 'dashboard' }}">
+        <i data-lucide="users" class="icon"></i> סטודנטים
+      </a>
+      <a href="{{ url_for('admin_submissions') }}" class="btn btn-outline-light btn-sm position-relative {{ 'active' if current_page == 'submissions' }}">
+        <i data-lucide="inbox" class="icon"></i> הגשות
+        {% if new_submissions_count is defined and new_submissions_count > 0 %}
+          <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-danger" style="font-size:.58rem;">{{ new_submissions_count }}</span>
+        {% endif %}
+      </a>
+      <a href="{{ url_for('admin_schedule') }}" class="btn btn-outline-light btn-sm position-relative {{ 'active' if current_page == 'schedule' }}">
+        <i data-lucide="calendar" class="icon"></i> לוח
+        {% if upcoming_count is defined and upcoming_count > 0 %}
+          <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-warning text-dark" style="font-size:.58rem;">{{ upcoming_count }}</span>
+        {% endif %}
+      </a>
+      <a href="{{ url_for('billing_dashboard') }}" class="btn btn-outline-light btn-sm {{ 'active' if current_page == 'billing' }}">
+        <i data-lucide="credit-card" class="icon"></i> חיוב
+      </a>
+      <a href="{{ url_for('services_settings') }}" class="btn btn-outline-light btn-sm {{ 'active' if current_page == 'services' }}">
+        <i data-lucide="bar-chart-2" class="icon"></i> מחירון
+      </a>
+      <a href="{{ url_for('meetings_report') }}" target="_blank" class="btn btn-outline-light btn-sm">
+        <i data-lucide="file-text" class="icon"></i> דוח פגישות
+      </a>
+      {% if _role == 'hub' %}
+        <a href="{{ url_for('admin_business') }}" class="btn btn-outline-light btn-sm">
+          <i data-lucide="briefcase" class="icon"></i> עסקי
+        </a>
+      {% endif %}
+
+    {% elif _role == 'business' %}
+      <a href="{{ url_for('admin_hub') }}" class="btn btn-outline-light btn-sm">
+        <i data-lucide="arrow-right" class="icon"></i> לוח הבית
+      </a>
+      <a href="{{ url_for('admin_schedule') }}" class="btn btn-outline-light btn-sm">
+        <i data-lucide="calendar" class="icon"></i> לוז מאוחד
+      </a>
+    {% endif %}
+
+    <span class="small" style="color: var(--color-navbar-text-muted);">
+      {% if profile is defined and profile and profile.full_name %}
+        שלום, <strong style="color: var(--color-navbar-text);">{{ profile.full_name.split()[0] }}</strong>
+      {% elif user is defined and user %}
+        {{ user.name }}
+      {% endif %}
+    </span>
+    <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">
+      <i data-lucide="log-out" class="icon"></i> התנתקות
+    </a>
+  </div>
+</nav>

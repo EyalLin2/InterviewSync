@@ -7,57 +7,96 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <style>
+    :root {
+      --color-primary: #2563eb;
+      --color-primary-hover: #1d4ed8;
+      --color-primary-subtle: #eff4ff;
+      --color-text: #1f2430;
+      --color-text-muted: #6b7280;
+      --color-bg: #ffffff;
+      --color-bg-subtle: #f7f8fa;
+      --color-border: #e5e7eb;
+      --color-success: #2f8f5b;
+      --color-success-subtle: #eaf6f0;
+      --color-warning: #b8860b;
+      --color-warning-subtle: #fbf4e3;
+      --color-danger: #c0392b;
+      --color-danger-subtle: #fbeae8;
+      --color-info: #2563eb;
+      --color-info-subtle: #eff4ff;
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+      --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
+    }
+    .icon {
+      width: 1em;
+      height: 1em;
+      vertical-align: -0.125em;
+      stroke-width: 2;
+    }
     body {
       font-family: 'Heebo', sans-serif;
-      background: #f0f4ff;
+      background: var(--color-bg-subtle);
       min-height: 100vh;
       display: flex; align-items: center; justify-content: center;
-      padding: 2rem 1rem;
+      padding: var(--space-6) var(--space-4);
     }
     .card-main {
-      background: #fff; border-radius: 20px;
-      box-shadow: 0 8px 40px rgba(67,97,238,.12);
-      padding: 2.5rem 2rem; width: 100%; max-width: 580px;
+      background: var(--color-bg); border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: var(--space-6) var(--space-5); width: 100%; max-width: 580px;
     }
-    .brand { font-size: 1.5rem; font-weight: 800; color: #4361ee; }
+    .brand { font-size: 1.5rem; font-weight: 800; color: var(--color-primary); display: flex; align-items: center; justify-content: center; gap: var(--space-2); }
     .step-badge {
-      display: inline-block; background: #eef0ff; color: #4361ee;
-      border-radius: 50px; padding: 0.25rem 0.9rem;
-      font-size: 0.8rem; font-weight: 600; margin-bottom: 1.5rem;
+      display: inline-block; background: var(--color-primary-subtle); color: var(--color-primary);
+      border-radius: var(--radius-md); padding: var(--space-1) var(--space-3);
+      font-size: 0.8rem; font-weight: 600; margin-bottom: var(--space-5);
     }
     .section-title {
       font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
-      color: #adb5bd; letter-spacing: 0.5px; margin-bottom: 0.75rem;
+      color: var(--color-text-muted); letter-spacing: 0.5px; margin-bottom: var(--space-3);
+      display: flex; align-items: center; gap: var(--space-2);
     }
-    .divider { border-top: 2px dashed #e9ecef; margin: 1.5rem 0; }
+    .divider { border-top: 2px dashed var(--color-border); margin: var(--space-5) 0; }
     .info-banner {
-      background: #f0f4ff; border-right: 3px solid #4361ee;
-      border-radius: 8px 0 0 8px; padding: 0.7rem 1rem;
-      font-size: 0.83rem; color: #4361ee; margin-bottom: 1.5rem;
+      background: var(--color-info-subtle); border-right: 3px solid var(--color-primary);
+      border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4);
+      font-size: 0.83rem; color: var(--color-primary); margin-bottom: var(--space-5);
+      display: flex; align-items: flex-start; gap: var(--space-2);
     }
     .form-control:focus, .form-select:focus {
-      border-color: #4361ee; box-shadow: 0 0 0 .2rem rgba(67,97,238,.15);
+      border-color: var(--color-primary); box-shadow: var(--shadow-sm);
     }
     .edu-option { cursor: pointer; }
     .edu-option input[type=radio]:checked + .edu-card {
-      border-color: #4361ee; background: #eef0ff;
+      border-color: var(--color-primary); background: var(--color-primary-subtle);
     }
     .edu-card {
-      border: 2px solid #dee2e6; border-radius: 12px;
-      padding: 0.75rem 1rem; transition: all .2s;
+      border: 2px solid var(--color-border); border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4); transition: all .2s;
       font-weight: 600;
     }
-    .edu-card:hover { border-color: #4361ee; }
+    .edu-card:hover { border-color: var(--color-primary); }
+    .edu-card .icon { color: var(--color-primary); width: 1.6rem; height: 1.6rem; }
     #section-highschool, #section-college { display: none; }
   </style>
 </head>
 <body>
   <div class="card-main">
     <div class="text-center mb-3">
-      <div class="brand">&#127891; InterviewSync</div>
+      <div class="brand"><i data-lucide="graduation-cap" class="icon"></i> InterviewSync</div>
       <div class="text-muted small mb-2">בוא/י נכיר אותך כדי שנוכל לעזור לך בצורה הטובה ביותר</div>
-      <span class="step-badge">&#128203; מילוי פרופיל ראשוני</span>
+      <span class="step-badge"><i data-lucide="clipboard-list" class="icon"></i> מילוי פרופיל ראשוני</span>
     </div>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -69,14 +108,15 @@
     {% endwith %}
 
     <div class="info-banner">
-      &#128161; המידע שתמלא/י יעזור למנטור שלך לבנות עבורך תוכנית אישית מותאמת.
-      <strong>לא תצטרך/י למלא זאת שוב.</strong>
+      <i data-lucide="lightbulb" class="icon"></i>
+      <span>המידע שתמלא/י יעזור למנטור שלך לבנות עבורך תוכנית אישית מותאמת.
+      <strong>לא תצטרך/י למלא זאת שוב.</strong></span>
     </div>
 
     <form method="POST" action="{{ url_for('onboarding') }}" id="onboardingForm">
 
       <!-- Section 1: Personal -->
-      <div class="section-title">&#128100; פרטים אישיים</div>
+      <div class="section-title"><i data-lucide="user" class="icon"></i> פרטים אישיים</div>
       <div class="row g-3 mb-1">
         <div class="col-md-6">
           <label class="form-label fw-semibold">שם מלא <span class="text-danger">*</span></label>
@@ -96,13 +136,13 @@
       <div class="divider"></div>
 
       <!-- Section 2: Type selection (3 options) -->
-      <div class="section-title">&#9733; אני...</div>
+      <div class="section-title"><i data-lucide="sparkles" class="icon"></i> אני...</div>
       <div class="row g-3 mb-3">
         <div class="col-4">
           <label class="edu-option d-block">
             <input type="radio" name="education_level" value="highschool" class="d-none" id="radio-hs" required>
             <div class="edu-card text-center">
-              <div style="font-size:1.6rem;">&#127979;</div>
+              <div><i data-lucide="school" class="icon"></i></div>
               <div class="fw-semibold" style="font-size:.85rem;">תלמיד/ה תיכון</div>
             </div>
           </label>
@@ -111,7 +151,7 @@
           <label class="edu-option d-block">
             <input type="radio" name="education_level" value="college" class="d-none" id="radio-col">
             <div class="edu-card text-center">
-              <div style="font-size:1.6rem;">&#127979;</div>
+              <div><i data-lucide="graduation-cap" class="icon"></i></div>
               <div class="fw-semibold" style="font-size:.85rem;">סטודנט/ית</div>
               <div class="text-muted" style="font-size:.72rem;">תואר / תעודה</div>
             </div>
@@ -121,7 +161,7 @@
           <label class="edu-option d-block">
             <input type="radio" name="education_level" value="career" class="d-none" id="radio-car">
             <div class="edu-card text-center">
-              <div style="font-size:1.6rem;">&#128188;</div>
+              <div><i data-lucide="briefcase" class="icon"></i></div>
               <div class="fw-semibold" style="font-size:.85rem;">הכוונה תעסוקתית</div>
               <div class="text-muted" style="font-size:.72rem;">בוגר/ת עם ניסיון</div>
             </div>
@@ -196,7 +236,7 @@
       <div class="divider"></div>
 
       <!-- Section 3: Goals & Weaknesses -->
-      <div class="section-title">&#127919; מטרות ואתגרים</div>
+      <div class="section-title"><i data-lucide="target" class="icon"></i> מטרות ואתגרים</div>
       <div class="row g-3 mb-4">
         <div class="col-12">
           <label class="form-label fw-semibold">מטרות קריירה <span class="text-danger">*</span></label>
@@ -212,7 +252,7 @@
       </div>
 
       <button type="submit" class="btn btn-primary btn-lg w-100 fw-semibold" id="submitBtn">
-        שמור והתחל &#8594;
+        שמור והתחל <i data-lucide="arrow-left" class="icon"></i>
       </button>
     </form>
   </div>
@@ -246,6 +286,8 @@
         combined.value = job + (exp ? ` (${exp} שנות ניסיון)` : '');
       }
     });
+
+    if (window.lucide) { lucide.createIcons(); }
   </script>
 </body>
 </html>

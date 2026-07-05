@@ -7,32 +7,64 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body { font-family:'Heebo',sans-serif; background:#fff; color:#1a1f36; max-width:600px; margin:0 auto; padding:2rem; }
-    .print-btn { background:#635bff; color:#fff; border:none; border-radius:8px; padding:.5rem 1.25rem; font-size:.9rem; font-weight:700; cursor:pointer; margin-bottom:1.5rem; }
-    .invoice-header { border-bottom:3px solid #635bff; padding-bottom:1.5rem; margin-bottom:1.5rem; }
-    .business-name { font-size:1.6rem; font-weight:800; color:#635bff; }
-    .invoice-title  { font-size:1.1rem; font-weight:700; color:#374151; margin-top:.5rem; }
-    .invoice-num    { font-size:.82rem; color:#9ca3af; }
-    .section-lbl { font-size:.7rem; font-weight:700; text-transform:uppercase; color:#9ca3af; letter-spacing:.4px; margin-bottom:.3rem; }
-    .amount-box { background:#f8f7ff; border-right:4px solid #635bff; border-radius:8px 0 0 8px; padding:1rem 1.25rem; margin-top:1.5rem; }
-    .amount-big { font-size:2rem; font-weight:800; color:#635bff; }
-    .status-paid    { background:#d1fae5; color:#065f46; border-radius:50px; padding:.25rem .75rem; font-size:.8rem; font-weight:700; }
-    .status-pending { background:#fef3c7; color:#92400e; border-radius:50px; padding:.25rem .75rem; font-size:.8rem; font-weight:700; }
-    table { width:100%; border-collapse:collapse; margin-top:1rem; }
-    th,td { padding:.5rem .75rem; border-bottom:1px solid #f0f1f5; text-align:right; }
-    th { font-size:.75rem; font-weight:700; color:#9ca3af; text-transform:uppercase; background:#f8f9ff; }
-    .footer-note { margin-top:2rem; font-size:.75rem; color:#9ca3af; text-align:center; border-top:1px solid #f0f1f5; padding-top:1rem; }
+    :root {
+      --color-primary: #2563eb;
+      --color-primary-hover: #1d4ed8;
+      --color-primary-subtle: #eff4ff;
+      --color-text: #1f2430;
+      --color-text-muted: #6b7280;
+      --color-bg: #ffffff;
+      --color-bg-subtle: #f7f8fa;
+      --color-border: #e5e7eb;
+      --color-success: #2f8f5b;
+      --color-success-subtle: #eaf6f0;
+      --color-warning: #b8860b;
+      --color-warning-subtle: #fbf4e3;
+      --color-danger: #c0392b;
+      --color-danger-subtle: #fbeae8;
+      --color-info: #2563eb;
+      --color-info-subtle: #eff4ff;
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+      --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
+    }
+    .icon { width: 1em; height: 1em; vertical-align: -0.125em; stroke-width: 2; }
+    body { font-family:'Heebo',sans-serif; background:var(--color-bg); color:var(--color-text); max-width:600px; margin:0 auto; padding:var(--space-6); }
+    .print-btn { background:var(--color-primary); color:#fff; border:none; border-radius:var(--radius-md); padding:var(--space-2) var(--space-4); font-size:.9rem; font-weight:700; cursor:pointer; margin-bottom:var(--space-5); display:inline-flex; align-items:center; gap:var(--space-2); }
+    .print-btn:hover { background:var(--color-primary-hover); }
+    .back-btn { background: var(--color-bg-subtle); color: var(--color-text-muted); border: none; border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); font-size: .85rem; font-weight: 600; cursor: pointer; margin-inline-end: var(--space-2); text-decoration: none; display: inline-flex; align-items: center; gap: var(--space-1); }
+    .invoice-header { border-bottom:3px solid var(--color-primary); padding-bottom:var(--space-5); margin-bottom:var(--space-5); }
+    .business-name { font-size:1.6rem; font-weight:800; color:var(--color-primary); display:inline-flex; align-items:center; gap:var(--space-2); }
+    .invoice-title  { font-size:1.1rem; font-weight:700; color:var(--color-text); margin-top:var(--space-2); }
+    .invoice-num    { font-size:.82rem; color:var(--color-text-muted); }
+    .section-lbl { font-size:.7rem; font-weight:700; text-transform:uppercase; color:var(--color-text-muted); letter-spacing:.4px; margin-bottom:var(--space-1); }
+    .amount-box { background:var(--color-bg-subtle); border-right:4px solid var(--color-primary); border-radius:var(--radius-md) 0 0 var(--radius-md); padding:var(--space-4) var(--space-5); margin-top:var(--space-5); }
+    .amount-big { font-size:2rem; font-weight:800; color:var(--color-primary); }
+    table { width:100%; border-collapse:collapse; margin-top:var(--space-4); }
+    th,td { padding:var(--space-2) var(--space-3); border-bottom:1px solid var(--color-border); text-align:right; }
+    th { font-size:.75rem; font-weight:700; color:var(--color-text-muted); text-transform:uppercase; background:var(--color-bg-subtle); }
+    .footer-note { margin-top:var(--space-6); font-size:.75rem; color:var(--color-text-muted); text-align:center; border-top:1px solid var(--color-border); padding-top:var(--space-4); }
     @media print {
       .print-btn { display:none; }
-      body { padding:1rem; }
+      .back-btn { display:none; }
+      body { padding:var(--space-4); }
     }
   </style>
 </head>
 <body>
-  <button class="print-btn" onclick="window.print()">&#128424;&#65039; הדפס / שמור PDF</button>
+  <a href="javascript:history.back()" class="back-btn"><i data-lucide="arrow-right" class="icon"></i> חזרה</a>
+  <button class="print-btn" onclick="window.print()"><i data-lucide="printer" class="icon"></i> הדפס / שמור PDF</button>
 
   <div class="invoice-header">
-    <div class="business-name">&#127891; InterviewSync</div>
+    <div class="business-name"><i data-lucide="building-2" class="icon"></i> InterviewSync</div>
     <div class="invoice-title">חשבונית שירות</div>
     <div class="invoice-num">
       מס׳ {{ student.id }}-{{ month|replace('-','') }} ·
@@ -54,9 +86,9 @@
       {% if record %}
         <div class="mt-1">
           {% if record.paid_at %}
-            <span class="status-paid">שולם ✓ {{ record.paid_at | dt }}</span>
+            <span class="badge-soft badge-soft-success"><i data-lucide="check-circle" class="icon"></i> שולם {{ record.paid_at | dt }}</span>
           {% else %}
-            <span class="status-pending">ממתין לתשלום</span>
+            <span class="badge-soft badge-soft-warning">ממתין לתשלום</span>
           {% endif %}
         </div>
       {% endif %}
@@ -110,17 +142,17 @@
               <td class="small fw-semibold" style="text-align:center;">₪{{ r.amount_due|int }}</td>
               <td style="text-align:center;">
                 {% if r.paid_at %}
-                  <span class="status-paid" style="font-size:.7rem;">שולם</span>
+                  <span class="badge-soft badge-soft-success">שולם</span>
                 {% else %}
-                  <span class="status-pending" style="font-size:.7rem;">ממתין</span>
+                  <span class="badge-soft badge-soft-warning">ממתין</span>
                 {% endif %}
               </td>
             </tr>
           {% endfor %}
-          <tr style="border-top:2px solid #635bff;">
+          <tr style="border-top:2px solid var(--color-primary);">
             <td class="fw-bold small">סה"כ {{ history.year }}</td>
             <td class="fw-bold small">{{ history.meetings_year }}</td>
-            <td class="fw-bold small" style="text-align:center; color:#635bff;">₪{{ history.total_year|int }}</td>
+            <td class="fw-bold small" style="text-align:center; color:var(--color-primary);">₪{{ history.total_year|int }}</td>
             <td></td>
           </tr>
         </tbody>
@@ -129,5 +161,8 @@
   {% endif %}
 
   <div class="footer-note">InterviewSync · מערכת ניהול ליווי קריירה · {{ now_date | dt }}</div>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script>if (window.lucide) { lucide.createIcons(); }</script>
 </body>
 </html>

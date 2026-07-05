@@ -7,56 +7,81 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <style>
-    body { font-family: 'Heebo', sans-serif; background: #f4f5f9; }
+    :root {
+      --color-primary: #2563eb;
+      --color-primary-hover: #1d4ed8;
+      --color-primary-subtle: #eff4ff;
+      --color-text: #1f2430;
+      --color-text-muted: #6b7280;
+      --color-bg: #ffffff;
+      --color-bg-subtle: #f7f8fa;
+      --color-border: #e5e7eb;
+      --color-success: #2f8f5b;
+      --color-success-subtle: #eaf6f0;
+      --color-warning: #b8860b;
+      --color-warning-subtle: #fbf4e3;
+      --color-danger: #c0392b;
+      --color-danger-subtle: #fbeae8;
+      --color-info: #2563eb;
+      --color-info-subtle: #eff4ff;
+      --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px; --space-6: 32px;
+      --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px;
+      --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+      --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
+    }
+    .icon { width: 1em; height: 1em; vertical-align: -0.125em; stroke-width: 2; }
+    body { font-family: 'Heebo', sans-serif; background: var(--color-bg-subtle); }
 
     /* ── Navbar (same as admin) ── */
     .navbar-admin { background: #1a1f36; }
     .navbar-brand-text { font-weight: 800; color: #fff; font-size: 1.15rem; }
-    .breadcrumb-item a { color: #635bff; text-decoration: none; }
+    .breadcrumb-item a { color: var(--color-primary); text-decoration: none; }
 
     /* ── Cards (same spec as admin) ── */
     .card-crm {
-      background: #fff;
-      border-radius: 14px;
-      box-shadow: 0 2px 10px rgba(0,0,0,.06);
-      padding: 1.75rem;
-      margin-bottom: 1.25rem;
+      background: var(--color-bg);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      padding: var(--space-6);
+      margin-bottom: var(--space-5);
     }
     .section-title {
       font-size: .72rem; font-weight: 700; text-transform: uppercase;
-      color: #9ca3af; letter-spacing: .5px; margin-bottom: 1rem;
+      color: var(--color-text-muted); letter-spacing: .5px; margin-bottom: var(--space-4);
     }
 
     /* ── Quick Actions Bar ── */
     .quick-bar {
-      background: #fff; border-radius: 14px;
-      box-shadow: 0 2px 10px rgba(0,0,0,.06);
-      padding: .75rem 1.5rem; margin-bottom: 1rem;
-      display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
+      background: var(--color-bg); border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      padding: var(--space-3) var(--space-6); margin-bottom: var(--space-4);
+      display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap;
     }
-    .qa { display: inline-flex; align-items: center; gap: .3rem; font-size: .82rem; font-weight: 600; padding: .3rem .8rem; border-radius: 7px; text-decoration: none; border: none; cursor: pointer; transition: opacity .12s; }
+    .qa { display: inline-flex; align-items: center; gap: .3rem; font-size: .82rem; font-weight: 600; padding: .3rem .8rem; border-radius: var(--radius-sm); text-decoration: none; border: none; cursor: pointer; transition: opacity .12s; }
     .qa:hover { opacity: .8; }
-    .qa-wa    { background: #dcfce7; color: #166534; }
-    .qa-email { background: #dbeafe; color: #1e40af; }
-    .qa-meet  { background: #ede9fe; color: #5b21b6; }
-    .qa-none  { background: #f3f4f6; color: #9ca3af; cursor: default; }
+    .qa-wa    { background: var(--color-success-subtle); color: var(--color-success); }
+    .qa-email { background: var(--color-info-subtle); color: var(--color-info); }
+    .qa-meet  { background: var(--color-primary-subtle); color: var(--color-primary); }
+    .qa-none  { background: var(--color-bg-subtle); color: var(--color-text-muted); cursor: default; }
+    .qa-intake { background: var(--color-warning-subtle); color: var(--color-warning); }
 
     /* ── Status pill ── */
-    .status-select { font-size: .78rem; font-weight: 700; border: none; border-radius: 50px; padding: .25rem .7rem; cursor: pointer; outline: none; }
-    .st-active    { background: #d1fae5; color: #065f46; }
-    .st-paused    { background: #fef3c7; color: #92400e; }
-    .st-completed { background: #f3f4f6; color: #374151; }
+    .status-select { font-size: .78rem; font-weight: 700; border: none; border-radius: var(--radius-sm); padding: .25rem .7rem; cursor: pointer; outline: none; }
+    .st-active    { background: var(--color-success-subtle); color: var(--color-success); }
+    .st-paused    { background: var(--color-warning-subtle); color: var(--color-warning); }
+    .st-completed { background: var(--color-bg-subtle); color: var(--color-text-muted); }
 
     /* ── Stats row (same scale as admin stat-cards) ── */
-    .stats-row { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .stats-row { display: flex; gap: var(--space-4); margin-bottom: var(--space-4); flex-wrap: wrap; }
     .stat-box {
-      background: #fff; border-radius: 14px;
-      box-shadow: 0 2px 10px rgba(0,0,0,.06);
-      padding: 1rem 1.25rem; text-align: center; flex: 1; min-width: 120px;
+      background: var(--color-bg); border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      padding: var(--space-4) var(--space-5); text-align: center; flex: 1; min-width: 120px;
     }
-    .stat-num { font-size: 2rem; font-weight: 800; line-height: 1; color: #1a1f36; }
-    .stat-lbl { font-size: .72rem; color: #9ca3af; margin-top: 4px; }
+    .stat-num { font-size: 2rem; font-weight: 800; line-height: 1; color: var(--color-text); }
+    .stat-lbl { font-size: .72rem; color: var(--color-text-muted); margin-top: 4px; }
 
     /* ── Profile header (compact like admin table row) ── */
     .profile-avatar {
@@ -64,120 +89,121 @@
       display: flex; align-items: center; justify-content: center;
       font-weight: 800; font-size: 1rem; color: #fff; flex-shrink: 0;
     }
-    .field-lbl { font-size: .72rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .3px; }
-    .field-val { font-size: .88rem; color: #1a1f36; }
+    .field-lbl { font-size: .72rem; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: .3px; }
+    .field-val { font-size: .88rem; color: var(--color-text); }
 
     /* ── Tabs (left column) ── */
     .nav-tabs-crm .nav-link {
-      color: #6b7280; font-size: .85rem; font-weight: 600;
+      color: var(--color-text-muted); font-size: .85rem; font-weight: 600;
       border: none; border-radius: 0; padding: .55rem 1rem;
       border-bottom: 2px solid transparent;
     }
     .nav-tabs-crm .nav-link.active {
-      color: #635bff; border-bottom-color: #635bff; background: none;
+      color: var(--color-primary); border-bottom-color: var(--color-primary); background: none;
     }
-    .nav-tabs-crm { border-bottom: 1px solid #e4e8f0; margin-bottom: 1.25rem; }
+    .nav-tabs-crm { border-bottom: 1px solid var(--color-border); margin-bottom: var(--space-5); }
 
     /* ── Strategy box ── */
-    .strategy-box { background: #f8f7ff; border-right: 4px solid #635bff; border-radius: 8px 0 0 8px; padding: .9rem 1.1rem; font-size: .87rem; white-space: pre-wrap; line-height: 1.7; }
-    .strategy-empty { color: #9ca3af; font-style: italic; }
+    .strategy-box { background: var(--color-primary-subtle); border-right: 4px solid var(--color-primary); border-radius: var(--radius-md) 0 0 var(--radius-md); padding: .9rem 1.1rem; font-size: .87rem; white-space: pre-wrap; line-height: 1.7; }
+    .strategy-empty { color: var(--color-text-muted); font-style: italic; }
 
     /* ── Timeline bar ── */
-    .timeline-bar  { height: 7px; border-radius: 8px; background: #e9ecef; overflow: hidden; }
-    .timeline-fill { height: 100%; background: linear-gradient(90deg, #635bff, #a855f7); border-radius: 8px; }
+    .timeline-bar  { height: 7px; border-radius: var(--radius-sm); background: var(--color-bg-subtle); overflow: hidden; }
+    .timeline-fill { height: 100%; background: var(--color-primary); border-radius: var(--radius-sm); }
 
     /* ── Notes log ── */
-    .note-entry { padding: .55rem .8rem; background: #f8f9ff; border-radius: 8px; margin-bottom: .35rem; font-size: .83rem; position: relative; padding-left: 1.8rem; }
-    .note-ts    { font-size: .67rem; color: #9ca3af; margin-top: .15rem; }
-    .note-del   { position: absolute; top: .45rem; left: .5rem; background: none; border: none; color: #d1d5db; font-size: .75rem; cursor: pointer; padding: 0; }
-    .note-del:hover { color: #ef4444; }
+    .note-entry { padding: .55rem .8rem; background: var(--color-bg-subtle); border-radius: var(--radius-md); margin-bottom: .35rem; font-size: .83rem; position: relative; padding-left: 1.8rem; }
+    .note-ts    { font-size: .67rem; color: var(--color-text-muted); margin-top: .15rem; }
+    .note-del   { position: absolute; top: .45rem; left: .5rem; background: none; border: none; color: var(--color-text-muted); font-size: .75rem; cursor: pointer; padding: 0; }
+    .note-del:hover { color: var(--color-danger); }
 
     /* ── Task items ── */
-    .task-row { display: flex; align-items: flex-start; gap: .6rem; padding: .55rem 0; border-bottom: 1px solid #f0f1f5; }
+    .task-row { display: flex; align-items: flex-start; gap: .6rem; padding: .55rem 0; border-bottom: 1px solid var(--color-border); }
     .task-row:last-child { border-bottom: none; }
     .task-title { font-weight: 600; font-size: .85rem; }
-    .task-meta  { font-size: .72rem; color: #9ca3af; }
-    .cat-pill { font-size: .63rem; font-weight: 700; border-radius: 50px; padding: .12rem .5rem; flex-shrink: 0; }
-    .cat-resume   { background: #ffecd2; color: #b45309; }
-    .cat-linkedin { background: #dbeafe; color: #1d4ed8; }
-    .cat-interview{ background: #fce7f3; color: #9d174d; }
-    .cat-quiz     { background: #ede9fe; color: #5b21b6; }
-    .cat-general  { background: #f3f4f6; color: #374151; }
-    .badge-done    { background: #d1fae5; color: #065f46; font-size: .63rem; }
+    .task-meta  { font-size: .72rem; color: var(--color-text-muted); }
+    .cat-pill { font-size: .63rem; font-weight: 700; border-radius: var(--radius-sm); padding: .12rem .5rem; flex-shrink: 0; }
+    .cat-resume   { background: var(--color-warning-subtle); color: var(--color-warning); }
+    .cat-linkedin { background: var(--color-info-subtle); color: var(--color-info); }
+    .cat-interview{ background: var(--color-danger-subtle); color: var(--color-danger); }
+    .cat-quiz     { background: var(--color-primary-subtle); color: var(--color-primary); }
+    .cat-general  { background: var(--color-bg-subtle); color: var(--color-text-muted); }
+    .badge-done    { background: var(--color-success-subtle); color: var(--color-success); font-size: .63rem; }
 
     /* ── Submission (always visible preview) ── */
-    .sub-preview { background: #f8f9ff; border-right: 3px solid #635bff; border-radius: 8px 0 0 8px; padding: .4rem .7rem; font-size: .8rem; margin-top: .3rem; color: #374151; }
-    .sub-more    { font-size: .75rem; color: #635bff; cursor: pointer; text-decoration: none; }
+    .sub-preview { background: var(--color-primary-subtle); border-right: 3px solid var(--color-primary); border-radius: var(--radius-md) 0 0 var(--radius-md); padding: .4rem .7rem; font-size: .8rem; margin-top: .3rem; color: var(--color-text); }
+    .sub-more    { font-size: .75rem; color: var(--color-primary); cursor: pointer; text-decoration: none; }
     .sub-full    { display: none; }
-    .task-row.has-submission { border-right: 3px solid #635bff; padding-right: .5rem; margin-right: -1px; }
+    .task-row.has-submission { border-right: 3px solid var(--color-primary); padding-right: .5rem; margin-right: -1px; }
 
     /* ── Task description ── */
-    .task-desc { font-size: .75rem; color: #6b7280; margin-top: .1rem; }
+    .task-desc { font-size: .75rem; color: var(--color-text-muted); margin-top: .1rem; }
 
     /* ── Print styles ── */
     @media print {
       .navbar-admin, .quick-bar, .btn, button,
       .nav-tabs-crm, .modal, .no-print { display: none !important; }
       body { background: #fff; font-size: 11pt; }
-      .card-crm { box-shadow: none; border: 1px solid #e5e7eb; page-break-inside: avoid; }
+      .card-crm { box-shadow: none; border: 1px solid var(--color-border); page-break-inside: avoid; }
       /* Show all tabs in print */
       .tab-pane { display: block !important; opacity: 1 !important; }
-      .tab-pane + .tab-pane { border-top: 1px dashed #e5e7eb; padding-top: 1rem; margin-top: 1rem; }
-      .stats-row .stat-box { box-shadow: none; border: 1px solid #e5e7eb; }
-      .strategy-box { border: 1px solid #635bff; }
+      .tab-pane + .tab-pane { border-top: 1px dashed var(--color-border); padding-top: 1rem; margin-top: 1rem; }
+      .stats-row .stat-box { box-shadow: none; border: 1px solid var(--color-border); }
+      .strategy-box { border: 1px solid var(--color-primary); }
       a[href]::after { content: none; }
     }
 
     /* ── Meetings ── */
-    .meeting-row { background: #f0fdf4; border-right: 3px solid #10b981; border-radius: 8px 0 0 8px; padding: .5rem .8rem; font-size: .82rem; margin-bottom: .35rem; }
+    .meeting-row { background: var(--color-success-subtle); border-right: 3px solid var(--color-success); border-radius: var(--radius-md) 0 0 var(--radius-md); padding: .5rem .8rem; font-size: .82rem; margin-bottom: .35rem; }
 
     /* ── Assign modal search ── */
     .assign-search { font-size: .83rem; }
 
     /* ── Buttons ── */
-    .btn-crm { background: #635bff; border-color: #635bff; color: #fff; font-weight: 600; }
-    .btn-crm:hover { background: #4f46e5; border-color: #4f46e5; color: #fff; }
-    .btn-ai  { background: linear-gradient(90deg, #635bff, #a855f7); border: none; color: #fff; font-weight: 600; }
-    .btn-ai:hover { opacity: .88; color: #fff; }
+    .btn-crm { background: var(--color-primary); border-color: var(--color-primary); color: #fff; font-weight: 600; }
+    .btn-crm:hover { background: var(--color-primary-hover); border-color: var(--color-primary-hover); color: #fff; }
+    .btn-ai  { background: var(--color-primary); border: none; color: #fff; font-weight: 600; }
+    .btn-ai:hover { background: var(--color-primary-hover); color: #fff; }
 
-    .edu-badge-hs  { background: #fef3c7; color: #92400e; }
-    .edu-badge-col { background: #dbeafe; color: #1e40af; }
+    .edu-badge-hs  { background: var(--color-warning-subtle); color: var(--color-warning); }
+    .edu-badge-col { background: var(--color-info-subtle); color: var(--color-info); }
     .resume-area { min-height: 200px; font-size: .84rem; resize: vertical; }
 
     /* ── Focus Banner ── */
-    .focus-banner { border-radius: 8px 0 0 8px; padding: .65rem 1rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
-    .focus-banner.fb-danger  { background: #fef2f2; border-right: 4px solid #ef4444; }
-    .focus-banner.fb-warning { background: #fffbeb; border-right: 4px solid #f59e0b; }
+    .focus-banner { border-radius: var(--radius-md) 0 0 var(--radius-md); padding: .65rem 1rem; margin-bottom: var(--space-4); display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+    .focus-banner.fb-danger  { background: var(--color-danger-subtle); border-right: 4px solid var(--color-danger); }
+    .focus-banner.fb-warning { background: var(--color-warning-subtle); border-right: 4px solid var(--color-warning); }
     .focus-text { font-size: .85rem; font-weight: 600; }
-    .focus-sub  { font-size: .73rem; color: #6b7280; margin-top: .1rem; }
+    .focus-sub  { font-size: .73rem; color: var(--color-text-muted); margin-top: .1rem; }
     /* Complete task button */
-    .btn-done { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; border-radius: 6px; font-size: .7rem; font-weight: 700; padding: .18rem .5rem; cursor: pointer; white-space: nowrap; }
-    .btn-done:hover { background: #a7f3d0; }
+    .btn-done { background: var(--color-success-subtle); color: var(--color-success); border: 1px solid var(--color-success); border-radius: var(--radius-sm); font-size: .7rem; font-weight: 700; padding: .18rem .5rem; cursor: pointer; white-space: nowrap; }
+    .btn-done:hover { background: var(--color-success-subtle); opacity: .8; }
 
     /* ── AI Chat ── */
     .chat-msgs {
-      background: #f8f9ff; border-radius: 10px; padding: .75rem;
+      background: var(--color-bg-subtle); border-radius: var(--radius-md); padding: .75rem;
       overflow-y: auto; display: flex; flex-direction: column; gap: .5rem;
       min-height: 80px;
     }
-    .chat-msg { max-width: 88%; padding: .45rem .75rem; border-radius: 10px; font-size: .84rem; line-height: 1.5; }
-    .chat-msg.user { background: #635bff; color: #fff; align-self: flex-end; border-radius: 10px 10px 0 10px; }
-    .chat-msg.ai   { background: #fff; border: 1px solid #e4e8f0; align-self: flex-start; border-radius: 10px 10px 10px 0; }
-    .chat-msg.ai.loading { color: #9ca3af; font-style: italic; }
+    .chat-msg { max-width: 88%; padding: .45rem .75rem; border-radius: var(--radius-md); font-size: .84rem; line-height: 1.5; }
+    .chat-msg.user { background: var(--color-primary); color: #fff; align-self: flex-end; border-radius: var(--radius-md) var(--radius-md) 0 var(--radius-md); }
+    .chat-msg.ai   { background: var(--color-bg); border: 1px solid var(--color-border); align-self: flex-start; border-radius: var(--radius-md) var(--radius-md) var(--radius-md) 0; }
+    .chat-msg.ai.loading { color: var(--color-text-muted); font-style: italic; }
     .chat-input { font-size: .83rem; }
     /* ── Floating Chat Widget ── */
     .chat-bubble-btn {
       position: fixed; left: 1.5rem; bottom: 1.5rem; z-index: 1050;
       width: 56px; height: 56px; border-radius: 50%;
-      background: linear-gradient(135deg, #635bff, #a855f7);
-      border: none; cursor: pointer; box-shadow: 0 4px 20px rgba(99,91,255,.45);
+      background: var(--color-primary);
+      border: none; cursor: pointer; box-shadow: var(--shadow-md);
       display: flex; align-items: center; justify-content: center;
       font-size: 1.5rem; transition: transform .15s, box-shadow .15s;
+      color: #fff;
     }
-    .chat-bubble-btn:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(99,91,255,.55); }
+    .chat-bubble-btn:hover { transform: scale(1.05); background: var(--color-primary-hover); }
     .chat-bubble-btn .chat-unread {
       position: absolute; top: -3px; right: -3px;
-      background: #ef4444; color: #fff; border-radius: 50%;
+      background: var(--color-danger); color: #fff; border-radius: 50%;
       width: 18px; height: 18px; font-size: .65rem; font-weight: 700;
       display: flex; align-items: center; justify-content: center;
       display: none;
@@ -186,8 +212,8 @@
     .chat-panel {
       position: fixed; left: 1.5rem; bottom: 5rem; z-index: 1049;
       width: 360px; max-width: calc(100vw - 2rem);
-      background: #fff; border-radius: 16px;
-      box-shadow: 0 8px 40px rgba(0,0,0,.2);
+      background: var(--color-bg); border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
       display: flex; flex-direction: column;
       transform: translateY(20px) scale(.95);
       opacity: 0; pointer-events: none;
@@ -199,8 +225,8 @@
       opacity: 1; pointer-events: all;
     }
     .chat-panel-header {
-      background: linear-gradient(135deg, #635bff, #a855f7);
-      color: #fff; border-radius: 16px 16px 0 0;
+      background: var(--color-primary);
+      color: #fff; border-radius: var(--radius-lg) var(--radius-lg) 0 0;
       padding: .9rem 1.1rem;
       display: flex; align-items: center; justify-content: space-between;
     }
@@ -212,10 +238,10 @@
     .chat-quick-chips {
       padding: .6rem .8rem .25rem;
       display: flex; gap: .35rem; flex-wrap: wrap;
-      border-bottom: 1px solid #f0f1f5;
+      border-bottom: 1px solid var(--color-border);
     }
-    .chat-chip { font-size: .7rem; border: 1px solid #e4e8f0; border-radius: 50px; padding: .18rem .6rem; background: #fff; cursor: pointer; color: #374151; transition: background .1s; }
-    .chat-chip:hover { background: #f0f0ff; border-color: #635bff; color: #635bff; }
+    .chat-chip { font-size: .7rem; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: .18rem .6rem; background: var(--color-bg); cursor: pointer; color: var(--color-text); transition: background .1s; display: inline-flex; align-items: center; gap: .25rem; }
+    .chat-chip:hover { background: var(--color-primary-subtle); border-color: var(--color-primary); color: var(--color-primary); }
 
     .chat-panel-msgs {
       flex: 1; overflow-y: auto; padding: .75rem;
@@ -223,31 +249,31 @@
       min-height: 160px; max-height: 280px;
     }
     .chat-panel-input {
-      padding: .6rem .75rem; border-top: 1px solid #f0f1f5;
+      padding: .6rem .75rem; border-top: 1px solid var(--color-border);
       display: flex; gap: .5rem; align-items: center;
     }
     .chat-panel-input input {
-      flex: 1; border: 1px solid #e4e8f0; border-radius: 50px;
+      flex: 1; border: 1px solid var(--color-border); border-radius: var(--radius-sm);
       padding: .4rem .9rem; font-size: .83rem; outline: none;
       font-family: 'Heebo', sans-serif;
     }
-    .chat-panel-input input:focus { border-color: #635bff; }
+    .chat-panel-input input:focus { border-color: var(--color-primary); }
     .chat-panel-send {
       width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
-      background: #635bff; border: none; color: #fff; cursor: pointer;
+      background: var(--color-primary); border: none; color: #fff; cursor: pointer;
       display: flex; align-items: center; justify-content: center; font-size: .9rem;
     }
-    .chat-panel-send:hover { background: #4f46e5; }
+    .chat-panel-send:hover { background: var(--color-primary-hover); }
   </style>
 </head>
 <body>
 
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-admin px-4 py-2">
-    <span class="navbar-brand-text">&#127891; InterviewSync</span>
+    <span class="navbar-brand-text d-inline-flex align-items-center gap-2"><i data-lucide="graduation-cap" class="icon"></i> InterviewSync</span>
     <div class="ms-auto d-flex align-items-center gap-3">
       <a href="{{ url_for('admin_hub') }}" class="btn btn-outline-light btn-sm">&#8592; לוח הבית</a>
-      <a href="{{ url_for('admin_schedule') }}" class="btn btn-outline-light btn-sm">&#128197; לוז</a>
+      <a href="{{ url_for('admin_schedule') }}" class="btn btn-outline-light btn-sm d-inline-flex align-items-center gap-1"><i data-lucide="calendar" class="icon"></i> לוז</a>
       <span class="text-white-50 small">{{ user.name }}</span>
       <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">התנתקות</a>
     </div>
@@ -265,11 +291,11 @@
       </nav>
       <div class="d-flex gap-2 no-print">
         <a href="{{ url_for('student_report', sid=student.id) }}" target="_blank"
-           class="btn btn-sm btn-outline-primary" style="font-size:.78rem;">
-          &#128438; הפק דוח PDF
+           class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1" style="font-size:.78rem;">
+          <i data-lucide="file-text" class="icon"></i> הפק דוח PDF
         </a>
-        <button onclick="window.print()" class="btn btn-sm btn-outline-secondary" style="font-size:.78rem;">
-          &#128424;&#65039; הדפס עמוד
+        <button onclick="window.print()" class="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1" style="font-size:.78rem;">
+          <i data-lucide="printer" class="icon"></i> הדפס עמוד
         </button>
       </div>
     </div>
@@ -292,17 +318,17 @@
     <div class="quick-bar">
       {% if profile and profile.phone %}
         <a href="https://wa.me/{{ profile.phone | replace('+','') }}" target="_blank" class="qa qa-wa">
-          &#128242; WhatsApp
+          <i data-lucide="phone" class="icon"></i> WhatsApp
         </a>
       {% else %}
-        <span class="qa qa-none">&#128242; אין טלפון</span>
+        <span class="qa qa-none"><i data-lucide="phone" class="icon"></i> אין טלפון</span>
       {% endif %}
       {% if profile and profile.email %}
-        <a href="mailto:{{ profile.email }}" class="qa qa-email">&#9993;&#65039; אימייל</a>
+        <a href="mailto:{{ profile.email }}" class="qa qa-email"><i data-lucide="mail" class="icon"></i> אימייל</a>
       {% endif %}
-      <a href="{{ url_for('admin_schedule') }}?prefill={{ student.id }}" class="qa qa-meet">&#128197; קבע פגישה</a>
+      <a href="{{ url_for('admin_schedule') }}?prefill={{ student.id }}" class="qa qa-meet"><i data-lucide="calendar" class="icon"></i> קבע פגישה</a>
       <a href="{{ url_for('admin_intake', sid=student.id) }}"
-         class="qa" style="background:#fef3c7;color:#92400e;">&#128203; שאלון קליטה</a>
+         class="qa qa-intake"><i data-lucide="clipboard-list" class="icon"></i> שאלון קליטה</a>
 
       <div class="ms-auto d-flex align-items-center gap-2">
         <span class="text-muted" style="font-size:.75rem;">סטטוס:</span>
@@ -314,19 +340,19 @@
                  value="{{ profile.target_end_date if profile and profile.target_end_date else '' }}">
           <select name="student_status" class="status-select st-{{ cur_status }}"
                   id="statusSel" onchange="this.className='status-select st-'+this.value; this.form.submit()">
-            <option value="active"    {{ 'selected' if cur_status=='active' }}>&#9889; פעיל</option>
-            <option value="paused"    {{ 'selected' if cur_status=='paused' }}>&#9208;&#65039; מושהה</option>
-            <option value="completed" {{ 'selected' if cur_status=='completed' }}>&#10003; הושלם</option>
+            <option value="active"    {{ 'selected' if cur_status=='active' }}>פעיל</option>
+            <option value="paused"    {{ 'selected' if cur_status=='paused' }}>מושהה</option>
+            <option value="completed" {{ 'selected' if cur_status=='completed' }}>הושלם</option>
           </select>
         </form>
         {% if profile %}
-          <button class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:.78rem;"
-                  data-bs-toggle="modal" data-bs-target="#editModal">&#9998; ערוך</button>
+          <button class="btn btn-sm btn-outline-secondary py-0 px-2 d-inline-flex align-items-center gap-1" style="font-size:.78rem;"
+                  data-bs-toggle="modal" data-bs-target="#editModal"><i data-lucide="pencil" class="icon"></i> ערוך</button>
         {% endif %}
         <form method="POST" action="{{ url_for('admin_delete_student', sid=student.id) }}"
               onsubmit="return confirm('למחוק לצמיתות? לא ניתן לשחזר.')"
               class="no-print">
-          <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:.75rem;">&#128465; מחק</button>
+          <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2 d-inline-flex align-items-center gap-1" style="font-size:.75rem;"><i data-lucide="trash-2" class="icon"></i> מחק</button>
         </form>
       </div>
     </div>
@@ -349,37 +375,37 @@
       <div class="stats-row">
         {% if days_in is not none %}
           <div class="stat-box">
-            <div class="stat-num" style="color:#635bff;">{{ days_in }}</div>
-            <div class="stat-lbl">&#9203; ימים בתהליך</div>
+            <div class="stat-num" style="color:var(--color-primary);">{{ days_in }}</div>
+            <div class="stat-lbl"><i data-lucide="clock" class="icon"></i> ימים בתהליך</div>
           </div>
         {% endif %}
         <div class="stat-box">
-          <div class="stat-num">{{ completed|length }}<span style="font-size:1rem; color:#9ca3af;">/{{ total_tasks }}</span></div>
-          <div class="stat-lbl">&#10003; משימות הושלמו</div>
+          <div class="stat-num">{{ completed|length }}<span style="font-size:1rem; color:var(--color-text-muted);">/{{ total_tasks }}</span></div>
+          <div class="stat-lbl"><i data-lucide="check" class="icon"></i> משימות הושלמו</div>
         </div>
         {% if last_contact_days is not none %}
-          {% set contact_color = '#ef4444' if last_contact_days > 7 else '#10b981' %}
+          {% set contact_color = 'var(--color-danger)' if last_contact_days > 7 else 'var(--color-success)' %}
           <div class="stat-box">
             <div class="stat-num" style="color:{{ contact_color }};">{{ last_contact_days }}</div>
-            <div class="stat-lbl">&#128336; ימים מאז הגשה</div>
+            <div class="stat-lbl"><i data-lucide="clock" class="icon"></i> ימים מאז הגשה</div>
           </div>
         {% endif %}
         {% if student_meetings %}
           <div class="stat-box">
-            <div class="stat-num" style="font-size:1rem; font-weight:700; color:#10b981;">{{ student_meetings[0].scheduled_at | dt }}</div>
-            <div class="stat-lbl">&#128197; פגישה הבאה</div>
+            <div class="stat-num" style="font-size:1rem; font-weight:700; color:var(--color-success);">{{ student_meetings[0].scheduled_at | dt }}</div>
+            <div class="stat-lbl"><i data-lucide="calendar" class="icon"></i> פגישה הבאה</div>
           </div>
         {% endif %}
         <div class="stat-box">
-          <div class="stat-num" style="font-size:1.1rem; color:{{ '#065f46' if cur_status=='active' else ('#92400e' if cur_status=='paused' else '#374151') }};">
+          <div class="stat-num" style="font-size:1.1rem; color:{{ 'var(--color-success)' if cur_status=='active' else ('var(--color-warning)' if cur_status=='paused' else 'var(--color-text-muted)') }};">
             {{ status_lbl.get(cur_status, cur_status) }}
           </div>
-          <div class="stat-lbl">&#9889; סטטוס</div>
+          <div class="stat-lbl">סטטוס</div>
         </div>
         {% if billing_info and billing_info.assigned %}
           <div class="stat-box">
-            <div class="stat-num" style="font-size:1rem; font-weight:800; color:#635bff;">₪{{ billing_info.effective_price|int }}</div>
-            <div class="stat-lbl">&#128176; {{ '/ פגישה' if billing_info.service_unit == 'per_session' else '/ חודש' }}</div>
+            <div class="stat-num" style="font-size:1rem; font-weight:800; color:var(--color-primary);">₪{{ billing_info.effective_price|int }}</div>
+            <div class="stat-lbl">{{ '/ פגישה' if billing_info.service_unit == 'per_session' else '/ חודש' }}</div>
           </div>
         {% endif %}
       </div>
@@ -394,7 +420,7 @@
         {% if overdue_tasks|length > 0 %}
           <div class="focus-banner fb-danger mb-3">
             <div>
-              <div class="focus-text">&#128308; {{ overdue_tasks|length }} משימות מחכות יותר מ-7 ימים</div>
+              <div class="focus-text d-inline-flex align-items-center gap-1"><i data-lucide="alert-triangle" class="icon"></i> {{ overdue_tasks|length }} משימות מחכות יותר מ-7 ימים</div>
               <div class="focus-sub">בדוק/י את הסטודנט או עדכן/י את המשימות</div>
             </div>
             <a href="#right-col" class="btn btn-sm btn-outline-danger py-0 px-2 no-print" style="font-size:.73rem; white-space:nowrap;"
@@ -405,13 +431,13 @@
         {% elif last_contact_days is not none and last_contact_days > 10 %}
           <div class="focus-banner fb-warning mb-3">
             <div>
-              <div class="focus-text">&#9203; לא פעיל {{ last_contact_days }} ימים</div>
+              <div class="focus-text d-inline-flex align-items-center gap-1"><i data-lucide="clock" class="icon"></i> לא פעיל {{ last_contact_days }} ימים</div>
               <div class="focus-sub">שקול/י לשלוח תזכורת</div>
             </div>
             {% if profile and profile.phone %}
               <a href="https://wa.me/{{ profile.phone | replace('+','') }}" target="_blank"
-                 class="btn btn-sm btn-outline-warning py-0 px-2 no-print" style="font-size:.73rem; white-space:nowrap;">
-                &#128242; WA
+                 class="btn btn-sm btn-outline-warning py-0 px-2 no-print d-inline-flex align-items-center gap-1" style="font-size:.73rem; white-space:nowrap;">
+                <i data-lucide="phone" class="icon"></i> WA
               </a>
             {% endif %}
           </div>
@@ -448,28 +474,28 @@
           </div>
 
           {% if not profile or not profile.full_name %}
-            <div class="alert alert-warning py-2 small">&#9888;&#65039; הסטודנט טרם מילא פרופיל ראשוני.</div>
+            <div class="alert alert-warning py-2 small d-inline-flex align-items-center gap-1"><i data-lucide="alert-triangle" class="icon"></i> הסטודנט טרם מילא פרופיל ראשוני.</div>
           {% else %}
 
             {% set etype = profile.education_level if profile else 'college' %}
 
             <!-- Tabs (labels adapt to type) -->
             <ul class="nav nav-tabs-crm nav-tabs" id="fileTabs">
-              <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-profile" type="button">&#128100; פרופיל</button></li>
+              <li class="nav-item"><button class="nav-link active d-inline-flex align-items-center gap-1" data-bs-toggle="tab" data-bs-target="#tab-profile" type="button"><i data-lucide="user" class="icon"></i> פרופיל</button></li>
               <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-cv" type="button">
-                  {% if etype == 'highschool' %}&#128218; הכנה לשוק
-                  {% elif etype == 'career' %}&#128203; קו"ח + אסטרטגיה
-                  {% else %}&#128196; קו"ח{% endif %}
+                <button class="nav-link d-inline-flex align-items-center gap-1" data-bs-toggle="tab" data-bs-target="#tab-cv" type="button">
+                  {% if etype == 'highschool' %}<i data-lucide="briefcase" class="icon"></i> הכנה לשוק
+                  {% elif etype == 'career' %}<i data-lucide="clipboard-list" class="icon"></i> קו"ח + אסטרטגיה
+                  {% else %}<i data-lucide="file-text" class="icon"></i> קו"ח{% endif %}
                 </button>
               </li>
-              <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-ai" type="button">&#129504; אסטרטגיית עבודה</button></li>
-              <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-notes" type="button">
-                &#128221; הערות
-                {% if notes %}<span class="badge rounded-pill ms-1" style="background:#635bff;font-size:.6rem;">{{ notes|length }}</span>{% endif %}
+              <li class="nav-item"><button class="nav-link d-inline-flex align-items-center gap-1" data-bs-toggle="tab" data-bs-target="#tab-ai" type="button"><i data-lucide="lightbulb" class="icon"></i> אסטרטגיית עבודה</button></li>
+              <li class="nav-item"><button class="nav-link d-inline-flex align-items-center gap-1" data-bs-toggle="tab" data-bs-target="#tab-notes" type="button">
+                <i data-lucide="file-text" class="icon"></i> הערות
+                {% if notes %}<span class="badge-soft ms-1" style="font-size:.6rem;">{{ notes|length }}</span>{% endif %}
               </button></li>
-              <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-billing" type="button">
-                &#128176; חיוב
+              <li class="nav-item"><button class="nav-link d-inline-flex align-items-center gap-1" data-bs-toggle="tab" data-bs-target="#tab-billing" type="button">
+                <i data-lucide="credit-card" class="icon"></i> חיוב
               </button></li>
             </ul>
 
@@ -481,37 +507,37 @@
                   {# ── Type-specific fields ── #}
                   {% if etype == 'highschool' %}
                     <div class="col-sm-4">
-                      <div class="field-lbl">&#127979; כיתה</div>
+                      <div class="field-lbl"><i data-lucide="graduation-cap" class="icon"></i> כיתה</div>
                       <div class="field-val">{{ profile.current_occupation_or_grade or '—' }}</div>
                     </div>
                     <div class="col-sm-8">
-                      <div class="field-lbl">&#127919; תחומי עניין</div>
+                      <div class="field-lbl"><i data-lucide="target" class="icon"></i> תחומי עניין</div>
                       <div class="field-val">{{ profile.interests_hobbies or '—' }}</div>
                     </div>
                   {% elif etype == 'college' %}
                     <div class="col-sm-5">
-                      <div class="field-lbl">&#127979; תואר ותחום</div>
+                      <div class="field-lbl"><i data-lucide="graduation-cap" class="icon"></i> תואר ותחום</div>
                       <div class="field-val">{{ profile.current_occupation_or_grade or '—' }}</div>
                     </div>
                     <div class="col-sm-4">
-                      <div class="field-lbl">&#127979; מוסד לימודים</div>
+                      <div class="field-lbl"><i data-lucide="graduation-cap" class="icon"></i> מוסד לימודים</div>
                       <div class="field-val">{{ profile.institution_name or '—' }}</div>
                     </div>
                     <div class="col-sm-3">
-                      <div class="field-lbl">&#127881; שנת סיום</div>
+                      <div class="field-lbl">שנת סיום</div>
                       <div class="field-val">{{ profile.graduation_year or '—' }}</div>
                     </div>
                   {% else %}{# career #}
                     <div class="col-sm-5">
-                      <div class="field-lbl">&#128188; תפקיד נוכחי / קודם</div>
+                      <div class="field-lbl"><i data-lucide="briefcase" class="icon"></i> תפקיד נוכחי / קודם</div>
                       <div class="field-val">{{ profile.current_job or '—' }}</div>
                     </div>
                     <div class="col-sm-3">
-                      <div class="field-lbl">&#9203; שנות ניסיון</div>
+                      <div class="field-lbl"><i data-lucide="clock" class="icon"></i> שנות ניסיון</div>
                       <div class="field-val">{{ profile.years_experience or '—' }}</div>
                     </div>
                     <div class="col-sm-4">
-                      <div class="field-lbl">&#128172; סיבה לפנייה</div>
+                      <div class="field-lbl">סיבה לפנייה</div>
                       <div class="field-val">{{ profile.reason_for_guidance or '—' }}</div>
                     </div>
                   {% endif %}
@@ -567,10 +593,10 @@
                   <div class="d-flex gap-2">
                     <form method="POST">
                       <input type="hidden" name="action" value="regenerate_strategy">
-                      <button type="submit" class="btn btn-sm btn-outline-secondary py-1">&#8635; רענן</button>
+                      <button type="submit" class="btn btn-sm btn-outline-secondary py-1 d-inline-flex align-items-center gap-1"><i data-lucide="refresh-cw" class="icon"></i> רענן</button>
                     </form>
-                    <button type="button" class="btn btn-sm btn-ai py-1"
-                            onclick="loadAiSuggestions({{ student.id }})">&#10024; הצע משימות AI</button>
+                    <button type="button" class="btn btn-sm btn-ai py-1 d-inline-flex align-items-center gap-1"
+                            onclick="loadAiSuggestions({{ student.id }})"><i data-lucide="sparkles" class="icon"></i> הצע משימות AI</button>
                   </div>
                 </div>
                 {% set strategy = profile.ai_coaching_strategy if profile else '' %}
@@ -579,7 +605,7 @@
                   <div class="strategy-box mb-2">{{ strategy }}</div>
                 {% else %}
                   <div class="strategy-box strategy-empty mb-2">
-                    {% if is_error %}&#9888;&#65039; הגדר <code>GROQ_API_KEY</code> ב-docker-compose.yml ולחץ "רענן". מפתח חינמי: <a href="https://console.groq.com" target="_blank" rel="noopener">console.groq.com</a>
+                    {% if is_error %}<i data-lucide="alert-triangle" class="icon"></i> הגדר <code>GROQ_API_KEY</code> ב-docker-compose.yml ולחץ "רענן". מפתח חינמי: <a href="https://console.groq.com" target="_blank" rel="noopener">console.groq.com</a>
                     {% else %}לחץ/י "רענן" לייצור אסטרטגיית הדרכה מותאמת.{% endif %}
                   </div>
                 {% endif %}
@@ -587,13 +613,13 @@
                 {% if profile and profile.ai_strategy_updated_at %}
                   {% set strat_days = ((now_date - (profile.ai_strategy_updated_at | to_date)).days) %}
                   <div class="text-muted" style="font-size:.72rem; margin-bottom:.5rem;">
-                    &#9203; נוצר {{ 'היום' if strat_days == 0 else ('אתמול' if strat_days == 1 else strat_days|string + ' ימים') }} ·
-                    <a href="javascript:void(0)" onclick="document.querySelector('[name=action][value=regenerate_strategy]').closest('form').submit()" style="color:#635bff;">רענן עכשיו</a>
+                    <i data-lucide="clock" class="icon"></i> נוצר {{ 'היום' if strat_days == 0 else ('אתמול' if strat_days == 1 else strat_days|string + ' ימים') }} ·
+                    <a href="javascript:void(0)" onclick="document.querySelector('[name=action][value=regenerate_strategy]').closest('form').submit()" style="color:var(--color-primary);">רענן עכשיו</a>
                   </div>
                 {% endif %}
                 {# ── Chat moved to floating bubble only ── #}
-                <div class="text-muted no-print" style="font-size:.75rem; padding:.4rem .75rem; background:#f8f9ff; border-radius:8px;">
-                  &#129302; לצ׳ט AI — לחץ/י על הבועה הסגולה בפינה השמאלית &#8595;
+                <div class="text-muted no-print d-inline-flex align-items-center gap-1" style="font-size:.75rem; padding:.4rem .75rem; background:var(--color-bg-subtle); border-radius:var(--radius-md);">
+                  <i data-lucide="bot" class="icon"></i> לצ׳ט AI — לחץ/י על הבועה בפינה השמאלית &#8595;
                 </div>
               </div>
 
@@ -601,7 +627,7 @@
               <div class="tab-pane fade" id="tab-cv">
                 <!-- CV File Upload -->
                 <div class="mb-3">
-                  <div class="field-lbl mb-2">&#128206; העלאת קובץ קורות חיים (PDF/DOC)</div>
+                  <div class="field-lbl mb-2 d-inline-flex align-items-center gap-1"><i data-lucide="file-text" class="icon"></i> העלאת קובץ קורות חיים (PDF/DOC)</div>
                   <form method="POST" enctype="multipart/form-data"
                         action="{{ url_for('admin_upload_cv', sid=student.id) }}">
                     <div class="d-flex gap-2 align-items-center">
@@ -612,20 +638,20 @@
                     {% if profile and profile.resume_file %}
                       <div class="mt-1">
                         <a href="{{ '/files/' + profile.resume_file }}" target="_blank"
-                           class="text-decoration-none" style="font-size:.78rem; color:#635bff;">
-                          &#128206; קובץ קיים — {{ profile.resume_file.split('/')[-1] }}
+                           class="text-decoration-none d-inline-flex align-items-center gap-1" style="font-size:.78rem; color:var(--color-primary);">
+                          <i data-lucide="file-text" class="icon"></i> קובץ קיים — {{ profile.resume_file.split('/')[-1] }}
                         </a>
                       </div>
                     {% endif %}
                   </form>
                 </div>
-                <div class="field-lbl mb-2">&#128221; הערות / גרסה כתובה</div>
+                <div class="field-lbl mb-2 d-inline-flex align-items-center gap-1"><i data-lucide="file-text" class="icon"></i> הערות / גרסה כתובה</div>
                 <form method="POST">
                   <input type="hidden" name="action" value="save_resume">
                   <textarea name="resume_content" class="form-control resume-area mb-2"
                             placeholder="{% if etype == 'highschool' %}כתוב/י ניסיון, כישורים ותחביבים...{% elif etype == 'career' %}קורות חיים + חברות יעד + מה כבר ניסית...{% else %}הדבק/י קורות חיים או הערות...{% endif %}">{{ profile.resume_content if profile else '' }}</textarea>
                   <div class="d-flex justify-content-between align-items-center">
-                    <span class="text-muted small">&#128274; גלוי למנטור בלבד</span>
+                    <span class="text-muted small">גלוי למנטור בלבד</span>
                     <button type="submit" class="btn btn-crm btn-sm fw-semibold">שמור</button>
                   </div>
                 </form>
@@ -641,7 +667,7 @@
                       <form method="POST" style="display:inline;">
                         <input type="hidden" name="action" value="delete_note">
                         <input type="hidden" name="note_id" value="{{ n.id }}">
-                        <button type="submit" class="note-del" onclick="return confirm('מחק?')">✕</button>
+                        <button type="submit" class="note-del" onclick="return confirm('מחק?')"><i data-lucide="x" class="icon"></i></button>
                       </form>
                     </div>
                   {% endfor %}
@@ -704,7 +730,7 @@
                 <div id="billingHistoryBox" class="small text-muted">לחץ "חודשי" או "שנתי" לטעינה</div>
 
                 <div class="mt-3">
-                  <a href="{{ url_for('billing_dashboard') }}" class="text-muted small">&#128176; לוח חיוב חודשי &#8592;</a>
+                  <a href="{{ url_for('billing_dashboard') }}" class="text-muted small d-inline-flex align-items-center gap-1"><i data-lucide="credit-card" class="icon"></i> לוח חיוב חודשי &#8592;</a>
                 </div>
               </div>
 
@@ -719,8 +745,8 @@
         <!-- ① Tasks (FIRST — most actionable) -->
         <div class="card-crm">
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <div class="section-title mb-0">&#9889; משימות פעילות ({{ active|length }})</div>
-            <span class="badge" style="background:#635bff;font-size:.68rem;">{{ active|length }}/{{ (active|length)+(completed|length) }}</span>
+            <div class="section-title mb-0">משימות פעילות ({{ active|length }})</div>
+            <span class="badge-soft" style="font-size:.68rem;">{{ active|length }}/{{ (active|length)+(completed|length) }}</span>
           </div>
 
           {% if not active %}
@@ -737,14 +763,12 @@
                     <div class="task-title">{{ t.title }}</div>
                     {% if at.due_date %}
                       {% if at.due_date < now_date.isoformat() %}
-                        <span style="font-size:.65rem;font-weight:700;border-radius:50px;padding:.1rem .45rem;background:#fee2e2;color:#991b1b;">באיחור ⚠</span>
+                        <span class="badge-soft-danger d-inline-flex align-items-center gap-1" style="font-size:.65rem;font-weight:700;border-radius:var(--radius-sm);padding:.1rem .45rem;"><i data-lucide="alert-triangle" class="icon"></i> באיחור</span>
                       {% else %}
-                        <span style="font-size:.65rem;font-weight:700;border-radius:50px;padding:.1rem .45rem;background:#fef3c7;color:#92400e;">עד {{ at.due_date[8:] }}/{{ at.due_date[5:7] }}</span>
+                        <span class="badge-soft-warning" style="font-size:.65rem;font-weight:700;border-radius:var(--radius-sm);padding:.1rem .45rem;">עד {{ at.due_date[8:] }}/{{ at.due_date[5:7] }}</span>
                       {% endif %}
                     {% elif age_days is not none and age_days >= 3 %}
-                      <span style="font-size:.65rem; font-weight:700; border-radius:50px; padding:.1rem .45rem;
-                                   {% if age_days > 7 %}background:#fee2e2; color:#991b1b;
-                                   {% else %}background:#fef3c7; color:#92400e;{% endif %}">
+                      <span class="{{ 'badge-soft-danger' if age_days > 7 else 'badge-soft-warning' }}" style="font-size:.65rem; font-weight:700; border-radius:var(--radius-sm); padding:.1rem .45rem;">
                         מחכה {{ age_days }} י׳
                       </span>
                     {% endif %}
@@ -759,7 +783,7 @@
                       class="flex-shrink-0 no-print"
                       onsubmit="return confirm('לסמן כהושלמה?')">
                   <input type="hidden" name="student_id" value="{{ student.id }}">
-                  <button type="submit" class="btn-done">✓</button>
+                  <button type="submit" class="btn-done"><i data-lucide="check" class="icon"></i></button>
                 </form>
               </div>
             {% endfor %}
@@ -768,17 +792,17 @@
           <!-- Completed tasks (collapsed) -->
           {% if completed %}
             <div class="border-top mt-2 pt-2">
-              <button class="btn btn-link btn-sm p-0 text-muted fw-semibold no-print"
+              <button class="btn btn-link btn-sm p-0 text-muted fw-semibold no-print d-inline-flex align-items-center gap-1"
                       style="font-size:.82rem;"
                       type="button" data-bs-toggle="collapse" data-bs-target="#completedTasks">
-                &#10003; הושלמו ({{ completed|length }}) &#9660;
+                <i data-lucide="check-circle" class="icon"></i> הושלמו ({{ completed|length }}) &#9660;
               </button>
               <div class="collapse" id="completedTasks">
                 {% for at in completed %}
                   {% set t = at.task %}
                   {% set has_sub = at.submission_note or at.submission_file %}
                   <div class="task-row {{ 'has-submission' if has_sub }}" style="opacity:.8;">
-                    <span class="text-success fw-bold flex-shrink-0">&#10003;</span>
+                    <span class="text-success fw-bold flex-shrink-0"><i data-lucide="check" class="icon"></i></span>
                     <div class="flex-grow-1">
                       <div class="task-title" style="text-decoration:line-through;">{{ t.title }}</div>
                       <div class="task-meta">{{ at.completed_at | dt if at.completed_at else '' }}</div>
@@ -795,12 +819,12 @@
                       {% if at.submission_file %}
                         <a href="{{ '/files/' + at.submission_file }}" target="_blank"
                            class="d-inline-flex align-items-center gap-1 mt-1"
-                           style="font-size:.75rem;color:#635bff;text-decoration:none;">
-                          &#128206; קובץ מצורף
+                           style="font-size:.75rem;color:var(--color-primary);text-decoration:none;">
+                          <i data-lucide="file-text" class="icon"></i> קובץ מצורף
                         </a>
                       {% endif %}
                       {# Feedback block #}
-                      <div class="mt-2 pt-2 border-top" style="border-color:#f0f1f5!important;">
+                      <div class="mt-2 pt-2 border-top" style="border-color:var(--color-border)!important;">
                         <form method="POST"
                               action="{{ url_for('admin_task_feedback', at_id=at.id) }}"
                               class="d-flex gap-2 align-items-start">
@@ -816,7 +840,7 @@
                         </form>
                         {% if at.feedback_at %}
                           <div class="text-muted" style="font-size:.7rem;">
-                            נשלח {{ at.feedback_at | dt }} {% if not at.feedback_seen %}<span class="badge bg-warning text-dark" style="font-size:.65rem;">טרם נצפה</span>{% endif %}
+                            נשלח {{ at.feedback_at | dt }} {% if not at.feedback_seen %}<span class="badge-soft-warning" style="font-size:.65rem;">טרם נצפה</span>{% endif %}
                           </div>
                         {% endif %}
                       </div>
@@ -829,30 +853,30 @@
 
           <!-- Assign buttons -->
           <div class="border-top mt-3 pt-3 d-flex gap-2">
-            <button class="btn btn-crm btn-sm flex-grow-1 fw-semibold"
+            <button class="btn btn-crm btn-sm flex-grow-1 fw-semibold d-inline-flex align-items-center justify-content-center gap-1"
                     data-bs-toggle="modal" data-bs-target="#assignModal">
-              &#128203; ניהול שיוך
+              <i data-lucide="clipboard-list" class="icon"></i> ניהול שיוך
             </button>
-            <button class="btn btn-sm btn-ai fw-semibold flex-shrink-0"
+            <button class="btn btn-sm btn-ai fw-semibold flex-shrink-0 d-inline-flex align-items-center gap-1"
                     onclick="loadAiSuggestions({{ student.id }})">
-              &#10024; AI
+              <i data-lucide="sparkles" class="icon"></i> AI
             </button>
           </div>
         </div>
 
         <!-- ② Meetings -->
         {% if student_meetings %}
-          <div class="card-crm" style="border-right: 3px solid #10b981; padding: 1.25rem 1.5rem;">
-            <div class="section-title mb-2">&#128197; פגישות קרובות</div>
+          <div class="card-crm" style="border-right: 3px solid var(--color-success); padding: 1.25rem 1.5rem;">
+            <div class="section-title mb-2 d-inline-flex align-items-center gap-1"><i data-lucide="calendar" class="icon"></i> פגישות קרובות</div>
             {% for m in student_meetings %}
               {% set mt_labels = {'intake':'שיחת היכרות','progress_review':'סקירת התקדמות','support':'תמיכה','other':'אחר'} %}
               <div class="meeting-row">
                 <strong>{{ m.scheduled_at | dt('%d/%m/%Y %H:%M') }}</strong> · {{ m.duration_min }} דק׳
                 {% if m.get('meeting_type') and m.meeting_type != 'progress_review' %}
-                  <span style="font-size:.68rem; color:#635bff; margin-right:.3rem;">· {{ mt_labels.get(m.meeting_type, m.meeting_type) }}</span>
+                  <span style="font-size:.68rem; color:var(--color-primary); margin-right:.3rem;">· {{ mt_labels.get(m.meeting_type, m.meeting_type) }}</span>
                 {% endif %}
-                <span class="badge rounded-pill ms-1"
-                      style="font-size:.62rem; background:{% if m.status=='confirmed' %}#d1fae5; color:#065f46{% else %}#fef3c7; color:#92400e{% endif %};">
+                <span class="{{ 'badge-soft-success' if m.status=='confirmed' else 'badge-soft-warning' }} ms-1"
+                      style="font-size:.62rem;">
                   {{ 'מאושר' if m.status=='confirmed' else 'ממתין' }}
                 </span>
                 {% if m.notes %}<div class="text-muted" style="font-size:.75rem;">{{ m.notes }}</div>{% endif %}
@@ -864,10 +888,10 @@
 
         <!-- ③ Last note (compact) -->
         {% if notes %}
-          <div class="card-crm" style="padding:.9rem 1.25rem; background:#f8f9ff; border-right:3px solid #635bff; border-radius:8px 0 0 8px; margin-bottom:1rem;">
+          <div class="card-crm" style="padding:.9rem 1.25rem; background:var(--color-primary-subtle); border-right:3px solid var(--color-primary); border-radius:var(--radius-md) 0 0 var(--radius-md); margin-bottom:1rem;">
             <div class="d-flex justify-content-between align-items-start gap-2">
-              <div style="font-size:.8rem; color:#1a1f36; flex-grow:1;">&#128172; {{ notes[0].text | truncate(100) }}</div>
-              <span style="font-size:.68rem; color:#9ca3af; white-space:nowrap;">{{ notes[0].created_at | dt('%d/%m') }}</span>
+              <div class="d-flex align-items-start gap-1" style="font-size:.8rem; color:var(--color-text); flex-grow:1;"><i data-lucide="file-text" class="icon"></i> {{ notes[0].text | truncate(100) }}</div>
+              <span style="font-size:.68rem; color:var(--color-text-muted); white-space:nowrap;">{{ notes[0].created_at | dt('%d/%m') }}</span>
             </div>
             <a class="text-muted" style="font-size:.72rem; text-decoration:none;" href="javascript:void(0)"
                onclick="document.querySelector('[data-bs-target=\'#tab-notes\']').click()">
@@ -888,13 +912,13 @@
         <form method="POST">
           <input type="hidden" name="action" value="save_full_profile">
           <div class="modal-header">
-            <h6 class="modal-title fw-bold">&#9998; עריכת פרופיל</h6>
+            <h6 class="modal-title fw-bold d-inline-flex align-items-center gap-1"><i data-lucide="pencil" class="icon"></i> עריכת פרופיל</h6>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
             <div class="row g-3">
               {# ── פרטי קשר ── #}
-              <div class="col-12"><div style="font-size:.7rem; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:.4px;">פרטי קשר</div></div>
+              <div class="col-12"><div class="section-title mb-0">פרטי קשר</div></div>
               <div class="col-md-5">
                 <label class="form-label fw-semibold small">שם מלא</label>
                 <input type="text" name="full_name" class="form-control" value="{{ profile.full_name }}">
@@ -909,13 +933,13 @@
               </div>
 
               {# ── רקע לימודי ── #}
-              <div class="col-12 border-top pt-2 mt-1"><div style="font-size:.7rem; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:.4px;">רקע לימודי ומקצועי</div></div>
+              <div class="col-12 border-top pt-2 mt-1"><div class="section-title mb-0">רקע לימודי ומקצועי</div></div>
               <div class="col-md-4">
                 <label class="form-label fw-semibold small">סוג</label>
                 <select name="education_level" class="form-select" id="editEduLevel">
-                  <option value="highschool" {{ 'selected' if profile.education_level=='highschool' }}>🏫 תיכון</option>
-                  <option value="college"    {{ 'selected' if profile.education_level=='college'    }}>🎓 סטודנט</option>
-                  <option value="career"     {{ 'selected' if profile.education_level=='career'     }}>💼 הכוונה תעסוקתית</option>
+                  <option value="highschool" {{ 'selected' if profile.education_level=='highschool' }}>תיכון</option>
+                  <option value="college"    {{ 'selected' if profile.education_level=='college'    }}>סטודנט</option>
+                  <option value="career"     {{ 'selected' if profile.education_level=='career'     }}>הכוונה תעסוקתית</option>
                 </select>
               </div>
               <div class="col-md-8">
@@ -959,7 +983,7 @@
               </div>
 
               {# ── מטרות ואתגרים ── #}
-              <div class="col-12 border-top pt-2 mt-1"><div style="font-size:.7rem; font-weight:700; color:#9ca3af; text-transform:uppercase; letter-spacing:.4px;">מטרות ואתגרים</div></div>
+              <div class="col-12 border-top pt-2 mt-1"><div class="section-title mb-0">מטרות ואתגרים</div></div>
               <div class="col-12">
                 <label class="form-label fw-semibold small">מטרות קריירה <span class="text-danger">*</span></label>
                 <textarea name="career_goals" class="form-control" rows="3">{{ profile.career_goals }}</textarea>
@@ -985,7 +1009,7 @@
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h6 class="modal-title fw-bold">&#10024; הצעות משימות AI</h6>
+          <h6 class="modal-title fw-bold d-inline-flex align-items-center gap-1"><i data-lucide="sparkles" class="icon"></i> הצעות משימות AI</h6>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
@@ -1002,13 +1026,13 @@
           <div class="text-muted small mb-1" style="font-size:.72rem;">המשימות ישויכו ישירות לסטודנט. לשמירה בבנק הכלל לשימוש עתידי — בחר/י את האופציה השנייה.</div>
           <div class="d-flex gap-2 justify-content-end">
             <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ביטול</button>
-            <button type="button" class="btn btn-outline-primary btn-sm fw-semibold"
+            <button type="button" class="btn btn-outline-primary btn-sm fw-semibold d-inline-flex align-items-center gap-1"
                     onclick="confirmAiTasks({{ student.id }}, true)">
-              &#128203; שייך + שמור לבנק
+              <i data-lucide="clipboard-list" class="icon"></i> שייך + שמור לבנק
             </button>
-            <button type="button" class="btn btn-crm btn-sm fw-semibold"
+            <button type="button" class="btn btn-crm btn-sm fw-semibold d-inline-flex align-items-center gap-1"
                     onclick="confirmAiTasks({{ student.id }}, false)">
-              &#10003; שייך לסטודנט
+              <i data-lucide="check" class="icon"></i> שייך לסטודנט
             </button>
           </div>
         </div>
@@ -1023,16 +1047,16 @@
         <form method="POST">
           <input type="hidden" name="action" value="assign_tasks">
           <div class="modal-header">
-            <h6 class="modal-title fw-bold">&#128203; שיוך משימות</h6>
+            <h6 class="modal-title fw-bold d-inline-flex align-items-center gap-1"><i data-lucide="clipboard-list" class="icon"></i> שיוך משימות</h6>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body" style="max-height:60vh; overflow-y:auto;">
             <input type="text" class="form-control form-control-sm assign-search mb-3"
-                   placeholder="&#128269; חיפוש משימה..." id="assignSearch"
+                   placeholder="חיפוש משימה..." id="assignSearch"
                    oninput="filterAssign(this.value)">
             <div id="assignList">
               {% set type_labels = {'reflection':'שאלון', 'exercise':'תרגיל', 'task':'משימה'} %}
-              {% set type_colors = {'reflection':'#ede9fe;color:#5b21b6', 'exercise':'#d1fae5;color:#065f46', 'task':'#dbeafe;color:#1e40af'} %}
+              {% set type_colors = {'reflection':'var(--color-primary-subtle);color:var(--color-primary)', 'exercise':'var(--color-success-subtle);color:var(--color-success)', 'task':'var(--color-info-subtle);color:var(--color-info)'} %}
               {% for cat in categories %}
                 {% set cat_tasks = taskbank | selectattr('category','equalto',cat) | list %}
                 {% if cat_tasks %}
@@ -1051,8 +1075,8 @@
                           <div class="flex-grow-1">
                             <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
                               <span class="fw-semibold" style="font-size:.85rem;">{{ t.title }}</span>
-                              {% if t.resource_file %}<span style="font-size:.7rem; color:#9ca3af;">📎</span>{% endif %}
-                              <span class="badge rounded-pill" style="font-size:.65rem; background:{{ type_colors.get(t.task_type,'#dbeafe;color:#1e40af') }};">{{ type_labels.get(t.task_type, t.task_type) }}</span>
+                              {% if t.resource_file %}<span style="font-size:.7rem; color:var(--color-text-muted);"><i data-lucide="paperclip" class="icon"></i></span>{% endif %}
+                              <span class="badge-soft" style="font-size:.65rem; background:{{ type_colors.get(t.task_type,'var(--color-info-subtle);color:var(--color-info)') }};">{{ type_labels.get(t.task_type, t.task_type) }}</span>
                             </div>
                             {% if t.description %}
                               <div class="text-muted" style="font-size:.77rem; line-height:1.35;">{{ t.description | truncate(80) }}</div>
@@ -1077,7 +1101,7 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">ביטול</button>
-            <button type="submit" class="btn btn-crm btn-sm fw-semibold">&#10003; עדכן שיוך</button>
+            <button type="submit" class="btn btn-crm btn-sm fw-semibold d-inline-flex align-items-center gap-1"><i data-lucide="check" class="icon"></i> עדכן שיוך</button>
           </div>
         </form>
       </div>
@@ -1086,27 +1110,27 @@
 
   <!-- ── Floating Chat Widget ── -->
   <button class="chat-bubble-btn no-print" onclick="toggleChatPanel()" title="צ׳ט AI על הסטודנט">
-    &#129302;
+    <i data-lucide="bot" class="icon"></i>
     <span class="chat-unread" id="chatUnread">1</span>
   </button>
 
   <div class="chat-panel no-print" id="chatPanel">
     <div class="chat-panel-header">
       <div>
-        <div class="title">&#129302; AI — {{ profile.full_name if profile else student.username }}</div>
+        <div class="title d-inline-flex align-items-center gap-1"><i data-lucide="bot" class="icon"></i> AI — {{ profile.full_name if profile else student.username }}</div>
         <div class="subtitle">שאל/י על התיק, ההתקדמות, הצעות</div>
       </div>
       <div class="d-flex gap-2 align-items-center">
-        <button class="chat-panel-close" onclick="clearChat('general')" title="אפס שיחה">&#128260;</button>
-        <button class="chat-panel-close" onclick="toggleChatPanel()">&#10005;</button>
+        <button class="chat-panel-close" onclick="clearChat('general')" title="אפס שיחה"><i data-lucide="refresh-cw" class="icon"></i></button>
+        <button class="chat-panel-close" onclick="toggleChatPanel()"><i data-lucide="x" class="icon"></i></button>
       </div>
     </div>
 
     <!-- Quick chips -->
     <div class="chat-quick-chips">
-      {% for q in ['🎯 מה השלב הבא?', '📊 האם בקצב?', '📋 אילו משימות?', '📅 מה לדון?'] %}
+      {% for icon, q in [('target','מה השלב הבא?'), ('bar-chart-2','האם בקצב?'), ('clipboard-list','אילו משימות?'), ('calendar','מה לדון?')] %}
         <button class="chat-chip"
-                onclick="sendQuick('general', {{ student.id }}, {{ q[2:]|trim|tojson }})">{{ q }}</button>
+                onclick="sendQuick('general', {{ student.id }}, {{ q|trim|tojson }})"><i data-lucide="{{ icon }}" class="icon"></i> {{ q }}</button>
       {% endfor %}
     </div>
 
@@ -1211,7 +1235,7 @@
           aiSuggestions.forEach((s, i) => {
             const cls = catColors[s.category] || 'cat-general';
             container.innerHTML += `
-              <div class="d-flex align-items-start gap-2 p-2 border rounded mb-2" style="background:#fafafa;">
+              <div class="d-flex align-items-start gap-2 p-2 border rounded mb-2" style="background:var(--color-bg-subtle);">
                 <input type="checkbox" class="form-check-input mt-1 flex-shrink-0 ai-task-check"
                        id="ait${i}" data-idx="${i}" checked>
                 <label for="ait${i}" class="flex-grow-1" style="cursor:pointer;">
@@ -1228,6 +1252,7 @@
         document.getElementById('aiSuggestLoading').style.display = 'none';
         document.getElementById('aiSuggestList').style.display    = '';
         document.getElementById('aiSuggestFooter').style.removeProperty('display');
+        if (window.lucide) { lucide.createIcons(); }
       } catch(e) {
         document.getElementById('aiSuggestLoading').textContent = 'שגיאת תקשורת — נסה שוב.';
       }
@@ -1251,7 +1276,7 @@
         });
         const data = await resp.json();
         bootstrap.Modal.getInstance(document.getElementById('aiSuggestModal')).hide();
-        alert(`✅ שויכו ${data.created} משימות לסטודנט${saveToBank ? ' (ונשמרו גם בבנק)' : ''}.`);
+        alert(`שויכו ${data.created} משימות לסטודנט${saveToBank ? ' (ונשמרו גם בבנק)' : ''}.`);
         location.reload();
       } catch(e) {
         btn.disabled = false;
@@ -1279,14 +1304,15 @@
           <td>${r.month}</td>
           <td>${r.meetings_count}</td>
           <td><strong>₪${Math.round(r.amount_due)}</strong></td>
-          <td>${r.paid_at ? '<span style="color:#065f46;font-weight:700;">✓ שולם</span>' : '<span style="color:#92400e;">⏳ ממתין</span>'}</td>
-          <td><a href="/admin/private/billing/invoice/${studentId}/${r.month}" target="_blank" style="font-size:.7rem;color:#635bff;">📄</a></td>
+          <td>${r.paid_at ? '<span style="color:var(--color-success);font-weight:700;">שולם</span>' : '<span style="color:var(--color-warning);">ממתין</span>'}</td>
+          <td><a href="/admin/private/billing/invoice/${studentId}/${r.month}" target="_blank" style="font-size:.7rem;color:var(--color-primary);"><i data-lucide="file-text" class="icon"></i></a></td>
         </tr>`;
       });
-      html += `<tr style="font-weight:700;border-top:2px solid #635bff;">
+      html += `<tr style="font-weight:700;border-top:2px solid var(--color-primary);">
         <td>סה"כ ${year}</td><td>${totalMeet}</td>
-        <td style="color:#635bff;">₪${Math.round(totalDue)}</td><td colspan="2"></td></tr>`;
+        <td style="color:var(--color-primary);">₪${Math.round(totalDue)}</td><td colspan="2"></td></tr>`;
       box.innerHTML = html + '</tbody></table>';
+      if (window.lucide) { lucide.createIcons(); }
     }
 
     // ── Task assign filter ───────────────────────────────────────────

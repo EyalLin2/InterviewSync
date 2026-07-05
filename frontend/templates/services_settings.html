@@ -6,22 +6,24 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <style>
-    body { font-family:'Heebo',sans-serif; background:#f4f5f9; }
+    .icon { width: 1em; height: 1em; vertical-align: -0.125em; stroke-width: 2; }
+    body { font-family:'Heebo',sans-serif; background:var(--color-bg-subtle, #f4f5f9); }
     .navbar-admin { background:#1a1f36; }
     .navbar-brand-text { font-weight:800; color:#fff; font-size:1.1rem; }
-    .card-crm { background:#fff; border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,.06); padding:1.5rem; margin-bottom:1.25rem; }
-    .btn-crm { background:#635bff; border-color:#635bff; color:#fff; font-weight:600; }
-    .btn-crm:hover { background:#4f46e5; color:#fff; }
-    .unit-badge-per_session { background:#dbeafe; color:#1d4ed8; }
-    .unit-badge-monthly     { background:#d1fae5; color:#065f46; }
-    .unit-badge-fixed       { background:#ede9fe; color:#5b21b6; }
+    .card-crm { background:var(--color-bg, #fff); border-radius:var(--radius-lg, 14px); box-shadow:var(--shadow-sm, 0 1px 3px rgba(0,0,0,.08)); padding:var(--space-6, 1.5rem); margin-bottom:var(--space-5, 1.25rem); }
+    .btn-crm { background:var(--color-primary, #2563eb); border-color:var(--color-primary, #2563eb); color:#fff; font-weight:600; }
+    .btn-crm:hover { background:var(--color-primary-hover, #1d4ed8); color:#fff; }
+    .unit-badge-per_session { background:var(--color-info-subtle, #dbeafe); color:var(--color-info, #1d4ed8); }
+    .unit-badge-monthly     { background:var(--color-success-subtle, #d1fae5); color:var(--color-success, #065f46); }
+    .unit-badge-fixed       { background:var(--color-primary-subtle, #ede9fe); color:var(--color-primary, #5b21b6); }
     .price-cell { font-weight:700; font-size:.95rem; }
   </style>
 </head>
 <body>
   <nav class="navbar navbar-expand-lg navbar-admin px-4 py-2">
-    <span class="navbar-brand-text">&#127891; InterviewSync</span>
+    <span class="navbar-brand-text"><i data-lucide="graduation-cap" class="icon"></i> InterviewSync</span>
     <div class="ms-auto d-flex gap-3">
       <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-light btn-sm">&#8592; לוח ניהול</a>
       <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">התנתקות</a>
@@ -40,11 +42,11 @@
 
     <div class="d-flex align-items-center justify-content-between mb-4">
       <div>
-        <h4 class="fw-bold mb-0">&#128176; מחירון שירותים</h4>
+        <h4 class="fw-bold mb-0"><i data-lucide="banknote" class="icon"></i> מחירון שירותים</h4>
         <div class="text-muted small">הגדר שירותים ומחירים — מחובר אוטומטית לכל תיק תלמיד</div>
       </div>
       <button class="btn btn-crm btn-sm fw-semibold" data-bs-toggle="modal" data-bs-target="#addServiceModal">
-        &#10133; הוסף שירות
+        <i data-lucide="plus" class="icon"></i> הוסף שירות
       </button>
     </div>
 
@@ -55,9 +57,9 @@
           <tr>
             <th style="color:#9ca3af;font-size:.72rem;text-transform:uppercase;padding:.85rem 1rem;">שירות</th>
             <th style="color:#9ca3af;font-size:.72rem;text-transform:uppercase;">סוג</th>
-            <th style="color:#9ca3af;font-size:.72rem;text-transform:uppercase;text-align:center;">🏫 תיכון</th>
-            <th style="color:#9ca3af;font-size:.72rem;text-transform:uppercase;text-align:center;">🎓 סטודנט</th>
-            <th style="color:#9ca3af;font-size:.72rem;text-transform:uppercase;text-align:center;">💼 קריירה</th>
+            <th style="color:#9ca3af;font-size:.72rem;text-transform:uppercase;text-align:center;"><i data-lucide="school" class="icon"></i> תיכון</th>
+            <th style="color:#9ca3af;font-size:.72rem;text-transform:uppercase;text-align:center;"><i data-lucide="graduation-cap" class="icon"></i> סטודנט</th>
+            <th style="color:#9ca3af;font-size:.72rem;text-transform:uppercase;text-align:center;"><i data-lucide="briefcase" class="icon"></i> קריירה</th>
             <th></th>
           </tr>
         </thead>
@@ -70,17 +72,17 @@
                 {% if s.description %}<div class="text-muted" style="font-size:.75rem;">{{ s.description }}</div>{% endif %}
               </td>
               <td><span class="badge unit-badge-{{ s.unit }} rounded-pill" style="font-size:.7rem;">{{ unit_labels.get(s.unit, s.unit) }}</span></td>
-              <td class="price-cell text-center" style="color:#92400e;">₪{{ s.price_highschool|int }}</td>
-              <td class="price-cell text-center" style="color:#1e40af;">₪{{ s.price_college|int }}</td>
-              <td class="price-cell text-center" style="color:#5b21b6;">₪{{ s.price_career|int }}</td>
+              <td class="price-cell text-center" style="color:var(--color-warning, #92400e);">₪{{ s.price_highschool|int }}</td>
+              <td class="price-cell text-center" style="color:var(--color-info, #1e40af);">₪{{ s.price_college|int }}</td>
+              <td class="price-cell text-center" style="color:var(--color-primary, #5b21b6);">₪{{ s.price_career|int }}</td>
               <td class="text-center">
                 <button class="btn btn-sm btn-outline-secondary py-0 px-2 me-1" style="font-size:.72rem;"
-                        data-bs-toggle="modal" data-bs-target="#editModal{{ s.id }}">&#9998;</button>
+                        data-bs-toggle="modal" data-bs-target="#editModal{{ s.id }}"><i data-lucide="edit" class="icon"></i></button>
                 <form method="POST" style="display:inline;"
                       onsubmit="return confirm('למחוק את {{ s.name }}?')">
                   <input type="hidden" name="action" value="delete">
                   <input type="hidden" name="service_id" value="{{ s.id }}">
-                  <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:.72rem;">&#10005;</button>
+                  <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:.72rem;"><i data-lucide="trash-2" class="icon"></i></button>
                 </form>
               </td>
             </tr>
@@ -113,15 +115,15 @@
                         </select>
                       </div>
                       <div class="col-4">
-                        <label class="form-label fw-semibold small">🏫 תיכון ₪</label>
+                        <label class="form-label fw-semibold small"><i data-lucide="school" class="icon"></i> תיכון ₪</label>
                         <input type="number" name="price_highschool" class="form-control" value="{{ s.price_highschool|int }}" min="0">
                       </div>
                       <div class="col-4">
-                        <label class="form-label fw-semibold small">🎓 סטודנט ₪</label>
+                        <label class="form-label fw-semibold small"><i data-lucide="graduation-cap" class="icon"></i> סטודנט ₪</label>
                         <input type="number" name="price_college" class="form-control" value="{{ s.price_college|int }}" min="0">
                       </div>
                       <div class="col-4">
-                        <label class="form-label fw-semibold small">💼 קריירה ₪</label>
+                        <label class="form-label fw-semibold small"><i data-lucide="briefcase" class="icon"></i> קריירה ₪</label>
                         <input type="number" name="price_career" class="form-control" value="{{ s.price_career|int }}" min="0">
                       </div>
                     </div>
@@ -147,7 +149,7 @@
     <div class="modal-dialog"><div class="modal-content">
       <form method="POST">
         <input type="hidden" name="action" value="add">
-        <div class="modal-header"><h6 class="modal-title fw-bold">&#10133; שירות חדש</h6>
+        <div class="modal-header"><h6 class="modal-title fw-bold"><i data-lucide="plus" class="icon"></i> שירות חדש</h6>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
           <div class="row g-3">
@@ -168,15 +170,15 @@
               </select>
             </div>
             <div class="col-4">
-              <label class="form-label fw-semibold small">🏫 תיכון ₪</label>
+              <label class="form-label fw-semibold small"><i data-lucide="school" class="icon"></i> תיכון ₪</label>
               <input type="number" name="price_highschool" class="form-control" value="0" min="0">
             </div>
             <div class="col-4">
-              <label class="form-label fw-semibold small">🎓 סטודנט ₪</label>
+              <label class="form-label fw-semibold small"><i data-lucide="graduation-cap" class="icon"></i> סטודנט ₪</label>
               <input type="number" name="price_college" class="form-control" value="0" min="0">
             </div>
             <div class="col-4">
-              <label class="form-label fw-semibold small">💼 קריירה ₪</label>
+              <label class="form-label fw-semibold small"><i data-lucide="briefcase" class="icon"></i> קריירה ₪</label>
               <input type="number" name="price_career" class="form-control" value="0" min="0">
             </div>
           </div>
@@ -190,5 +192,6 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>if (window.lucide) { lucide.createIcons(); }</script>
 </body>
 </html>

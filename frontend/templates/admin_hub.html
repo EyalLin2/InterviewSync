@@ -6,93 +6,141 @@
   <title>InterviewSync</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <style>
+    :root {
+      --color-primary: #2563eb;
+      --color-primary-hover: #1d4ed8;
+      --color-primary-subtle: #eff4ff;
+
+      --color-text: #1f2430;
+      --color-text-muted: #6b7280;
+      --color-bg: #ffffff;
+      --color-bg-subtle: #f7f8fa;
+      --color-border: #e5e7eb;
+
+      --color-success: #2f8f5b;
+      --color-success-subtle: #eaf6f0;
+      --color-warning: #b8860b;
+      --color-warning-subtle: #fbf4e3;
+      --color-danger: #c0392b;
+      --color-danger-subtle: #fbeae8;
+      --color-info: #2563eb;
+      --color-info-subtle: #eff4ff;
+
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+
+      --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+      --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: 'Heebo', sans-serif;
-      background: #0d1117;
-      color: #fff;
+      background: var(--color-bg-subtle);
+      color: var(--color-text);
       min-height: 100vh;
       display: flex; flex-direction: column;
+    }
+
+    .icon {
+      width: 1em;
+      height: 1em;
+      vertical-align: -0.125em;
+      stroke-width: 2;
     }
 
     /* Top bar */
     .top {
       display: flex; align-items: center; justify-content: space-between;
-      padding: .9rem 2rem;
-      border-bottom: 1px solid rgba(255,255,255,.06);
+      padding: var(--space-3) var(--space-6);
+      border-bottom: 1px solid var(--color-border);
+      background: var(--color-bg);
     }
-    .logo { font-size: .95rem; font-weight: 700; color: rgba(255,255,255,.5); }
-    .logo strong { color: #fff; font-weight: 800; }
-    .top-right { display: flex; align-items: center; gap: 1.5rem; }
-    .top-right span { font-size: .82rem; color: rgba(255,255,255,.35); }
-    .top-right a { font-size: .82rem; color: rgba(255,255,255,.3); text-decoration: none; }
-    .top-right a:hover { color: rgba(255,255,255,.6); }
+    .logo { display: inline-flex; align-items: center; gap: var(--space-2); font-size: .95rem; font-weight: 700; color: var(--color-text-muted); }
+    .logo strong { color: var(--color-text); font-weight: 800; }
+    .top-right { display: flex; align-items: center; gap: var(--space-5); }
+    .top-right span { font-size: .82rem; color: var(--color-text-muted); }
+    .top-right a { font-size: .82rem; color: var(--color-text-muted); text-decoration: none; }
+    .top-right a:hover { color: var(--color-text); }
 
     /* Main */
-    main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 3rem 1.5rem; }
+    main { flex: 1; display: flex; align-items: center; justify-content: center; padding: var(--space-6) var(--space-4); }
 
     .hub { width: 100%; max-width: 680px; }
-    .hub-heading { text-align: center; margin-bottom: 2.5rem; }
-    .hub-heading h1 { font-size: 1.4rem; font-weight: 700; color: rgba(255,255,255,.75); margin-bottom: .3rem; }
-    .hub-heading p  { font-size: .85rem; color: rgba(255,255,255,.3); }
+    .hub-heading { text-align: center; margin-bottom: var(--space-6); }
+    .hub-heading h1 { font-size: 1.4rem; font-weight: 700; color: var(--color-text); margin-bottom: var(--space-1); }
+    .hub-heading p  { font-size: .85rem; color: var(--color-text-muted); }
 
     /* Cards */
-    .cards { display: grid; grid-template-columns: 1fr 1fr; gap: .875rem; }
+    .cards { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
 
     .card {
       display: block; text-decoration: none;
-      border-radius: 12px;
-      padding: 1.75rem 1.5rem;
-      border: 1px solid rgba(255,255,255,.07);
-      transition: border-color .15s, background .15s;
+      border-radius: var(--radius-lg);
+      padding: var(--space-5) var(--space-5);
+      border: 1px solid var(--color-border);
+      background: var(--color-bg);
+      box-shadow: var(--shadow-sm);
+      transition: border-color .15s, box-shadow .15s;
       cursor: pointer;
     }
-    .card:hover { border-color: rgba(255,255,255,.18); }
-
-    .card-private  { background: #131929; }
-    .card-private:hover  { background: #161e30; }
-    .card-business { background: #0f1e16; }
-    .card-business:hover { background: #122019; }
+    .card:hover { border-color: var(--color-primary); box-shadow: var(--shadow-md); }
 
     .card-label {
+      display: inline-flex; align-items: center; gap: var(--space-1);
       font-size: .68rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .8px; margin-bottom: .6rem;
+      letter-spacing: .8px; margin-bottom: var(--space-3);
     }
-    .card-private  .card-label { color: #7c6cf8; }
-    .card-business .card-label { color: #34a471; }
+    .card-private  .card-label { color: var(--color-primary); }
+    .card-business .card-label { color: var(--color-success); }
 
     .card-title {
-      font-size: 1.15rem; font-weight: 800; color: #fff; margin-bottom: .4rem;
+      font-size: 1.15rem; font-weight: 800; color: var(--color-text); margin-bottom: var(--space-2);
     }
     .card-desc {
-      font-size: .82rem; color: rgba(255,255,255,.4); line-height: 1.5; margin-bottom: 1.25rem;
+      font-size: .82rem; color: var(--color-text-muted); line-height: 1.5; margin-bottom: var(--space-5);
     }
 
-    .card-meta { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+    .card-meta { display: flex; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-5); }
     .meta-tag {
-      font-size: .72rem; color: rgba(255,255,255,.35);
-      border: 1px solid rgba(255,255,255,.1);
-      border-radius: 50px; padding: .18rem .6rem;
+      font-size: .72rem; color: var(--color-text-muted);
+      background: var(--color-bg-subtle);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm); padding: var(--space-1) var(--space-3);
     }
     {% if inquiries_new is defined and inquiries_new > 0 %}
-    .badge-new { background: #92400e; color: #fef3c7; border-color: transparent; font-weight: 700; }
+    .badge-new { background: var(--color-warning-subtle); color: var(--color-warning); border-color: transparent; font-weight: 700; }
     {% endif %}
 
     .card-arrow {
-      display: inline-flex; align-items: center; gap: .35rem;
+      display: inline-flex; align-items: center; gap: var(--space-1);
       font-size: .82rem; font-weight: 600;
     }
-    .card-private  .card-arrow { color: #7c6cf8; }
-    .card-business .card-arrow { color: #34a471; }
+    .card-private  .card-arrow { color: var(--color-primary); }
+    .card-business .card-arrow { color: var(--color-success); }
+    .card-arrow .icon { transform: scaleX(-1); }
 
     /* Flash */
-    .flash-wrap { padding: .5rem 2rem 0; }
-    .flash { padding: .5rem 1rem; border-radius: 8px; font-size: .82rem; margin-bottom: .35rem; }
-    .flash-success { background: rgba(52,164,113,.12); color: #6ee7b7; border: 1px solid rgba(52,164,113,.2); }
-    .flash-danger  { background: rgba(239,68,68,.12);  color: #fca5a5; border: 1px solid rgba(239,68,68,.2); }
-    .flash-info    { background: rgba(59,130,246,.12); color: #93c5fd; border: 1px solid rgba(59,130,246,.2); }
-    .flash-warning { background: rgba(245,158,11,.12); color: #fcd34d; border: 1px solid rgba(245,158,11,.2); }
+    .flash-wrap { padding: var(--space-2) var(--space-6) 0; }
+    .flash {
+      display: flex; align-items: center; gap: var(--space-2);
+      padding: var(--space-2) var(--space-4); border-radius: var(--radius-sm);
+      font-size: .82rem; margin-bottom: var(--space-2);
+    }
+    .flash-success { background: var(--color-success-subtle); color: var(--color-success); border: 1px solid var(--color-success-subtle); }
+    .flash-danger  { background: var(--color-danger-subtle);  color: var(--color-danger);  border: 1px solid var(--color-danger-subtle); }
+    .flash-info    { background: var(--color-info-subtle);    color: var(--color-info);    border: 1px solid var(--color-info-subtle); }
+    .flash-warning { background: var(--color-warning-subtle); color: var(--color-warning); border: 1px solid var(--color-warning-subtle); }
 
     @media (max-width: 560px) {
       .cards { grid-template-columns: 1fr; }
@@ -102,7 +150,7 @@
 <body>
 
   <div class="top">
-    <div class="logo">&#127891; <strong>InterviewSync</strong></div>
+    <div class="logo"><i data-lucide="graduation-cap" class="icon"></i> <strong>InterviewSync</strong></div>
     <div class="top-right">
       <span>{{ user.name or 'מנהל' }}</span>
       <a href="{{ url_for('logout') }}">התנתקות</a>
@@ -113,7 +161,14 @@
     {% if messages %}
       <div class="flash-wrap">
         {% for cat, msg in messages %}
-          <div class="flash flash-{{ cat }}">{{ msg }}</div>
+          <div class="flash flash-{{ cat }}">
+            {% if cat == 'success' %}<i data-lucide="check-circle" class="icon"></i>
+            {% elif cat == 'danger' %}<i data-lucide="alert-triangle" class="icon"></i>
+            {% elif cat == 'warning' %}<i data-lucide="alert-triangle" class="icon"></i>
+            {% else %}<i data-lucide="info" class="icon"></i>
+            {% endif %}
+            <span>{{ msg }}</span>
+          </div>
         {% endfor %}
       </div>
     {% endif %}
@@ -130,7 +185,7 @@
       <div class="cards">
 
         <a href="{{ url_for('admin_dashboard') }}" class="card card-private">
-          <div class="card-label">ניהול תלמידים</div>
+          <div class="card-label"><i data-lucide="user" class="icon"></i> ניהול תלמידים</div>
           <div class="card-title">פרטי</div>
           <div class="card-desc">תיקי תלמידים, שיוך משימות, פגישות ומעקב התקדמות אישי</div>
           <div class="card-meta">
@@ -138,11 +193,11 @@
             <span class="meta-tag">משימות</span>
             <span class="meta-tag">לוח פגישות</span>
           </div>
-          <span class="card-arrow">כניסה &#8592;</span>
+          <span class="card-arrow">כניסה <i data-lucide="arrow-right" class="icon"></i></span>
         </a>
 
         <a href="{{ url_for('admin_business') }}" class="card card-business">
-          <div class="card-label">פעילות עסקית</div>
+          <div class="card-label"><i data-lucide="briefcase" class="icon"></i> פעילות עסקית</div>
           <div class="card-title">עסקי</div>
           <div class="card-desc">הרצאות, סדנאות, פניות יזומות ותיעוד פעילות מקצועית</div>
           <div class="card-meta">
@@ -154,12 +209,16 @@
             {% endif %}
             <span class="meta-tag">תיעוד</span>
           </div>
-          <span class="card-arrow">כניסה &#8592;</span>
+          <span class="card-arrow">כניסה <i data-lucide="arrow-right" class="icon"></i></span>
         </a>
 
       </div>
     </div>
   </main>
+
+  <script>
+    if (window.lucide) { lucide.createIcons(); }
+  </script>
 
 </body>
 </html>

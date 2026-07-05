@@ -7,25 +7,50 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <style>
-    body { font-family: 'Heebo', sans-serif; background: #f4f5f9; }
+    :root {
+      --color-primary: #2563eb;
+      --color-primary-hover: #1d4ed8;
+      --color-primary-subtle: #eff4ff;
+      --color-text: #1f2430;
+      --color-text-muted: #6b7280;
+      --color-bg: #ffffff;
+      --color-bg-subtle: #f7f8fa;
+      --color-border: #e5e7eb;
+      --color-success: #2f8f5b;
+      --color-success-subtle: #eaf6f0;
+      --color-warning: #b8860b;
+      --color-warning-subtle: #fbf4e3;
+      --color-danger: #c0392b;
+      --color-danger-subtle: #fbeae8;
+      --color-info: #2563eb;
+      --color-info-subtle: #eff4ff;
+      --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px; --space-6: 32px;
+      --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px;
+      --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+      --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
+    }
+    body { font-family: 'Heebo', sans-serif; background: var(--color-bg-subtle); color: var(--color-text); }
+    .icon { width: 1em; height: 1em; vertical-align: -0.125em; stroke-width: 2; }
     .navbar-admin { background: #1a1f36; }
     .navbar-brand-text { font-weight: 800; color: #fff; font-size: 1.1rem; }
-    .page-card { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,.07); padding: 2rem; max-width: 720px; margin: 2rem auto; }
-    .section-divider { border-top: 2px dashed #e9ecef; margin: 1.5rem 0 1rem; }
-    .section-label { font-size: .7rem; font-weight: 700; text-transform: uppercase; color: #9ca3af; letter-spacing: .5px; margin-bottom: .75rem; }
-    .edu-card { border: 2px solid #dee2e6; border-radius: 10px; padding: .6rem .9rem; text-align: center; transition: all .15s; cursor: pointer; }
-    .edu-option input[type=radio]:checked + .edu-card { border-color: #635bff; background: #f0f0ff; }
-    .edu-card:hover { border-color: #635bff; }
-    .btn-crm { background: #635bff; border-color: #635bff; color: #fff; font-weight: 600; }
-    .btn-crm:hover { background: #4f46e5; color: #fff; }
+    .page-card { background: var(--color-bg); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: var(--space-6); max-width: 720px; margin: var(--space-6) auto; }
+    .section-divider { border-top: 1px solid var(--color-border); margin: var(--space-5) 0 var(--space-4); }
+    .section-label { font-size: .7rem; font-weight: 700; text-transform: uppercase; color: var(--color-text-muted); letter-spacing: .5px; margin-bottom: var(--space-3); display: flex; align-items: center; gap: var(--space-1); }
+    .edu-card { border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); text-align: center; transition: all .15s; cursor: pointer; }
+    .edu-option input[type=radio]:checked + .edu-card { border-color: var(--color-primary); background: var(--color-primary-subtle); }
+    .edu-card:hover { border-color: var(--color-primary); }
+    .btn-crm { background: var(--color-primary); border-color: var(--color-primary); color: #fff; font-weight: 600; border-radius: var(--radius-md); }
+    .btn-crm:hover { background: var(--color-primary-hover); border-color: var(--color-primary-hover); color: #fff; }
+    .avatar-initials { display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius-md); background: var(--color-primary-subtle); color: var(--color-primary); font-weight: 600; }
     #section-highschool, #section-college, #section-career { display: none; }
   </style>
 </head>
 <body>
 
   <nav class="navbar navbar-expand-lg navbar-admin px-4 py-2">
-    <span class="navbar-brand-text">&#127891; InterviewSync</span>
+    <span class="navbar-brand-text"><i data-lucide="graduation-cap" class="icon"></i> InterviewSync</span>
     <div class="ms-auto d-flex gap-3">
       <a href="{{ url_for('student_file', sid=student.id) }}" class="btn btn-outline-light btn-sm">&#8592; חזרה לתיק</a>
       <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">התנתקות</a>
@@ -43,7 +68,7 @@
     {% endwith %}
 
     <div class="d-flex align-items-center gap-3 mb-4">
-      <div style="width:40px;height:40px;border-radius:50%;background:#635bff;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:1rem;">
+      <div class="avatar-initials" style="width:40px;height:40px;font-size:1rem;">
         {{ (profile.full_name or student.username)[0].upper() }}
       </div>
       <div>
@@ -55,7 +80,7 @@
     <form method="POST" id="intakeForm">
 
       <!-- Section 1: Personal -->
-      <div class="section-label">&#128100; פרטים אישיים</div>
+      <div class="section-label"><i data-lucide="user" class="icon"></i> פרטים אישיים</div>
       <div class="row g-3 mb-1">
         <div class="col-md-5">
           <label class="form-label fw-semibold small">שם מלא <span class="text-danger">*</span></label>
@@ -74,14 +99,14 @@
       <div class="section-divider"></div>
 
       <!-- Section 2: Type -->
-      <div class="section-label">&#9733; רמת / סוג לימודים</div>
+      <div class="section-label"><i data-lucide="graduation-cap" class="icon"></i> רמת / סוג לימודים</div>
       <div class="row g-3 mb-3">
         <div class="col-4">
           <label class="edu-option d-block">
             <input type="radio" name="education_level" value="highschool" class="d-none" id="radio-hs"
                    {{ 'checked' if profile.education_level == 'highschool' }} required>
             <div class="edu-card text-center">
-              <div>&#127979;</div><div class="fw-semibold small">תיכון</div>
+              <div><i data-lucide="school" class="icon"></i></div><div class="fw-semibold small">תיכון</div>
             </div>
           </label>
         </div>
@@ -90,7 +115,7 @@
             <input type="radio" name="education_level" value="college" class="d-none" id="radio-col"
                    {{ 'checked' if profile.education_level == 'college' }}>
             <div class="edu-card text-center">
-              <div>&#127979;</div><div class="fw-semibold small">סטודנט</div>
+              <div><i data-lucide="graduation-cap" class="icon"></i></div><div class="fw-semibold small">סטודנט</div>
               <div class="text-muted" style="font-size:.7rem;">תואר/תעודה</div>
             </div>
           </label>
@@ -100,7 +125,7 @@
             <input type="radio" name="education_level" value="career" class="d-none" id="radio-car"
                    {{ 'checked' if profile.education_level == 'career' }}>
             <div class="edu-card text-center">
-              <div>&#128188;</div><div class="fw-semibold small">הכוונה</div>
+              <div><i data-lucide="briefcase" class="icon"></i></div><div class="fw-semibold small">הכוונה</div>
               <div class="text-muted" style="font-size:.7rem;">תעסוקתית</div>
             </div>
           </label>
@@ -176,7 +201,7 @@
       <div class="section-divider"></div>
 
       <!-- Section 3: Goals -->
-      <div class="section-label">&#127919; מטרות ואתגרים</div>
+      <div class="section-label"><i data-lucide="target" class="icon"></i> מטרות ואתגרים</div>
       <div class="row g-3 mb-4">
         <div class="col-12">
           <label class="form-label fw-semibold small">מטרות קריירה <span class="text-danger">*</span></label>
@@ -189,7 +214,7 @@
                     placeholder="קושי בראיונות, חוסר ביטחון, כתיבת קורות חיים...">{{ profile.fears_weaknesses or '' }}</textarea>
         </div>
         <div class="col-md-6">
-          <label class="form-label fw-semibold small">&#128172; רשמות ראשוניות (הערות פנימיות)</label>
+          <label class="form-label fw-semibold small"><i data-lucide="file-text" class="icon"></i> רשמות ראשוניות (הערות פנימיות)</label>
           <textarea name="intake_notes" id="intakeNotes" class="form-control" rows="3"
                     placeholder="הרשמות שלי מהפגישה — לא גלוי לסטודנט"></textarea>
           <div class="form-text">ייכנס כהערת מנטור בתיק האישי</div>
@@ -198,7 +223,7 @@
 
       <div class="d-flex gap-3">
         <button type="submit" class="btn btn-crm btn-lg flex-grow-1 fw-semibold">
-          &#10003; שמור שאלון וייצר אסטרטגיה AI
+          <i data-lucide="check" class="icon"></i> שמור שאלון וייצר אסטרטגיה AI
         </button>
         <a href="{{ url_for('student_file', sid=student.id) }}" class="btn btn-outline-secondary btn-lg">
           ביטול
@@ -227,6 +252,8 @@
       else if (radioCol.checked) combined.value = document.getElementById('input-college').value;
       else if (radioCar.checked) combined.value = document.getElementById('input-career').value;
     });
+
+    if (window.lucide) { lucide.createIcons(); }
   </script>
 </body>
 </html>

@@ -7,125 +7,170 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <style>
-    body { font-family: 'Heebo', sans-serif; background: #f4f5f9; }
+    :root {
+      /* Brand */
+      --color-primary: #2563eb;
+      --color-primary-hover: #1d4ed8;
+      --color-primary-subtle: #eff4ff;
+
+      /* Neutrals */
+      --color-text: #1f2430;
+      --color-text-muted: #6b7280;
+      --color-bg: #ffffff;
+      --color-bg-subtle: #f7f8fa;
+      --color-border: #e5e7eb;
+
+      /* Status (muted) */
+      --color-success: #2f8f5b;
+      --color-success-subtle: #eaf6f0;
+      --color-warning: #b8860b;
+      --color-warning-subtle: #fbf4e3;
+      --color-danger: #c0392b;
+      --color-danger-subtle: #fbeae8;
+      --color-info: #2563eb;
+      --color-info-subtle: #eff4ff;
+
+      /* Spacing */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+
+      /* Radius */
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+
+      /* Shadow */
+      --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+      --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
+    }
+
+    body { font-family: 'Heebo', sans-serif; color: var(--color-text); background: var(--color-bg-subtle); }
+
+    .icon { width: 1em; height: 1em; vertical-align: -0.125em; stroke-width: 2; }
 
     /* Navbar */
-    .navbar-admin { background: #1a1f36; }
-    .navbar-brand-text { font-weight: 800; color: #fff; font-size: 1.15rem; }
+    .navbar-admin { background: var(--color-text); }
+    .navbar-brand-text { font-weight: 800; color: #fff; font-size: 1.15rem; display: inline-flex; align-items: center; gap: var(--space-2); }
 
     /* Sidebar nav pills */
-    .nav-admin .nav-link { color: #6b7280; border-radius: 8px; font-weight: 500; padding: .5rem .85rem; }
-    .nav-admin .nav-link.active, .nav-admin .nav-link:hover { background: #eef0ff; color: #635bff; }
+    .nav-admin .nav-link { color: var(--color-text-muted); border-radius: var(--radius-sm); font-weight: 500; padding: var(--space-2) var(--space-3); }
+    .nav-admin .nav-link.active, .nav-admin .nav-link:hover { background: var(--color-primary-subtle); color: var(--color-primary); }
 
     /* Stat cards */
-    .stat-card { background:#fff; border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,.06); padding:1.2rem 1.4rem; }
+    .stat-card { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: var(--space-5) var(--space-5); }
     .stat-num  { font-size:2.2rem; font-weight:800; line-height:1; }
-    .stat-lbl  { font-size:.8rem; color:#6b7280; margin-top:4px; }
+    .stat-lbl  { font-size:.8rem; color: var(--color-text-muted); margin-top: var(--space-1); display: flex; align-items: center; gap: var(--space-1); }
 
     /* Student table */
-    .students-table { background:#fff; border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,.06); overflow:hidden; }
+    .students-table { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow:hidden; }
     .students-table table { margin-bottom:0; }
     .students-table thead th {
-      background: #1a1f36; color: #9ca3af;
+      background: var(--color-bg-subtle); color: var(--color-text-muted);
       font-size:.72rem; font-weight:700; text-transform:uppercase;
-      letter-spacing:.5px; border:none; padding:.85rem 1rem;
+      letter-spacing:.5px; border:none; padding: var(--space-3) var(--space-4);
     }
-    .students-table tbody td { padding:.85rem 1rem; border-bottom:1px solid #f0f1f5; vertical-align:middle; }
+    .students-table tbody td { padding: var(--space-3) var(--space-4); border-bottom:1px solid var(--color-border); vertical-align:middle; }
     .students-table tbody tr:last-child td { border-bottom:none; }
-    .students-table tbody tr:hover { background:#fafbff; }
+    .students-table tbody tr:hover { background: var(--color-bg-subtle); }
 
     .avatar {
-      width:36px; height:36px; border-radius:50%;
+      width:36px; height:36px; border-radius: var(--radius-md);
       display:inline-flex; align-items:center; justify-content:center;
       font-weight:700; font-size:.95rem; color:#fff;
       flex-shrink:0;
     }
-    .edu-badge-hs  { background:#fef3c7; color:#92400e; font-size:.7rem; }
-    .edu-badge-col { background:#dbeafe; color:#1e40af; font-size:.7rem; }
+    .edu-badge-hs  { background: var(--color-warning-subtle); color: var(--color-warning); font-size:.7rem; }
+    .edu-badge-col { background: var(--color-info-subtle); color: var(--color-info); font-size:.7rem; }
     .wa-dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
-    .wa-dot-on  { background:#25d366; }
-    .wa-dot-off { background:#d1d5db; }
+    .wa-dot-on  { background: var(--color-success); }
+    .wa-dot-off { background: var(--color-border); }
 
     /* Risk dots */
     .risk-dot { width:10px; height:10px; border-radius:50%; display:inline-block; flex-shrink:0; cursor:default; }
-    .risk-red    { background:#ef4444; box-shadow:0 0 0 2px #fee2e2; }
-    .risk-yellow { background:#f59e0b; box-shadow:0 0 0 2px #fef3c7; }
-    .risk-green  { background:#10b981; box-shadow:0 0 0 2px #d1fae5; }
+    .risk-red    { background: var(--color-danger); box-shadow: 0 0 0 2px var(--color-danger-subtle); }
+    .risk-yellow { background: var(--color-warning); box-shadow: 0 0 0 2px var(--color-warning-subtle); }
+    .risk-green  { background: var(--color-success); box-shadow: 0 0 0 2px var(--color-success-subtle); }
 
     /* Task bank cards */
     .task-bank-card {
-      background:#fff; border-radius:12px;
-      box-shadow:0 1px 6px rgba(0,0,0,.06);
-      padding:.85rem 1rem; height:100%;
+      background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      padding: var(--space-3) var(--space-4); height:100%;
     }
     .task-bank-card .task-title { font-weight:700; font-size:.9rem; }
-    .task-bank-card .task-desc  { font-size:.8rem; color:#6b7280; }
+    .task-bank-card .task-desc  { font-size:.8rem; color: var(--color-text-muted); }
 
     /* Category label */
     .cat-pill {
-      font-size:.65rem; font-weight:700; border-radius:50px;
-      padding:.2rem .6rem; display:inline-block;
+      font-size:.65rem; font-weight:700; border-radius: var(--radius-sm);
+      padding: var(--space-1) var(--space-2); display:inline-block;
     }
-    .cat-resume   { background:#ffecd2; color:#b45309; }
-    .cat-linkedin { background:#dbeafe; color:#1d4ed8; }
-    .cat-interview{ background:#fce7f3; color:#9d174d; }
-    .cat-quiz     { background:#ede9fe; color:#5b21b6; }
-    .cat-general  { background:#f3f4f6; color:#374151; }
-    .type-pill { font-size:.65rem; border-radius:50px; padding:.15rem .55rem; }
-    .type-reflection{ background:#ede9fe; color:#5b21b6; }
-    .type-exercise  { background:#d1fae5; color:#065f46; }
-    .type-task      { background:#dbeafe; color:#1e40af; }
+    .cat-resume   { background: var(--color-warning-subtle); color: var(--color-warning); }
+    .cat-linkedin { background: var(--color-info-subtle); color: var(--color-info); }
+    .cat-interview{ background: var(--color-danger-subtle); color: var(--color-danger); }
+    .cat-quiz     { background: var(--color-primary-subtle); color: var(--color-primary); }
+    .cat-general  { background: var(--color-bg-subtle); color: var(--color-text-muted); }
+    .type-pill { font-size:.65rem; border-radius: var(--radius-sm); padding: 2px var(--space-2); }
+    .type-reflection{ background: var(--color-primary-subtle); color: var(--color-primary); }
+    .type-exercise  { background: var(--color-success-subtle); color: var(--color-success); }
+    .type-task      { background: var(--color-info-subtle); color: var(--color-info); }
 
     .section-hdr {
       font-size:.72rem; font-weight:700; text-transform:uppercase;
-      color:#9ca3af; letter-spacing:.5px; margin:.75rem 0 .5rem;
+      color: var(--color-text-muted); letter-spacing:.5px; margin: var(--space-3) 0 var(--space-2);
     }
 
-    .btn-primary-crm { background:#635bff; border-color:#635bff; }
-    .btn-primary-crm:hover { background:#4f46e5; border-color:#4f46e5; }
-    .progress { height:7px; }
+    .btn-primary-crm { background: var(--color-primary); border-color: var(--color-primary); border-radius: var(--radius-md); }
+    .btn-primary-crm:hover { background: var(--color-primary-hover); border-color: var(--color-primary-hover); }
+    .progress { height:7px; background: var(--color-bg-subtle); border-radius: var(--radius-sm); }
+    .progress-bar { background: var(--color-primary); }
 
     /* ── Focus Panel ── */
-    .focus-panel { background:#fff; border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,.06); overflow:hidden; }
-    .focus-header { background:#1a1f36; color:rgba(255,255,255,.7); font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; padding:.5rem 1.25rem; }
+    .focus-panel { background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow:hidden; }
+    .focus-header { background: var(--color-bg-subtle); color: var(--color-text-muted); font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; padding: var(--space-2) var(--space-5); display: flex; align-items: center; gap: var(--space-1); }
     .focus-cols { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; }
-    .focus-col { padding:.85rem 1rem; border-left:1px solid #f0f1f5; }
+    .focus-col { padding: var(--space-3) var(--space-4); border-left:1px solid var(--color-border); }
     .focus-col:last-child { border-left:none; }
-    .focus-col-alert { background:#fffbf0; }
-    .focus-col-title { font-size:.72rem; font-weight:700; color:#374151; margin-bottom:.5rem; }
-    .focus-item { display:flex; justify-content:space-between; align-items:center; gap:.5rem; padding:.25rem 0; border-bottom:1px solid #f5f5f5; text-decoration:none; color:#1a1f36; font-size:.82rem; }
+    .focus-col-alert { background: var(--color-warning-subtle); }
+    .focus-col-title { font-size:.72rem; font-weight:700; color: var(--color-text); margin-bottom: var(--space-2); display: flex; align-items: center; gap: var(--space-1); }
+    .focus-item { display:flex; justify-content:space-between; align-items:center; gap: var(--space-2); padding: var(--space-1) 0; border-bottom:1px solid var(--color-border); text-decoration:none; color: var(--color-text); font-size:.82rem; }
     .focus-item:last-child { border-bottom:none; }
-    .focus-item:hover { color:#635bff; }
+    .focus-item:hover { color: var(--color-primary); }
     .focus-item .fw-semibold { font-size:.82rem; }
     .focus-sub { font-size:.72rem; }
-    .focus-days { font-size:.72rem; font-weight:700; border-radius:50px; padding:.1rem .45rem; background:#f3f4f6; color:#374151; white-space:nowrap; }
-    .focus-days-red { background:#fee2e2; color:#991b1b; }
-    .focus-days-yellow { background:#fef3c7; color:#92400e; }
-    .focus-empty { font-size:.78rem; color:#9ca3af; font-style:italic; }
+    .focus-days { font-size:.72rem; font-weight:700; border-radius: var(--radius-sm); padding: 2px var(--space-2); background: var(--color-bg-subtle); color: var(--color-text-muted); white-space:nowrap; }
+    .focus-days-red { background: var(--color-danger-subtle); color: var(--color-danger); }
+    .focus-days-yellow { background: var(--color-warning-subtle); color: var(--color-warning); }
+    .focus-empty { font-size:.78rem; color: var(--color-text-muted); font-style:italic; display: flex; align-items: center; gap: var(--space-1); }
   </style>
 </head>
 <body>
 
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-admin px-4 py-2">
-    <span class="navbar-brand-text">&#127891; InterviewSync</span>
+    <span class="navbar-brand-text"><i data-lucide="graduation-cap" class="icon"></i> InterviewSync</span>
     <div class="ms-3">
-      <span class="badge" style="background:#635bff; font-size:.65rem;">מנהל</span>
+      <span class="badge" style="background:var(--color-primary); font-size:.65rem;">מנהל</span>
     </div>
     <div class="ms-auto d-flex align-items-center gap-3">
-      <a href="{{ url_for('admin_hub') }}" class="btn btn-outline-light btn-sm">&#8592; לוח הבית</a>
+      <a href="{{ url_for('admin_hub') }}" class="btn btn-outline-light btn-sm"><i data-lucide="arrow-right" class="icon"></i> לוח הבית</a>
       <a href="{{ url_for('admin_submissions') }}" class="btn btn-outline-light btn-sm position-relative">
-        &#128229; הגשות
+        <i data-lucide="inbox" class="icon"></i> הגשות
         {% if new_submissions_count > 0 %}
           <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-danger" style="font-size:.58rem;">{{ new_submissions_count }}</span>
         {% endif %}
       </a>
-      <a href="{{ url_for('billing_dashboard') }}" class="btn btn-outline-light btn-sm">&#128176; חיוב</a>
-      <a href="{{ url_for('services_settings') }}" class="btn btn-outline-light btn-sm">&#128200; מחירון</a>
-      <a href="{{ url_for('meetings_report') }}" target="_blank" class="btn btn-outline-light btn-sm">&#128438; דוח פגישות</a>
+      <a href="{{ url_for('billing_dashboard') }}" class="btn btn-outline-light btn-sm"><i data-lucide="credit-card" class="icon"></i> חיוב</a>
+      <a href="{{ url_for('services_settings') }}" class="btn btn-outline-light btn-sm"><i data-lucide="bar-chart-2" class="icon"></i> מחירון</a>
+      <a href="{{ url_for('meetings_report') }}" target="_blank" class="btn btn-outline-light btn-sm"><i data-lucide="file-text" class="icon"></i> דוח פגישות</a>
       <a href="{{ url_for('admin_schedule') }}" class="btn btn-outline-light btn-sm position-relative">
-        &#128197; לוח
+        <i data-lucide="calendar" class="icon"></i> לוח
         {% if upcoming_count > 0 %}
           <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill bg-warning text-dark" style="font-size:.58rem;">{{ upcoming_count }}</span>
         {% endif %}
@@ -150,13 +195,13 @@
       <div class="col-6 col-sm-3">
         <div class="stat-card">
           <div class="stat-num text-primary">{{ students|length }}</div>
-          <div class="stat-lbl">&#128100; תלמידים</div>
+          <div class="stat-lbl"><i data-lucide="users" class="icon"></i> תלמידים</div>
         </div>
       </div>
       <div class="col-6 col-sm-3">
         <div class="stat-card">
-          <div class="stat-num" style="color:#635bff;">{{ taskbank|length }}</div>
-          <div class="stat-lbl">&#128203; משימות בבנק</div>
+          <div class="stat-num" style="color:var(--color-primary);">{{ taskbank|length }}</div>
+          <div class="stat-lbl"><i data-lucide="clipboard-list" class="icon"></i> משימות בבנק</div>
         </div>
       </div>
       <div class="col-6 col-sm-3">
@@ -165,7 +210,7 @@
           {% set act = namespace(n=0) %}
           {% for s in students %}{% set act.n = act.n + (progress[s.id].total - progress[s.id].done) %}{% endfor %}
           <div class="stat-num text-warning">{{ act.n }}</div>
-          <div class="stat-lbl">&#9889; משימות פעילות</div>
+          <div class="stat-lbl"><i data-lucide="zap" class="icon"></i> משימות פעילות</div>
         </div>
       </div>
       <div class="col-6 col-sm-3">
@@ -173,7 +218,7 @@
           {% set done = namespace(n=0) %}
           {% for s in students %}{% set done.n = done.n + progress[s.id].done %}{% endfor %}
           <div class="stat-num text-success">{{ done.n }}</div>
-          <div class="stat-lbl">&#10003; משימות הושלמו</div>
+          <div class="stat-lbl"><i data-lucide="check-circle" class="icon"></i> משימות הושלמו</div>
         </div>
       </div>
     </div>
@@ -182,12 +227,12 @@
     <ul class="nav nav-pills mb-4 gap-2" id="adminTabs" role="tablist">
       <li class="nav-item">
         <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-students" type="button">
-          &#128100; תלמידים
+          <i data-lucide="users" class="icon"></i> תלמידים
         </button>
       </li>
       <li class="nav-item">
         <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-taskbank" type="button" id="taskbank-tab-btn">
-          &#128203; בנק משימות
+          <i data-lucide="clipboard-list" class="icon"></i> בנק משימות
         </button>
       </li>
     </ul>
@@ -204,10 +249,10 @@
         {% set overdue_tasks = focus.get('overdue_tasks', []) %}
         {% if needs_att or sub_review or pend_meet or overdue_tasks %}
         <div class="focus-panel mb-4">
-          <div class="focus-header">&#9889; פוקוס היום</div>
+          <div class="focus-header"><i data-lucide="zap" class="icon"></i> פוקוס היום</div>
           <div class="focus-cols">
             <div class="focus-col {{ 'focus-col-alert' if needs_att }}">
-              <div class="focus-col-title">&#9888;&#65039; דורשים תשומת לב ({{ needs_att|length }})</div>
+              <div class="focus-col-title"><i data-lucide="alert-triangle" class="icon"></i> דורשים תשומת לב ({{ needs_att|length }})</div>
               {% for s in needs_att[:5] %}
                 <a href="{{ url_for('student_file', sid=s.id) }}" class="focus-item">
                   <span class="fw-semibold">{{ s.name }}</span>
@@ -216,10 +261,10 @@
                   </span>
                 </a>
               {% endfor %}
-              {% if not needs_att %}<div class="focus-empty">&#10003; כולם פעילים</div>{% endif %}
+              {% if not needs_att %}<div class="focus-empty"><i data-lucide="check-circle" class="icon"></i> כולם פעילים</div>{% endif %}
             </div>
             <div class="focus-col">
-              <div class="focus-col-title">&#128229; הגשות לסקירה ({{ sub_review|length }})</div>
+              <div class="focus-col-title"><i data-lucide="inbox" class="icon"></i> הגשות לסקירה ({{ sub_review|length }})</div>
               {% for s in sub_review[:4] %}
                 <a href="{{ url_for('student_file', sid=s.student_id) }}" class="focus-item">
                   <span class="fw-semibold">{{ s.student_name }}</span>
@@ -229,7 +274,7 @@
               {% if not sub_review %}<div class="focus-empty">אין הגשות חדשות</div>{% endif %}
             </div>
             <div class="focus-col">
-              <div class="focus-col-title">&#128276; ממתינות לאישור ({{ pend_meet|length }})</div>
+              <div class="focus-col-title"><i data-lucide="bell" class="icon"></i> ממתינות לאישור ({{ pend_meet|length }})</div>
               {% for m in pend_meet[:4] %}
                 <a href="{{ url_for('admin_schedule') }}" class="focus-item">
                   <span class="fw-semibold">{{ m.student_name }}</span>
@@ -239,14 +284,14 @@
               {% if not pend_meet %}<div class="focus-empty">אין פגישות ממתינות</div>{% endif %}
             </div>
             <div class="focus-col {{ 'focus-col-alert' if overdue_tasks }}">
-              <div class="focus-col-title">&#9201;&#65039; משימות באיחור ({{ overdue_tasks|length }})</div>
+              <div class="focus-col-title"><i data-lucide="clock" class="icon"></i> משימות באיחור ({{ overdue_tasks|length }})</div>
               {% for ot in overdue_tasks[:4] %}
                 <a href="{{ url_for('student_file', sid=ot.student_id) }}" class="focus-item">
                   <span class="fw-semibold">{{ ot.student_name }}</span>
                   <span class="text-muted focus-sub" style="font-size:.7rem;">{{ ot.task_title | truncate(22) }}</span>
                 </a>
               {% endfor %}
-              {% if not overdue_tasks %}<div class="focus-empty">&#10003; אין איחורים</div>{% endif %}
+              {% if not overdue_tasks %}<div class="focus-empty"><i data-lucide="check-circle" class="icon"></i> אין איחורים</div>{% endif %}
             </div>
           </div>
         </div>
@@ -255,12 +300,12 @@
         <!-- Toolbar: search + filters + add student -->
         <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
           <input type="text" id="studentSearch" class="form-control form-control-sm"
-                 style="max-width:200px;" placeholder="&#128269; חיפוש שם...">
+                 style="max-width:200px;" placeholder="חיפוש שם...">
           <select id="filterType" class="form-select form-select-sm" style="max-width:130px;">
             <option value="">כל הסוגים</option>
-            <option value="highschool">🏫 תיכון</option>
-            <option value="college">🎓 סטודנט</option>
-            <option value="career">💼 קריירה</option>
+            <option value="highschool">תיכון</option>
+            <option value="college">סטודנט</option>
+            <option value="career">קריירה</option>
           </select>
           <select id="filterStatus" class="form-select form-select-sm" style="max-width:130px;">
             <option value="">כל הסטטוסים</option>
@@ -276,11 +321,11 @@
           <div class="d-flex gap-2 ms-auto">
             <a href="{{ url_for('admin_new_intake') }}"
                class="btn btn-outline-primary btn-sm fw-semibold">
-              &#128203; סטודנט חדש + שאלון קליטה
+              <i data-lucide="clipboard-list" class="icon"></i> סטודנט חדש + שאלון קליטה
             </a>
             <button class="btn btn-primary-crm text-white btn-sm fw-semibold"
                     data-bs-toggle="modal" data-bs-target="#addStudentModal">
-              &#10133; הוסף מהיר
+              <i data-lucide="plus" class="icon"></i> הוסף מהיר
             </button>
           </div>
         </div>
@@ -304,7 +349,7 @@
                 </tr>
               </thead>
               <tbody>
-                {% set avatar_colors = ['#635bff','#f72585','#4cc9f0','#2d6a4f','#e76f51','#7209b7'] %}
+                {% set avatar_colors = ['#2563eb','#7c3aed','#0891b2','#2f8f5b','#b8860b','#c0392b'] %}
                 {% for s in students %}
                   {% set p    = s.profile %}
                   {% set prog = progress[s.id] %}
@@ -342,11 +387,11 @@
                     </td>
                     <td>
                       {% if p and p.education_level == 'highschool' %}
-                        <span class="badge edu-badge-hs rounded-pill">&#127979; תיכון</span>
+                        <span class="badge edu-badge-hs" style="border-radius:var(--radius-sm);"><i data-lucide="graduation-cap" class="icon"></i> תיכון</span>
                       {% elif p and p.education_level == 'college' %}
-                        <span class="badge edu-badge-col rounded-pill">&#127979; סטודנט</span>
+                        <span class="badge edu-badge-col" style="border-radius:var(--radius-sm);"><i data-lucide="graduation-cap" class="icon"></i> סטודנט</span>
                       {% elif p and p.education_level == 'career' %}
-                        <span class="badge rounded-pill" style="background:#ede9fe;color:#5b21b6;font-size:.7rem;">&#128188; קריירה</span>
+                        <span class="badge" style="background:var(--color-primary-subtle);color:var(--color-primary);font-size:.7rem;border-radius:var(--radius-sm);"><i data-lucide="briefcase" class="icon"></i> קריירה</span>
                       {% else %}
                         <span class="text-muted small">—</span>
                       {% endif %}
@@ -364,24 +409,24 @@
                     <td style="min-width:110px;">
                       <div class="d-flex align-items-center gap-2">
                         <div class="progress flex-grow-1">
-                          <div class="progress-bar" style="background:#635bff; width:{{ prog.pct }}%;"></div>
+                          <div class="progress-bar" style="width:{{ prog.pct }}%;"></div>
                         </div>
                         <span class="text-muted" style="font-size:.72rem; white-space:nowrap;">{{ prog.done }}/{{ prog.total }}</span>
                       </div>
                     </td>
                     <td>
-                      <span class="badge rounded-pill"
-                            style="font-size:.65rem;
-                                   {% if sts == 'active' %}background:#d1fae5;color:#065f46;
-                                   {% elif sts == 'paused' %}background:#fef3c7;color:#92400e;
-                                   {% else %}background:#f3f4f6;color:#374151;{% endif %}">
+                      <span class="badge"
+                            style="font-size:.65rem; border-radius:var(--radius-sm);
+                                   {% if sts == 'active' %}background:var(--color-success-subtle);color:var(--color-success);
+                                   {% elif sts == 'paused' %}background:var(--color-warning-subtle);color:var(--color-warning);
+                                   {% else %}background:var(--color-bg-subtle);color:var(--color-text-muted);{% endif %}">
                         {% if sts == 'active' %}פעיל{% elif sts == 'paused' %}מושהה{% else %}הושלם{% endif %}
                       </span>
                     </td>
                     <td>
                       {% if act_days is not none %}
                         <span style="font-size:.78rem; font-weight:700;
-                                     color:{% if act_days > 7 %}#ef4444{% else %}#10b981{% endif %};">
+                                     color:{% if act_days > 7 %}var(--color-danger){% else %}var(--color-success){% endif %};">
                           {{ act_days }}י׳
                         </span>
                       {% else %}
@@ -391,11 +436,11 @@
                     <td class="d-flex gap-1">
                       <a href="{{ url_for('student_file', sid=s.id) }}"
                          class="btn btn-sm btn-primary-crm text-white fw-semibold">
-                        תיק &#8592;
+                        תיק <i data-lucide="arrow-left" class="icon"></i>
                       </a>
                       <form method="POST" action="{{ url_for('admin_delete_student', sid=s.id) }}"
                             onsubmit="return confirm('למחוק סטודנט זה לצמיתות? לא ניתן לשחזר.')">
-                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1" style="font-size:.7rem;" title="מחק סטודנט">&#128465;</button>
+                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1" style="font-size:.7rem;" title="מחק סטודנט"><i data-lucide="trash-2" class="icon"></i></button>
                       </form>
                     </td>
                   </tr>
@@ -408,15 +453,15 @@
         <!-- Floating bulk action bar -->
         <form method="POST" action="{{ url_for('admin_bulk_status') }}" id="bulkForm">
           <div id="bulkBar" style="display:none; position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%); z-index:1050;
-                                    background:#1a1f36; color:#fff; border-radius:12px; padding:.75rem 1.5rem;
-                                    box-shadow:0 4px 20px rgba(0,0,0,.3); display:none; align-items:center; gap:1rem; white-space:nowrap;">
+                                    background:var(--color-text); color:#fff; border-radius:var(--radius-md); padding:var(--space-3) var(--space-5);
+                                    box-shadow:var(--shadow-md); display:none; align-items:center; gap:1rem; white-space:nowrap;">
             <span id="bulkCount" style="font-size:.88rem; font-weight:600;">0 נבחרו</span>
             <input type="hidden" name="status" id="bulkStatusInput" value="">
             <div id="bulkIds"></div>
-            <button type="submit" class="btn btn-sm fw-semibold" style="background:#10b981;color:#fff;" onclick="setBulkStatus('active')">&#9889; הפעל</button>
-            <button type="submit" class="btn btn-sm fw-semibold" style="background:#f59e0b;color:#fff;" onclick="setBulkStatus('paused')">&#9208;&#65039; השהה</button>
-            <button type="submit" class="btn btn-sm fw-semibold" style="background:#6b7280;color:#fff;" onclick="setBulkStatus('completed')">&#10003; סיים</button>
-            <button type="button" class="btn btn-sm" style="background:transparent;color:#adb5bd;border:1px solid #4a5568;" onclick="clearSelection()">&#10005;</button>
+            <button type="submit" class="btn btn-sm fw-semibold" style="background:var(--color-success);color:#fff;" onclick="setBulkStatus('active')"><i data-lucide="zap" class="icon"></i> הפעל</button>
+            <button type="submit" class="btn btn-sm fw-semibold" style="background:var(--color-warning);color:#fff;" onclick="setBulkStatus('paused')"><i data-lucide="pause" class="icon"></i> השהה</button>
+            <button type="submit" class="btn btn-sm fw-semibold" style="background:var(--color-text-muted);color:#fff;" onclick="setBulkStatus('completed')"><i data-lucide="check" class="icon"></i> סיים</button>
+            <button type="button" class="btn btn-sm" style="background:transparent;color:#adb5bd;border:1px solid var(--color-text-muted);" onclick="clearSelection()"><i data-lucide="x" class="icon"></i></button>
           </div>
         </form>
       </div>
@@ -427,14 +472,14 @@
         <!-- Task bank search -->
         <div class="d-flex align-items-center gap-3 mb-3">
           <input type="text" id="taskSearch" class="form-control form-control-sm"
-                 style="max-width:280px;" placeholder="&#128269; חיפוש בבנק המשימות...">
+                 style="max-width:280px;" placeholder="חיפוש בבנק המשימות...">
           <span class="text-muted small">{{ taskbank|length }} משימות</span>
         </div>
 
         <!-- Add task form -->
-        <div class="card border-0 shadow-sm rounded-3 mb-4" style="background:#fff;">
+        <div class="card-surface mb-4">
           <div class="card-body p-4">
-            <h6 class="fw-bold mb-3">&#10133; הוסף משימה לבנק</h6>
+            <h6 class="fw-bold mb-3"><i data-lucide="plus" class="icon"></i> הוסף משימה לבנק</h6>
             <form method="POST" action="{{ url_for('admin_taskbank') }}" enctype="multipart/form-data">
               <input type="hidden" name="action" value="add">
               <div class="row g-3">
@@ -464,7 +509,7 @@
                   <button type="submit" class="btn btn-primary-crm text-white w-100 fw-semibold">הוסף למאגר</button>
                 </div>
                 <div class="col-12">
-                  <label class="form-label small fw-semibold">&#128206; קובץ עזר (PDF, DOC, תמונה — אופציונלי)</label>
+                  <label class="form-label small fw-semibold"><i data-lucide="paperclip" class="icon"></i> קובץ עזר (PDF, DOC, תמונה — אופציונלי)</label>
                   <input type="file" name="resource_file" class="form-control form-control-sm"
                          accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.txt">
                 </div>
@@ -493,12 +538,12 @@
                       </div>
                       <div class="d-flex gap-1 flex-shrink-0">
                         <button class="btn btn-sm btn-outline-secondary py-0 px-2"
-                                data-bs-toggle="modal" data-bs-target="#editModal{{ t.id }}">&#9998;</button>
+                                data-bs-toggle="modal" data-bs-target="#editModal{{ t.id }}"><i data-lucide="pencil" class="icon"></i></button>
                         <form method="POST" action="{{ url_for('admin_taskbank') }}"
                               onsubmit="return confirm('למחוק משימה זו?')">
                           <input type="hidden" name="action" value="delete">
                           <input type="hidden" name="task_id" value="{{ t.id }}">
-                          <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2">&#10005;</button>
+                          <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2"><i data-lucide="x" class="icon"></i></button>
                         </form>
                       </div>
                     </div>
@@ -551,10 +596,10 @@
                             </div>
                           </div>
                           <div class="mb-1">
-                            <label class="form-label fw-semibold small">&#128206; קובץ עזר</label>
+                            <label class="form-label fw-semibold small"><i data-lucide="paperclip" class="icon"></i> קובץ עזר</label>
                             {% if t.resource_file %}
                               <div class="small text-muted mb-1">
-                                <a href="{{ '/files/' + t.resource_file if t.resource_file else '' }}" target="_blank">קובץ קיים &#8592;</a>
+                                <a href="{{ '/files/' + t.resource_file if t.resource_file else '' }}" target="_blank">קובץ קיים <i data-lucide="arrow-left" class="icon"></i></a>
                                 <label class="ms-2"><input type="checkbox" name="clear_resource" value="1"> מחק קובץ</label>
                               </div>
                             {% endif %}
@@ -589,7 +634,7 @@
       <div class="modal-content">
         <form method="POST" action="{{ url_for('admin_create_student') }}">
           <div class="modal-header">
-            <h6 class="modal-title fw-bold">&#10133; הוסף סטודנט חדש</h6>
+            <h6 class="modal-title fw-bold"><i data-lucide="plus" class="icon"></i> הוסף סטודנט חדש</h6>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
@@ -625,6 +670,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+    if (window.lucide) { lucide.createIcons(); }
     // Init Bootstrap tooltips (risk dots + any data-bs-toggle="tooltip")
     document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {

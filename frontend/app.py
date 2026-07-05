@@ -212,6 +212,7 @@ def index():
     from datetime import timedelta
     _today = _date.today()
     return render_template("index.html",
+        nav_role="student",
         user=me(),
         active=data["active"],
         completed=data["completed"],
@@ -268,6 +269,7 @@ def student_settings():
     r_me = api_get("/api/auth/me")
     data = r_me.json() if r_me.status_code == 200 else {}
     return render_template("student_settings.html",
+        nav_role="student", current_page="settings",
         user=me(),
         profile=data.get("profile", {}),
     )
@@ -282,7 +284,8 @@ def student_schedule():
     r_me     = api_get("/api/auth/me")
     meetings = r.json() if r.status_code == 200 else []
     me_data  = r_me.json() if r_me.status_code == 200 else {}
-    return render_template("student_schedule.html", user=me(), meetings=meetings,
+    return render_template("student_schedule.html", nav_role="student", current_page="schedule",
+                           user=me(), meetings=meetings,
                            profile=me_data.get("profile", {}))
 
 
@@ -348,6 +351,7 @@ def admin_hub():
     r_stu = api_get("/api/students")
     students_count = len(r_stu.json()) if r_stu.status_code == 200 else 0
     return render_template("admin_hub.html",
+        nav_role="hub",
         user=me(),
         students_count=students_count,
         inquiries_new=biz.get("inquiries_new", 0),
@@ -384,6 +388,7 @@ def admin_dashboard():
     new_submissions_count = focus.get("new_submissions_count", 0)
 
     return render_template("admin.html",
+        nav_role="admin", current_page="dashboard",
         user=me(),
         students=students,
         taskbank=taskbank,
@@ -549,6 +554,7 @@ def student_file(sid):
     services     = r_svcs.json()    if r_svcs.status_code    == 200 else []
 
     return render_template("student_file.html",
+        nav_role="admin",
         user=me(),
         student=student,
         profile=student.get("profile", {}),
@@ -584,7 +590,7 @@ def admin_delete_student(sid):
 def admin_submissions():
     r = api_get("/api/submissions")
     submissions = r.json() if r.status_code == 200 else []
-    return render_template("admin_submissions.html", user=me(), submissions=submissions)
+    return render_template("admin_submissions.html", nav_role="admin", current_page="submissions", user=me(), submissions=submissions)
 
 
 @app.route("/admin/private/submissions/<int:at_id>/feedback", methods=["POST"])
@@ -644,6 +650,7 @@ def billing_dashboard():
     r_svcs = api_get("/api/services")
     services = r_svcs.json() if r_svcs.status_code == 200 else []
     return render_template("billing_dashboard.html",
+        nav_role="admin", current_page="billing",
         user=me(), data=data, services=services)
 
 
@@ -700,7 +707,7 @@ def billing_invoice(student_id, month):
 def services_settings():
     r = api_get("/api/services")
     services = r.json() if r.status_code == 200 else []
-    return render_template("services_settings.html", user=me(), services=services)
+    return render_template("services_settings.html", nav_role="admin", current_page="services", user=me(), services=services)
 
 
 @app.route("/admin/private/services", methods=["POST"])

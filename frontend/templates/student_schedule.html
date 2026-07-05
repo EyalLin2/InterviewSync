@@ -7,51 +7,91 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <style>
-    body { font-family: 'Heebo', sans-serif; background: #f0f4ff; }
-    .navbar-student { background: #4361ee; }
-    .navbar-brand-text { font-weight: 800; color: #fff; font-size: 1.2rem; }
+    :root {
+      --color-primary: #2563eb;
+      --color-primary-hover: #1d4ed8;
+      --color-primary-subtle: #eff4ff;
+      --color-text: #1f2430;
+      --color-text-muted: #6b7280;
+      --color-bg: #ffffff;
+      --color-bg-subtle: #f7f8fa;
+      --color-border: #e5e7eb;
+      --color-success: #2f8f5b;
+      --color-success-subtle: #eaf6f0;
+      --color-warning: #b8860b;
+      --color-warning-subtle: #fbf4e3;
+      --color-danger: #c0392b;
+      --color-danger-subtle: #fbeae8;
+      --color-info: #2563eb;
+      --color-info-subtle: #eff4ff;
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+      --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
+    }
+    .icon { width: 1em; height: 1em; vertical-align: -0.125em; stroke-width: 2; }
+    .badge-soft {
+      display: inline-flex; align-items: center; gap: var(--space-1);
+      padding: 2px var(--space-2); border-radius: var(--radius-sm);
+      font-size: 0.78rem; font-weight: 500;
+      background: var(--color-bg-subtle); color: var(--color-text-muted);
+    }
+    .badge-soft-success { background: var(--color-success-subtle); color: var(--color-success); }
+    .badge-soft-warning { background: var(--color-warning-subtle); color: var(--color-warning); }
+    .badge-soft-danger  { background: var(--color-danger-subtle);  color: var(--color-danger); }
+    .badge-soft-info    { background: var(--color-info-subtle);    color: var(--color-info); }
+    body { font-family: 'Heebo', sans-serif; background: var(--color-bg-subtle); }
+    .navbar-student { background: var(--color-primary); }
+    .navbar-brand-text { font-weight: 800; color: #fff; font-size: 1.2rem; display: inline-flex; align-items: center; gap: var(--space-1); }
 
     .meeting-card {
-      background: #fff; border-radius: 14px;
-      box-shadow: 0 2px 12px rgba(67,97,238,.08);
-      padding: 1.25rem 1.5rem; margin-bottom: .75rem;
+      background: var(--color-bg); border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      padding: var(--space-5) var(--space-6); margin-bottom: var(--space-3);
     }
-    .meeting-card.confirmed { border-right: 4px solid #10b981; }
-    .meeting-card.pending   { border-right: 4px solid #f59e0b; }
-    .meeting-card.completed { border-right: 4px solid #6b7280; background: #fafafa; }
+    .meeting-card.confirmed { border-right: 4px solid var(--color-success); }
+    .meeting-card.pending   { border-right: 4px solid var(--color-warning); }
+    .meeting-card.completed { border-right: 4px solid var(--color-text-muted); background: var(--color-bg-subtle); }
 
     .date-block {
-      background: #eef0ff; border-radius: 10px;
-      padding: .5rem .75rem; text-align: center; min-width: 60px;
+      background: var(--color-primary-subtle); border-radius: var(--radius-md);
+      padding: var(--space-2) var(--space-3); text-align: center; min-width: 60px;
     }
-    .meeting-card.completed .date-block { background: #f3f4f6; }
-    .date-day  { font-size: 1.5rem; font-weight: 800; color: #4361ee; line-height: 1; }
-    .meeting-card.completed .date-day { color: #9ca3af; }
-    .date-mon  { font-size: .72rem; color: #6b7280; }
-    .badge-conf { background: #d1fae5; color: #065f46; }
-    .badge-pend { background: #fef3c7; color: #92400e; }
-    .badge-done { background: #e5e7eb; color: #4b5563; }
+    .meeting-card.completed .date-block { background: var(--color-bg-subtle); }
+    .date-day  { font-size: 1.5rem; font-weight: 800; color: var(--color-primary); line-height: 1; }
+    .meeting-card.completed .date-day { color: var(--color-text-muted); }
+    .date-mon  { font-size: .72rem; color: var(--color-text-muted); }
 
     .outcome-box {
-      background: #f0fdf4; border: 1px solid #86efac; border-radius: 10px;
-      padding: .75rem 1rem; margin-top: .75rem; font-size: .84rem;
+      background: var(--color-success-subtle); border: 1px solid var(--color-success); border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4); margin-top: var(--space-3); font-size: .84rem;
     }
     .action-box {
-      background: #eff6ff; border: 1px solid #93c5fd; border-radius: 10px;
-      padding: .75rem 1rem; margin-top: .5rem; font-size: .84rem;
+      background: var(--color-info-subtle); border: 1px solid var(--color-info); border-radius: var(--radius-md);
+      padding: var(--space-3) var(--space-4); margin-top: var(--space-2); font-size: .84rem;
     }
     .section-hdr { font-size: .72rem; font-weight: 700; text-transform: uppercase;
-                   color: #adb5bd; letter-spacing: .5px; margin-bottom: .75rem; margin-top: 1.5rem; }
+                   color: var(--color-text-muted); letter-spacing: .5px; margin-bottom: var(--space-3); margin-top: var(--space-6);
+                   display: flex; align-items: center; gap: var(--space-1); }
+    .section-hdr .icon { width: 14px; height: 14px; }
   </style>
 </head>
 <body>
 
   <nav class="navbar navbar-expand-lg navbar-student px-4 py-2">
-    <span class="navbar-brand-text">&#127891; InterviewSync</span>
+    <span class="navbar-brand-text"><i data-lucide="graduation-cap" class="icon"></i> InterviewSync</span>
     <div class="ms-auto d-flex align-items-center gap-3">
-      <a href="{{ url_for('index') }}" class="btn btn-outline-light btn-sm">&#8592; משימות</a>
-      <a href="{{ url_for('student_settings') }}" class="btn btn-outline-light btn-sm">&#9881;&#65039; הגדרות</a>
+      <a href="{{ url_for('index') }}" class="btn btn-outline-light btn-sm"><i data-lucide="arrow-right" class="icon"></i> משימות</a>
+      <a href="{{ url_for('student_settings') }}" class="btn btn-outline-light btn-sm"><i data-lucide="settings" class="icon"></i> הגדרות</a>
       <span class="text-white-50 small">{{ profile.full_name if profile and profile.full_name else (user.name if user else '') }}</span>
       <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">התנתקות</a>
     </div>
@@ -59,11 +99,11 @@
 
   <div class="container py-4" style="max-width:680px;">
 
-    <h4 class="fw-bold mb-4">&#128197; הפגישות שלי</h4>
+    <h4 class="fw-bold mb-4 d-flex align-items-center gap-2"><i data-lucide="calendar" class="icon"></i> הפגישות שלי</h4>
 
     {% if not meetings %}
       <div class="text-center text-muted py-5">
-        <div style="font-size:3rem;">&#128197;</div>
+        <div><i data-lucide="calendar" class="icon" style="width:3rem;height:3rem;"></i></div>
         <div class="fw-semibold mt-2">אין פגישות מתוכננות</div>
         <div class="small">המנטור שלך יקבע פגישה ותקבל/י הודעה</div>
       </div>
@@ -74,7 +114,7 @@
       {% set past     = meetings | selectattr('status', 'equalto', 'completed') | list %}
 
       {% if upcoming %}
-        <div class="section-hdr">&#128197; פגישות קרובות</div>
+        <div class="section-hdr"><i data-lucide="calendar" class="icon"></i> פגישות קרובות</div>
         {% for m in upcoming %}
           <div class="meeting-card {{ m.status }}">
             <div class="d-flex align-items-center gap-3">
@@ -85,12 +125,12 @@
               <div class="flex-grow-1">
                 <div class="fw-bold">
                   פגישה עם המנטור
-                  <span class="badge {{ 'badge-conf' if m.status == 'confirmed' else 'badge-pend' }} rounded-pill ms-2" style="font-size:.7rem;">
-                    {{ 'מאושר ✓' if m.status == 'confirmed' else 'ממתין לאישורך' }}
+                  <span class="badge-soft {{ 'badge-soft-success' if m.status == 'confirmed' else 'badge-soft-warning' }} ms-2">
+                    {% if m.status == 'confirmed' %}<i data-lucide="check-circle" class="icon"></i> מאושר{% else %}ממתין לאישורך{% endif %}
                   </span>
                 </div>
-                <div class="text-muted small mt-1">
-                  &#9202; {{ m.scheduled_at | dt('%H:%M') }} &nbsp;·&nbsp; {{ m.duration_min }} דקות
+                <div class="text-muted small mt-1 d-flex align-items-center gap-1">
+                  <i data-lucide="clock" class="icon"></i> {{ m.scheduled_at | dt('%H:%M') }} &nbsp;·&nbsp; {{ m.duration_min }} דקות
                 </div>
                 {% if m.notes %}
                   <div class="text-muted small mt-1">{{ m.notes }}</div>
@@ -99,7 +139,7 @@
                   <div class="mt-2">
                     <a href="{{ url_for('meeting_confirm', mid=m.id, token=m.token) }}"
                        class="btn btn-sm btn-success py-0 px-3 fw-semibold" style="font-size:.8rem;">
-                      אשר/י פגישה ✓
+                      <i data-lucide="check-circle" class="icon"></i> אשר/י פגישה
                     </a>
                     <span class="text-muted small me-2">או לחץ/י על הקישור שנשלח ב-WhatsApp</span>
                   </div>
@@ -111,7 +151,7 @@
       {% endif %}
 
       {% if past %}
-        <div class="section-hdr">&#10003; פגישות שהתקיימו</div>
+        <div class="section-hdr"><i data-lucide="check-circle" class="icon"></i> פגישות שהתקיימו</div>
         {% for m in past %}
           <div class="meeting-card completed">
             <div class="d-flex align-items-start gap-3">
@@ -122,10 +162,10 @@
               <div class="flex-grow-1">
                 <div class="fw-bold text-secondary">
                   פגישה עם המנטור
-                  <span class="badge badge-done rounded-pill ms-2" style="font-size:.7rem;">התקיימה ✓</span>
+                  <span class="badge-soft ms-2"><i data-lucide="check-circle" class="icon"></i> התקיימה</span>
                 </div>
-                <div class="text-muted small mt-1">
-                  &#9202; {{ m.scheduled_at | dt('%H:%M') }} &nbsp;·&nbsp; {{ m.duration_min }} דקות
+                <div class="text-muted small mt-1 d-flex align-items-center gap-1">
+                  <i data-lucide="clock" class="icon"></i> {{ m.scheduled_at | dt('%H:%M') }} &nbsp;·&nbsp; {{ m.duration_min }} דקות
                 </div>
                 {% if m.notes %}
                   <div class="text-muted small mt-1">{{ m.notes }}</div>
@@ -133,14 +173,14 @@
 
                 {% if m.outcome_notes %}
                   <div class="outcome-box mt-2">
-                    <div class="fw-semibold mb-1" style="color:#065f46; font-size:.72rem;">&#128221; סיכום פגישה מהמנטור</div>
+                    <div class="fw-semibold mb-1 d-flex align-items-center gap-1" style="color: var(--color-success); font-size:.72rem;"><i data-lucide="file-text" class="icon"></i> סיכום פגישה מהמנטור</div>
                     <div style="white-space: pre-wrap;">{{ m.outcome_notes }}</div>
                   </div>
                 {% endif %}
 
                 {% if m.action_items %}
                   <div class="action-box">
-                    <div class="fw-semibold mb-1" style="color:#1d4ed8; font-size:.72rem;">&#128203; מה הבא — משימות שנקבעו</div>
+                    <div class="fw-semibold mb-1 d-flex align-items-center gap-1" style="color: var(--color-info); font-size:.72rem;"><i data-lucide="list-checks" class="icon"></i> מה הבא — משימות שנקבעו</div>
                     <div style="white-space: pre-wrap;">{{ m.action_items }}</div>
                   </div>
                 {% endif %}
@@ -157,5 +197,6 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>if (window.lucide) { lucide.createIcons(); }</script>
 </body>
 </html>

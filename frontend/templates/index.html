@@ -7,113 +7,168 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <style>
-    body { font-family: 'Heebo', sans-serif; background: #f0f4ff; }
-    .navbar-student { background: #4361ee; }
-    .navbar-brand-text { font-weight: 800; font-size: 1.2rem; color: #fff; }
+    :root {
+      /* Brand */
+      --color-primary: #2563eb;
+      --color-primary-hover: #1d4ed8;
+      --color-primary-subtle: #eff4ff;
 
-    .hero-card { background: linear-gradient(135deg, #4361ee, #7209b7); color: #fff; border-radius: 16px; padding: 1.5rem 2rem; margin-bottom: 2rem; }
-    .hero-greeting { font-size: 1.5rem; font-weight: 700; }
-    .progress { height: 10px; border-radius: 10px; background: rgba(255,255,255,.3); }
-    .progress-bar { background: #fff; border-radius: 10px; }
+      /* Neutrals */
+      --color-text: #1f2430;
+      --color-text-muted: #6b7280;
+      --color-bg: #ffffff;
+      --color-bg-subtle: #f7f8fa;
+      --color-border: #e5e7eb;
 
-    .task-card { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(67,97,238,.08); padding: 1.1rem 1.25rem; margin-bottom: .75rem; }
+      /* Status (muted) */
+      --color-success: #2f8f5b;
+      --color-success-subtle: #eaf6f0;
+      --color-warning: #b8860b;
+      --color-warning-subtle: #fbf4e3;
+      --color-danger: #c0392b;
+      --color-danger-subtle: #fbeae8;
+      --color-info: #2563eb;
+      --color-info-subtle: #eff4ff;
+
+      /* Spacing */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+
+      /* Radius */
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+
+      /* Shadow */
+      --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+      --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
+    }
+
+    body { font-family: 'Heebo', sans-serif; color: var(--color-text); background: var(--color-bg-subtle); }
+    .icon { width: 1em; height: 1em; vertical-align: -0.125em; stroke-width: 2; }
+
+    .badge-soft {
+      display: inline-flex; align-items: center; gap: var(--space-1);
+      padding: 2px var(--space-2); border-radius: var(--radius-sm);
+      font-size: 0.78rem; font-weight: 500;
+      background: var(--color-bg-subtle); color: var(--color-text-muted);
+    }
+    .badge-soft-success { background: var(--color-success-subtle); color: var(--color-success); }
+    .badge-soft-warning { background: var(--color-warning-subtle); color: var(--color-warning); }
+    .badge-soft-danger  { background: var(--color-danger-subtle);  color: var(--color-danger); }
+    .badge-soft-info    { background: var(--color-info-subtle);    color: var(--color-info); }
+
+    .navbar-student { background: var(--color-primary); }
+    .navbar-brand-text { font-weight: 800; font-size: 1.2rem; color: #fff; display: inline-flex; align-items: center; gap: var(--space-2); }
+
+    .hero-card { background: var(--color-primary); color: #fff; border-radius: var(--radius-lg); padding: var(--space-5) var(--space-6); margin-bottom: var(--space-6); }
+    .hero-greeting { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: var(--space-2); }
+    .progress { height: 10px; border-radius: var(--radius-sm); background: rgba(255,255,255,.3); }
+    .progress-bar { background: #fff; border-radius: var(--radius-sm); }
+
+    .task-card { background: var(--color-bg); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: var(--space-4) var(--space-5); margin-bottom: var(--space-3); }
     .task-title { font-weight: 700; font-size: 1rem; }
-    .task-desc  { font-size: .85rem; color: #6c757d; }
-    .task-done  { background: #f0fff4; border-radius: 14px; padding: .8rem 1.25rem; margin-bottom: .5rem; border: 1px solid #c3e6cb; }
-    .task-done .task-title { color: #6c757d; text-decoration: line-through; font-weight: 500; }
+    .task-desc  { font-size: .85rem; color: var(--color-text-muted); }
+    .task-done  { background: var(--color-success-subtle); border-radius: var(--radius-lg); padding: var(--space-3) var(--space-5); margin-bottom: var(--space-2); border: 1px solid var(--color-success-subtle); }
+    .task-done .task-title { color: var(--color-text-muted); text-decoration: line-through; font-weight: 500; }
 
-    .cat-resume   { background: #ffecd2; color: #b45309; }
-    .cat-linkedin { background: #dbeafe; color: #1d4ed8; }
-    .cat-interview{ background: #fce7f3; color: #9d174d; }
-    .cat-quiz     { background: #ede9fe; color: #5b21b6; }
-    .cat-general  { background: #f3f4f6; color: #374151; }
-    .type-reflection{ background: #ede9fe; color: #5b21b6; font-size:.7rem; }
-    .type-exercise  { background: #d1fae5; color: #065f46; font-size:.7rem; }
-    .type-task      { background: #dbeafe; color: #1e40af; font-size:.7rem; }
+    .cat-resume   { background: var(--color-warning-subtle); color: var(--color-warning); }
+    .cat-linkedin { background: var(--color-info-subtle); color: var(--color-info); }
+    .cat-interview{ background: var(--color-danger-subtle); color: var(--color-danger); }
+    .cat-quiz     { background: var(--color-primary-subtle); color: var(--color-primary); }
+    .cat-general  { background: var(--color-bg-subtle); color: var(--color-text-muted); }
+    .type-reflection{ background: var(--color-primary-subtle); color: var(--color-primary); font-size:.7rem; }
+    .type-exercise  { background: var(--color-success-subtle); color: var(--color-success); font-size:.7rem; }
+    .type-task      { background: var(--color-info-subtle); color: var(--color-info); font-size:.7rem; }
 
-    .section-hdr { font-size: .72rem; font-weight: 700; text-transform: uppercase; color: #adb5bd; letter-spacing: .5px; margin-bottom: .75rem; margin-top: 1.5rem; }
+    .section-hdr { font-size: .72rem; font-weight: 700; text-transform: uppercase; color: var(--color-text-muted); letter-spacing: .5px; margin-bottom: var(--space-3); margin-top: var(--space-5); display: flex; align-items: center; gap: var(--space-1); }
 
-    .btn-complete { background: #4361ee; color: #fff; border: none; border-radius: 8px; font-size: .82rem; font-weight: 600; padding: .3rem .9rem; }
-    .btn-complete:hover { background: #3451cc; }
+    .btn-complete { background: var(--color-primary); color: #fff; border: none; border-radius: var(--radius-md); font-size: .82rem; font-weight: 600; padding: .3rem .9rem; display: inline-flex; align-items: center; gap: var(--space-1); }
+    .btn-complete:hover { background: var(--color-primary-hover); }
 
-    .resource-link { background: #f0f4ff; border-radius: 8px; padding: .4rem .75rem; font-size: .8rem; color: #4361ee; text-decoration: none; display: inline-block; }
-    .resource-link:hover { background: #e0e8ff; }
+    .resource-link { background: var(--color-bg-subtle); border-radius: var(--radius-md); padding: .4rem .75rem; font-size: .8rem; color: var(--color-primary); text-decoration: none; display: inline-flex; align-items: center; gap: var(--space-1); }
+    .resource-link:hover { background: var(--color-primary-subtle); }
 
-    .submit-collapse { background: #f8f9ff; border-radius: 10px; padding: 1rem; margin-top: .75rem; border: 1px solid #e0e8ff; }
+    .submit-collapse { background: var(--color-bg-subtle); border-radius: var(--radius-md); padding: var(--space-4); margin-top: var(--space-3); border: 1px solid var(--color-border); }
 
-    .meeting-banner { background: #f0fdf4; border: 1px solid #6ee7b7; border-radius: 12px; padding: .75rem 1rem; margin-bottom: 1rem; font-size: .88rem; }
+    .meeting-banner { background: var(--color-success-subtle); border: 1px solid var(--color-success-subtle); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); margin-bottom: var(--space-4); font-size: .88rem; display: flex; align-items: center; gap: var(--space-2); }
 
     /* ── Q&A Thread ── */
-    .qa-area { background: #f8f9ff; border-radius: 10px; padding: .85rem 1rem; margin-top: .75rem; border: 1px solid #e0e8ff; }
-    .qa-msg { display: flex; gap: .6rem; margin-bottom: .5rem; }
+    .qa-area { background: var(--color-bg-subtle); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); margin-top: var(--space-3); border: 1px solid var(--color-border); }
+    .qa-msg { display: flex; gap: .6rem; margin-bottom: var(--space-2); }
     .qa-msg.student { flex-direction: row-reverse; }
-    .qa-bubble { max-width: 80%; padding: .5rem .75rem; border-radius: 12px; font-size: .83rem; line-height: 1.4; }
-    .qa-bubble.student { background: #4361ee; color: #fff; border-radius: 12px 0 12px 12px; }
-    .qa-bubble.admin   { background: #fff; border: 1px solid #e0e8ff; color: #1a1f36; border-radius: 0 12px 12px 12px; }
+    .qa-bubble { max-width: 80%; padding: .5rem .75rem; border-radius: var(--radius-md); font-size: .83rem; line-height: 1.4; }
+    .qa-bubble.student { background: var(--color-primary); color: #fff; }
+    .qa-bubble.admin   { background: var(--color-bg); border: 1px solid var(--color-border); color: var(--color-text); }
     .qa-bubble .qa-time { font-size: .68rem; opacity: .65; margin-top: .2rem; }
-    .qa-input { display: flex; gap: .5rem; margin-top: .5rem; }
-    .qa-input input { flex-grow: 1; border-radius: 20px; border: 1px solid #d1d5db; padding: .35rem .85rem; font-size: .83rem; font-family: 'Heebo', sans-serif; }
-    .qa-input button { border-radius: 20px; background: #4361ee; color: #fff; border: none; padding: .35rem .9rem; font-size: .82rem; font-family: 'Heebo', sans-serif; }
-    .qa-input button:hover { background: #3451cc; }
-    .qa-toggle { font-size: .75rem; color: #4361ee; cursor: pointer; text-decoration: none; background: none; border: none; padding: 0; }
+    .qa-input { display: flex; gap: var(--space-2); margin-top: var(--space-2); }
+    .qa-input input { flex-grow: 1; border-radius: var(--radius-md); border: 1px solid var(--color-border); padding: .35rem .85rem; font-size: .83rem; font-family: 'Heebo', sans-serif; }
+    .qa-input button { border-radius: var(--radius-md); background: var(--color-primary); color: #fff; border: none; padding: .35rem .9rem; font-size: .82rem; font-family: 'Heebo', sans-serif; }
+    .qa-input button:hover { background: var(--color-primary-hover); }
+    .qa-toggle { font-size: .75rem; color: var(--color-primary); cursor: pointer; text-decoration: none; background: none; border: none; padding: 0; display: inline-flex; align-items: center; gap: var(--space-1); }
     .qa-toggle:hover { text-decoration: underline; }
 
     /* ── Progress Bars ── */
-    .progress-section { background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(67,97,238,.08); padding: 1.25rem 1.5rem; margin-bottom: .75rem; }
+    .progress-section { background: var(--color-bg); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: var(--space-4) var(--space-5); margin-bottom: var(--space-3); }
     .cat-bar-label { display: flex; justify-content: space-between; font-size: .83rem; margin-bottom: .2rem; }
-    .cat-bar { height: 8px; background: #e5e7eb; border-radius: 8px; overflow: hidden; margin-bottom: .6rem; }
-    .cat-bar-fill { height: 100%; border-radius: 8px; background: linear-gradient(90deg, #4361ee, #7209b7); transition: width .4s ease; }
-    .stat-pill { background: #f0f4ff; border-radius: 20px; padding: .35rem .85rem; font-size: .78rem; font-weight: 600; color: #4361ee; display: inline-block; }
-    .stat-pill.warning { background: #fef3c7; color: #92400e; }
-    .stat-pill.success { background: #d1fae5; color: #065f46; }
+    .cat-bar { height: 8px; background: var(--color-bg-subtle); border-radius: var(--radius-sm); overflow: hidden; margin-bottom: var(--space-2); }
+    .cat-bar-fill { height: 100%; border-radius: var(--radius-sm); background: var(--color-primary); transition: width .4s ease; }
+    .stat-pill { background: var(--color-primary-subtle); border-radius: var(--radius-sm); padding: .35rem .85rem; font-size: .78rem; font-weight: 600; color: var(--color-primary); display: inline-block; }
+    .stat-pill.warning { background: var(--color-warning-subtle); color: var(--color-warning); }
+    .stat-pill.success { background: var(--color-success-subtle); color: var(--color-success); }
 
     /* ── AI Chat ── */
     .chat-bubble-btn {
       position: fixed; bottom: 1.5rem; left: 1.5rem; width: 54px; height: 54px;
-      border-radius: 50%; background: linear-gradient(135deg,#4361ee,#7209b7);
+      border-radius: var(--radius-lg); background: var(--color-primary);
       border: none; color: #fff; font-size: 1.4rem;
-      box-shadow: 0 4px 18px rgba(67,97,238,.4);
+      box-shadow: var(--shadow-md);
       cursor: pointer; z-index: 900; display: flex; align-items: center; justify-content: center;
       transition: transform .15s;
     }
     .chat-bubble-btn:hover { transform: scale(1.08); }
     .chat-unread {
       position: absolute; top: 4px; right: 4px; width: 16px; height: 16px;
-      background: #ef4444; border-radius: 50%; font-size: .62rem; color: #fff;
+      background: var(--color-danger); border-radius: 50%; font-size: .62rem; color: #fff;
       display: flex; align-items: center; justify-content: center; font-weight: 700;
     }
     .chat-panel {
       position: fixed; bottom: 5rem; left: 1.5rem; width: 320px; max-height: 460px;
-      background: #fff; border-radius: 18px; box-shadow: 0 8px 36px rgba(0,0,0,.18);
+      background: var(--color-bg); border-radius: var(--radius-lg); box-shadow: var(--shadow-md);
       display: none; flex-direction: column; z-index: 910; overflow: hidden;
     }
     .chat-panel.open { display: flex; }
-    .chat-panel-header { background: linear-gradient(135deg,#4361ee,#7209b7); color:#fff; padding:.8rem 1rem; display:flex; align-items:center; justify-content:space-between; }
-    .chat-panel-header .title { font-weight: 700; font-size:.88rem; }
+    .chat-panel-header { background: var(--color-primary); color:#fff; padding: var(--space-3) var(--space-4); display:flex; align-items:center; justify-content:space-between; }
+    .chat-panel-header .title { font-weight: 700; font-size:.88rem; display: flex; align-items: center; gap: var(--space-1); }
     .chat-panel-header .subtitle { font-size:.7rem; opacity:.8; }
-    .chat-panel-close { background: rgba(255,255,255,.2); border: none; color: #fff; border-radius: 6px; padding:.1rem .45rem; cursor:pointer; font-size:.85rem; }
-    .chat-panel-msgs { flex: 1; overflow-y: auto; padding: .75rem 1rem; display: flex; flex-direction: column; gap: .5rem; }
-    .chat-msg { max-width: 82%; padding: .5rem .75rem; border-radius: 12px; font-size: .82rem; line-height: 1.45; }
-    .chat-msg.user   { background: #4361ee; color: #fff; align-self: flex-end; border-radius: 12px 0 12px 12px; }
-    .chat-msg.ai     { background: #f0f4ff; color: #1a1f36; align-self: flex-start; border-radius: 0 12px 12px 12px; }
-    .chat-msg.typing { background: #f0f4ff; color: #9ca3af; font-style: italic; }
-    .chat-panel-input { display: flex; gap: .4rem; padding: .65rem .85rem; border-top: 1px solid #f0f0f0; }
-    .chat-panel-input input { flex:1; border: 1px solid #e5e7eb; border-radius: 20px; padding: .35rem .85rem; font-size: .82rem; font-family:'Heebo',sans-serif; }
-    .chat-panel-input button { background: #4361ee; color:#fff; border:none; border-radius: 20px; padding: .35rem .9rem; font-size: .82rem; font-family:'Heebo',sans-serif; cursor:pointer; }
-    .chat-panel-input button:hover { background: #3451cc; }
-    .chat-quick-chips { display: flex; flex-wrap: wrap; gap: .35rem; padding: .4rem .85rem; border-bottom: 1px solid #f0f0f0; }
-    .chat-chip { background: #eef0ff; border: none; border-radius: 20px; padding: .22rem .65rem; font-size: .72rem; color: #4361ee; cursor: pointer; font-family:'Heebo',sans-serif; }
-    .chat-chip:hover { background: #dde1ff; }
+    .chat-panel-close { background: rgba(255,255,255,.2); border: none; color: #fff; border-radius: var(--radius-sm); padding:.1rem .45rem; cursor:pointer; font-size:.85rem; }
+    .chat-panel-msgs { flex: 1; overflow-y: auto; padding: var(--space-3) var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); }
+    .chat-msg { max-width: 82%; padding: .5rem .75rem; border-radius: var(--radius-md); font-size: .82rem; line-height: 1.45; }
+    .chat-msg.user   { background: var(--color-primary); color: #fff; align-self: flex-end; }
+    .chat-msg.ai     { background: var(--color-bg-subtle); color: var(--color-text); align-self: flex-start; }
+    .chat-msg.typing { background: var(--color-bg-subtle); color: var(--color-text-muted); font-style: italic; }
+    .chat-panel-input { display: flex; gap: var(--space-2); padding: .65rem .85rem; border-top: 1px solid var(--color-border); }
+    .chat-panel-input input { flex:1; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: .35rem .85rem; font-size: .82rem; font-family:'Heebo',sans-serif; }
+    .chat-panel-input button { background: var(--color-primary); color:#fff; border:none; border-radius: var(--radius-md); padding: .35rem .9rem; font-size: .82rem; font-family:'Heebo',sans-serif; cursor:pointer; }
+    .chat-panel-input button:hover { background: var(--color-primary-hover); }
+    .chat-quick-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); padding: .4rem .85rem; border-bottom: 1px solid var(--color-border); }
+    .chat-chip { background: var(--color-primary-subtle); border: none; border-radius: var(--radius-sm); padding: .22rem .65rem; font-size: .72rem; color: var(--color-primary); cursor: pointer; font-family:'Heebo',sans-serif; }
+    .chat-chip:hover { background: var(--color-bg-subtle); }
   </style>
 </head>
 <body>
 
   <nav class="navbar navbar-expand-lg navbar-student px-4 py-2">
-    <span class="navbar-brand-text">&#127891; InterviewSync</span>
+    <span class="navbar-brand-text"><i data-lucide="graduation-cap" class="icon"></i> InterviewSync</span>
     <div class="ms-auto d-flex align-items-center gap-3">
-      <a href="{{ url_for('student_schedule') }}" class="btn btn-outline-light btn-sm">&#128197; פגישות</a>
-      <a href="{{ url_for('student_settings') }}" class="btn btn-outline-light btn-sm">&#9881;&#65039; הגדרות</a>
+      <a href="{{ url_for('student_schedule') }}" class="btn btn-outline-light btn-sm"><i data-lucide="calendar" class="icon"></i> פגישות</a>
+      <a href="{{ url_for('student_settings') }}" class="btn btn-outline-light btn-sm"><i data-lucide="settings" class="icon"></i> הגדרות</a>
       <span class="text-white-50 small">שלום, <strong class="text-white">{{ profile.full_name.split()[0] if profile and profile.full_name else user.name }}</strong></span>
       <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">התנתקות</a>
     </div>
@@ -133,12 +188,12 @@
     {% for m in upcoming_meetings %}
       {% if loop.first %}
         <div class="meeting-banner">
-          &#128197; <strong>פגישה קרובה:</strong>
+          <i data-lucide="calendar" class="icon"></i> <strong>פגישה קרובה:</strong>
           {{ m.scheduled_at | dt('%d/%m/%Y בשעה %H:%M') }}
           {% if m.status == 'pending' %}
-            — <a href="{{ url_for('student_schedule') }}" style="color:#065f46;">אשר/י &#8592;</a>
+            — <a href="{{ url_for('student_schedule') }}" style="color:var(--color-success);">אשר/י &#8592;</a>
           {% else %}
-            <span class="badge rounded-pill ms-1" style="background:#d1fae5; color:#065f46; font-size:.7rem;">מאושר ✓</span>
+            <span class="badge-soft badge-soft-success ms-1"><i data-lucide="check" class="icon"></i> מאושר</span>
           {% endif %}
         </div>
       {% endif %}
@@ -146,7 +201,7 @@
 
     <!-- Hero / Progress -->
     <div class="hero-card">
-      <div class="hero-greeting">שלום{% if profile and profile.full_name %}, {{ profile.full_name.split()[0] }}{% endif %} 👋</div>
+      <div class="hero-greeting">שלום{% if profile and profile.full_name %}, {{ profile.full_name.split()[0] }}{% endif %} <i data-lucide="hand" class="icon"></i></div>
       <div class="mb-3" style="opacity:.85; font-size:.9rem;">
         {% if total == 0 %}ממתין/ה למשימות מהמנטור שלך
         {% else %}השלמת {{ completed|length }} מתוך {{ total }} משימות{% endif %}
@@ -163,13 +218,15 @@
     {% set type_label = {'reflection':'שאלון עצמי','exercise':'תרגיל','task':'משימה'} %}
 
     <!-- Active Tasks -->
-    <div class="section-hdr">&#9889; משימות פעילות ({{ active|length }})</div>
+    <div class="section-hdr"><i data-lucide="clipboard-list" class="icon"></i> משימות פעילות ({{ active|length }})</div>
 
     {% if not active %}
       <div class="text-center text-muted py-4">
-        <div style="font-size:3rem;">{% if total == 0 %}&#128274;{% else %}&#127881;{% endif %}</div>
+        <div style="font-size:2.5rem; color: var(--color-text-muted);">
+          {% if total == 0 %}<i data-lucide="lock" class="icon"></i>{% else %}<i data-lucide="party-popper" class="icon"></i>{% endif %}
+        </div>
         <div class="fw-semibold mt-1">{% if total == 0 %}אין משימות עדיין{% else %}כל המשימות הושלמו!{% endif %}</div>
-        <div class="small">{% if total == 0 %}המנטור שלך יוסיף בקרוב משימות{% else %}עבודה מצוינת &#127775;{% endif %}</div>
+        <div class="small">{% if total == 0 %}המנטור שלך יוסיף בקרוב משימות{% else %}עבודה מצוינת{% endif %}</div>
       </div>
     {% else %}
       {% for at in active %}
@@ -178,19 +235,19 @@
           <div class="d-flex align-items-start gap-3">
             <div class="flex-grow-1">
               <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
-                <span class="badge {{ cat_class.get(t.category,'cat-general') }} rounded-pill">{{ t.category }}</span>
-                <span class="badge {{ type_class.get(t.task_type,'type-task') }} rounded-pill">{{ type_label.get(t.task_type,t.task_type) }}</span>
+                <span class="badge {{ cat_class.get(t.category,'cat-general') }}">{{ t.category }}</span>
+                <span class="badge {{ type_class.get(t.task_type,'type-task') }}">{{ type_label.get(t.task_type,t.task_type) }}</span>
                 {% if at.due_date %}
                   {% if at.due_date < today %}
-                    <span class="badge rounded-pill" style="background:#fee2e2;color:#991b1b;font-size:.68rem;">באיחור ⚠</span>
+                    <span class="badge-soft badge-soft-danger"><i data-lucide="alert-triangle" class="icon"></i> באיחור</span>
                   {% elif at.due_date <= near_due %}
-                    <span class="badge rounded-pill" style="background:#fef3c7;color:#92400e;font-size:.68rem;">עד {{ at.due_date[8:] }}/{{ at.due_date[5:7] }}</span>
+                    <span class="badge-soft badge-soft-warning">עד {{ at.due_date[8:] }}/{{ at.due_date[5:7] }}</span>
                   {% else %}
-                    <span class="badge rounded-pill" style="background:#f3f4f6;color:#6b7280;font-size:.68rem;">עד {{ at.due_date[8:] }}/{{ at.due_date[5:7] }}</span>
+                    <span class="badge-soft">עד {{ at.due_date[8:] }}/{{ at.due_date[5:7] }}</span>
                   {% endif %}
                 {% endif %}
                 {% if at.has_admin_reply %}
-                  <span class="badge rounded-pill" style="background:#fef9c3;color:#854d0e;font-size:.68rem;">&#128172; תשובה חדשה מהמנטור</span>
+                  <span class="badge-soft badge-soft-warning"><i data-lucide="message-circle" class="icon"></i> תשובה חדשה מהמנטור</span>
                 {% endif %}
               </div>
               <div class="task-title">{{ t.title }}</div>
@@ -198,7 +255,7 @@
               {% if t.resource_file %}
                 <div class="mt-2">
                   <a href="{{ '/files/' + t.resource_file if t.resource_file else '' }}" target="_blank" class="resource-link">
-                    &#128206; פתח חומר עזר מהמנטור
+                    <i data-lucide="paperclip" class="icon"></i> פתח חומר עזר מהמנטור
                   </a>
                 </div>
               {% endif %}
@@ -208,11 +265,11 @@
               <button class="btn-complete"
                       data-bs-toggle="collapse"
                       data-bs-target="#submit-{{ at.task_id }}">
-                סיימתי ✓
+                <i data-lucide="check" class="icon"></i> סיימתי
               </button>
               <button class="qa-toggle mt-1"
                       onclick="toggleQA({{ at.task_id }}, this)">
-                &#128172; {% if at.comment_count > 0 %}{{ at.comment_count }} הודעות{% else %}שאל/י שאלה{% endif %}
+                <i data-lucide="message-circle" class="icon"></i> <span class="qa-toggle-label">{% if at.comment_count > 0 %}{{ at.comment_count }} הודעות{% else %}שאל/י שאלה{% endif %}</span>
               </button>
             </div>
           </div>
@@ -232,11 +289,11 @@
                             placeholder="{{ 'שתף/י את מחשבותיך, תובנות, ומה למדת...' if t.task_type == 'reflection' else 'מה עשית? מה למדת?' }}"></textarea>
                 </div>
                 <div class="mb-3">
-                  <label class="form-label fw-semibold small">&#128206; צרף/י קובץ (PDF, DOC, תמונה — עד 5MB)</label>
+                  <label class="form-label fw-semibold small"><i data-lucide="paperclip" class="icon"></i> צרף/י קובץ (PDF, DOC, תמונה — עד 5MB)</label>
                   <input type="file" name="submission_file" class="form-control form-control-sm"
                          accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.txt">
                 </div>
-                <button type="submit" class="btn btn-success btn-sm fw-semibold px-4">&#10003; אשר/י הגשה</button>
+                <button type="submit" class="btn btn-success btn-sm fw-semibold px-4"><i data-lucide="check" class="icon"></i> אשר/י הגשה</button>
                 <button type="button" class="btn btn-outline-secondary btn-sm ms-2"
                         data-bs-toggle="collapse" data-bs-target="#submit-{{ at.task_id }}">ביטול</button>
               </form>
@@ -259,30 +316,30 @@
 
     <!-- Completed Tasks -->
     {% if completed %}
-      <div class="section-hdr">&#10003; משימות שהושלמו ({{ completed|length }})</div>
+      <div class="section-hdr"><i data-lucide="check-circle" class="icon"></i> משימות שהושלמו ({{ completed|length }})</div>
       {% for at in completed %}
         {% set t = at.task %}
         {% set has_new_feedback = at.feedback and not at.feedback_seen %}
         <div class="task-done d-flex align-items-start gap-3"
-             style="{{ 'border-right: 3px solid #f59e0b; padding-right:.75rem;' if has_new_feedback else '' }}">
-          <span class="text-success fw-bold fs-5 flex-shrink-0">&#10003;</span>
+             style="{{ 'border-right: 3px solid var(--color-warning); padding-right:.75rem;' if has_new_feedback else '' }}">
+          <span class="text-success flex-shrink-0"><i data-lucide="check-circle" class="icon" style="width:1.25em;height:1.25em;"></i></span>
           <div class="flex-grow-1">
             <div class="d-flex align-items-center gap-2">
               <div class="task-title">{{ t.title }}</div>
               {% if has_new_feedback %}
-                <span class="badge bg-warning text-dark" style="font-size:.68rem;">פידבק חדש! &#9660;</span>
+                <span class="badge-soft badge-soft-warning">פידבק חדש!</span>
               {% endif %}
             </div>
             <div class="text-muted" style="font-size:.75rem;">הושלם {{ at.completed_at | dt if at.completed_at else '' }}</div>
             {% if at.submission_file %}
               <a href="{{ '/files/' + at.submission_file if at.submission_file else '' }}" target="_blank"
-                 class="resource-link mt-1" style="font-size:.75rem;">&#128206; קובץ שהגשת</a>
+                 class="resource-link mt-1" style="font-size:.75rem;"><i data-lucide="paperclip" class="icon"></i> קובץ שהגשת</a>
             {% endif %}
             {% if at.feedback %}
-              <div class="mt-2 p-2 rounded-3"
-                   style="background:#fffbeb; border:1px solid #fde68a; font-size:.8rem;"
+              <div class="mt-2 p-2"
+                   style="background:var(--color-warning-subtle); border:1px solid var(--color-warning-subtle); border-radius: var(--radius-md); font-size:.8rem;"
                    {% if has_new_feedback %}data-feedback-seen="{{ url_for('task_feedback_seen', tid=at.task_id) }}"{% endif %}>
-                <div class="fw-semibold text-warning-emphasis mb-1" style="font-size:.72rem;">&#128172; פידבק מהמנטור</div>
+                <div class="fw-semibold mb-1" style="font-size:.72rem; color: var(--color-warning);"><i data-lucide="message-circle" class="icon"></i> פידבק מהמנטור</div>
                 {{ at.feedback }}
               </div>
             {% else %}
@@ -294,14 +351,14 @@
     {% endif %}
 
     <!-- Progress Section -->
-    <div class="section-hdr" id="progressHdr" style="display:none;">&#128200; ההתקדמות שלי</div>
+    <div class="section-hdr" id="progressHdr" style="display:none;"><i data-lucide="bar-chart-2" class="icon"></i> ההתקדמות שלי</div>
     <div class="progress-section" id="progressSection" style="display:none;">
       <div class="d-flex gap-2 flex-wrap mb-3" id="progressStats"></div>
       <div id="progressCats"></div>
     </div>
     <div class="text-center mt-3 mb-4">
       <button class="btn btn-outline-primary btn-sm fw-semibold px-4" onclick="loadProgress()">
-        &#128200; הצג את ההתקדמות שלי
+        <i data-lucide="bar-chart-2" class="icon"></i> הצג את ההתקדמות שלי
       </button>
     </div>
 
@@ -309,19 +366,19 @@
 
   <!-- AI Chat Widget -->
   <button class="chat-bubble-btn" onclick="toggleChat()" title="AI עוזר אישי">
-    &#129302;
+    <i data-lucide="sparkles" class="icon" style="width:1.4rem;height:1.4rem;"></i>
     <span class="chat-unread" id="chatUnread" style="display:none;">!</span>
   </button>
 
   <div class="chat-panel" id="chatPanel">
     <div class="chat-panel-header">
       <div>
-        <div class="title">&#129302; עוזר AI אישי</div>
+        <div class="title"><i data-lucide="sparkles" class="icon"></i> עוזר AI אישי</div>
         <div class="subtitle">שאל/י אותי על התקדמות, משימות, וצעדים הבאים</div>
       </div>
       <div class="d-flex gap-1">
-        <button class="chat-panel-close" onclick="clearChat()" title="אפס שיחה">&#128260;</button>
-        <button class="chat-panel-close" onclick="toggleChat()">&#10005;</button>
+        <button class="chat-panel-close" onclick="clearChat()" title="אפס שיחה"><i data-lucide="rotate-ccw" class="icon"></i></button>
+        <button class="chat-panel-close" onclick="toggleChat()"><i data-lucide="x" class="icon"></i></button>
       </div>
     </div>
     <div class="chat-quick-chips">
@@ -359,7 +416,7 @@
       div.innerHTML = `
         <div class="qa-bubble ${role}">
           <div>${msg}</div>
-          <div class="qa-time">${role === 'admin' ? '👨‍💼 מנטור' : 'אני'} · ${fmtTime(time)}</div>
+          <div class="qa-time">${role === 'admin' ? 'מנטור' : 'אני'} · ${fmtTime(time)}</div>
         </div>`;
       box.appendChild(div);
       box.scrollTop = box.scrollHeight;
@@ -373,11 +430,12 @@
           await loadQA(tid);
           qaLoaded[tid] = true;
         }
-        btn.textContent = '✕ סגור שיחה';
+        btn.innerHTML = '<i data-lucide="x" class="icon"></i> <span class="qa-toggle-label">סגור שיחה</span>';
       } else {
         area.style.display = 'none';
-        btn.textContent = '💬 שאל/י שאלה';
+        btn.innerHTML = '<i data-lucide="message-circle" class="icon"></i> <span class="qa-toggle-label">שאל/י שאלה</span>';
       }
+      if (window.lucide) lucide.createIcons();
     }
 
     async function loadQA(tid) {
@@ -427,11 +485,12 @@
       const d = await r.json();
       stats.innerHTML = `
         <span class="stat-pill">${d.done}/${d.total} משימות הושלמו</span>
-        ${d.overdue > 0 ? `<span class="stat-pill warning">${d.overdue} באיחור ⚠</span>` : ''}
-        ${d.recent_done > 0 ? `<span class="stat-pill success">${d.recent_done} הושלמו ב-14 יום 🔥</span>` : ''}
+        ${d.overdue > 0 ? `<span class="stat-pill warning"><i data-lucide="alert-triangle" class="icon"></i> ${d.overdue} באיחור</span>` : ''}
+        ${d.recent_done > 0 ? `<span class="stat-pill success">${d.recent_done} הושלמו ב-14 יום</span>` : ''}
         ${d.meetings_done > 0 ? `<span class="stat-pill">${d.meetings_done} פגישות הושלמו</span>` : ''}
         ${d.days_in_process != null ? `<span class="stat-pill">${d.days_in_process} ימים בתהליך</span>` : ''}
       `;
+      if (window.lucide) lucide.createIcons();
       cats.innerHTML = '';
       (d.categories || []).sort((a,b) => b.total-a.total).forEach(c => {
         cats.innerHTML += `
@@ -452,7 +511,7 @@
       document.getElementById('chatPanel').classList.toggle('open', chatOpen);
       document.getElementById('chatUnread').style.display = 'none';
       if (chatOpen && !chatHistory.length) {
-        addBotMsg('שלום! אני ה-AI האישי שלך. שאל/י אותי כל שאלה על המשימות, ההתקדמות, או מה לעשות הלאה 💡');
+        addBotMsg('שלום! אני ה-AI האישי שלך. שאל/י אותי כל שאלה על המשימות, ההתקדמות, או מה לעשות הלאה.');
       }
     }
 
@@ -510,6 +569,9 @@
       document.getElementById('chatInput').value = text;
       sendChat();
     }
+  </script>
+  <script>
+    if (window.lucide) { lucide.createIcons(); }
   </script>
 </body>
 </html>

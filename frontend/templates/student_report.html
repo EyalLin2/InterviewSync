@@ -6,48 +6,83 @@
   <title>דוח תלמיד — {{ profile.full_name or student.username }}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <style>
-    body { font-family: 'Heebo', sans-serif; background: #fff; color: #1a1f36; max-width: 800px; margin: 0 auto; padding: 2rem; }
-    .print-btn { background: #635bff; color: #fff; border: none; border-radius: 8px; padding: .5rem 1.25rem; font-size: .9rem; font-weight: 700; cursor: pointer; margin-bottom: 1.5rem; }
-    h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: .25rem; }
-    .sub { color: #6b7280; font-size: .85rem; margin-bottom: 1.5rem; }
-    .section { border-top: 2px solid #e5e7eb; padding-top: 1rem; margin-top: 1rem; }
-    .section h2 { font-size: 1rem; font-weight: 700; color: #635bff; margin-bottom: .75rem; }
-    .field-row { display: flex; gap: 2rem; flex-wrap: wrap; margin-bottom: .75rem; }
+    :root {
+      --color-primary: #2563eb;
+      --color-primary-hover: #1d4ed8;
+      --color-primary-subtle: #eff4ff;
+      --color-text: #1f2430;
+      --color-text-muted: #6b7280;
+      --color-bg: #ffffff;
+      --color-bg-subtle: #f7f8fa;
+      --color-border: #e5e7eb;
+      --color-success: #2f8f5b;
+      --color-success-subtle: #eaf6f0;
+      --color-warning: #b8860b;
+      --color-warning-subtle: #fbf4e3;
+      --color-danger: #c0392b;
+      --color-danger-subtle: #fbeae8;
+      --color-info: #2563eb;
+      --color-info-subtle: #eff4ff;
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+      --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
+    }
+    .icon { width: 1em; height: 1em; vertical-align: -0.125em; stroke-width: 2; }
+    body { font-family: 'Heebo', sans-serif; background: var(--color-bg); color: var(--color-text); max-width: 800px; margin: 0 auto; padding: var(--space-6); }
+    .print-btn { background: var(--color-primary); color: #fff; border: none; border-radius: var(--radius-md); padding: var(--space-2) var(--space-4); font-size: .9rem; font-weight: 700; cursor: pointer; margin-bottom: var(--space-6); display: inline-flex; align-items: center; gap: var(--space-2); }
+    .print-btn:hover { background: var(--color-primary-hover); }
+    .back-btn { background: var(--color-bg-subtle); color: var(--color-text-muted); border: none; border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); font-size: .85rem; font-weight: 600; cursor: pointer; margin-inline-end: var(--space-2); text-decoration: none; display: inline-flex; align-items: center; gap: var(--space-1); }
+    h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: var(--space-1); }
+    .sub { color: var(--color-text-muted); font-size: .85rem; margin-bottom: var(--space-6); }
+    .section { border-top: 2px solid var(--color-border); padding-top: var(--space-4); margin-top: var(--space-4); }
+    .section h2 { font-size: 1rem; font-weight: 700; color: var(--color-primary); margin-bottom: var(--space-3); display: flex; align-items: center; gap: var(--space-2); }
+    .field-row { display: flex; gap: var(--space-6); flex-wrap: wrap; margin-bottom: var(--space-3); }
     .field { flex: 1; min-width: 160px; }
-    .field-lbl { font-size: .68rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .3px; }
+    .field-lbl { font-size: .68rem; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: .3px; }
     .field-val { font-size: .88rem; margin-top: 2px; }
-    .strategy-box { background: #f8f7ff; border-right: 4px solid #635bff; border-radius: 8px 0 0 8px; padding: .75rem 1rem; font-size: .85rem; white-space: pre-wrap; line-height: 1.7; }
-    .task-item { padding: .4rem 0; border-bottom: 1px solid #f3f4f6; font-size: .85rem; display: flex; gap: .75rem; align-items: flex-start; }
+    .strategy-box { background: var(--color-bg-subtle); border-right: 4px solid var(--color-primary); border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); font-size: .85rem; white-space: pre-wrap; line-height: 1.7; }
+    .task-item { padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border); font-size: .85rem; display: flex; gap: var(--space-3); align-items: flex-start; }
     .task-item:last-child { border-bottom: none; }
-    .cat { font-size: .65rem; font-weight: 700; border-radius: 50px; padding: .1rem .45rem; background: #f3f4f6; color: #374151; flex-shrink: 0; }
-    .note-entry { background: #f8f9ff; border-radius: 6px; padding: .4rem .65rem; margin-bottom: .35rem; font-size: .83rem; }
-    .note-ts { font-size: .68rem; color: #9ca3af; }
-    .resume-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: .75rem 1rem; font-size: .83rem; white-space: pre-wrap; line-height: 1.6; }
-    .badge-done { background: #d1fae5; color: #065f46; padding: .1rem .4rem; border-radius: 4px; font-size: .72rem; }
-    .sub-preview { background: #eff6ff; border-right: 2px solid #635bff; border-radius: 4px 0 0 4px; padding: .25rem .5rem; font-size: .78rem; color: #374151; margin-top: .25rem; }
+    .cat { font-size: .65rem; font-weight: 700; border-radius: var(--radius-sm); padding: .1rem var(--space-2); background: var(--color-bg-subtle); color: var(--color-text); flex-shrink: 0; }
+    .note-entry { background: var(--color-bg-subtle); border-radius: var(--radius-sm); padding: var(--space-2) var(--space-3); margin-bottom: var(--space-2); font-size: .83rem; }
+    .note-ts { font-size: .68rem; color: var(--color-text-muted); }
+    .resume-box { background: var(--color-bg-subtle); border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: var(--space-3) var(--space-4); font-size: .83rem; white-space: pre-wrap; line-height: 1.6; }
+    .badge-done { background: var(--color-success-subtle); color: var(--color-success); padding: .1rem var(--space-2); border-radius: var(--radius-sm); font-size: .72rem; }
+    .sub-preview { background: var(--color-primary-subtle); border-right: 2px solid var(--color-primary); border-radius: var(--radius-sm); padding: var(--space-1) var(--space-2); font-size: .78rem; color: var(--color-text); margin-top: var(--space-1); }
 
     @media print {
       .print-btn { display: none; }
-      body { padding: 1rem; }
+      .back-btn { display: none; }
+      body { padding: var(--space-4); }
       .section { break-inside: avoid; }
     }
   </style>
 </head>
 <body>
 
-  <button class="print-btn" onclick="window.print()">&#128424;&#65039; הדפס / שמור כ-PDF</button>
+  <a href="javascript:history.back()" class="back-btn"><i data-lucide="arrow-right" class="icon"></i> חזרה</a>
+  <button class="print-btn" onclick="window.print()"><i data-lucide="printer" class="icon"></i> הדפס / שמור כ-PDF</button>
 
   <h1>{{ profile.full_name or student.username }}</h1>
   <div class="sub">
     @{{ student.username }}
-    {% if profile.education_level == 'highschool' %}· 🏫 תיכון{% elif profile.education_level == 'college' %}· 🎓 סטודנט{% elif profile.education_level == 'career' %}· 💼 הכוונה תעסוקתית{% endif %}
+    {% if profile.education_level == 'highschool' %}· <i data-lucide="school" class="icon"></i> תיכון{% elif profile.education_level == 'college' %}· <i data-lucide="graduation-cap" class="icon"></i> סטודנט{% elif profile.education_level == 'career' %}· <i data-lucide="briefcase" class="icon"></i> הכוונה תעסוקתית{% endif %}
     · דוח הופק {{ now_date | dt }}
   </div>
 
   <!-- Profile -->
   <div class="section">
-    <h2>&#128100; פרטים אישיים ורקע</h2>
+    <h2><i data-lucide="user" class="icon"></i> פרטים אישיים ורקע</h2>
     <div class="field-row">
       {% if profile.email %}<div class="field"><div class="field-lbl">אימייל</div><div class="field-val">{{ profile.email }}</div></div>{% endif %}
       {% if profile.phone %}<div class="field"><div class="field-lbl">טלפון</div><div class="field-val">{{ profile.phone }}</div></div>{% endif %}
@@ -81,7 +116,7 @@
   <!-- AI Strategy -->
   {% if profile.ai_coaching_strategy %}
   <div class="section">
-    <h2>&#129504; אסטרטגיית הדרכה AI</h2>
+    <h2><i data-lucide="lightbulb" class="icon"></i> אסטרטגיית הדרכה AI</h2>
     <div class="strategy-box">{{ profile.ai_coaching_strategy }}</div>
   </div>
   {% endif %}
@@ -89,7 +124,7 @@
   <!-- Active Tasks -->
   {% if active %}
   <div class="section">
-    <h2>&#9889; משימות פעילות ({{ active|length }})</h2>
+    <h2><i data-lucide="clipboard-list" class="icon"></i> משימות פעילות ({{ active|length }})</h2>
     {% for at in active %}
       <div class="task-item">
         <span class="cat">{{ at.task.category }}</span>
@@ -105,10 +140,10 @@
   <!-- Completed Tasks -->
   {% if completed %}
   <div class="section">
-    <h2>&#10003; משימות שהושלמו ({{ completed|length }})</h2>
+    <h2><i data-lucide="check-circle" class="icon"></i> משימות שהושלמו ({{ completed|length }})</h2>
     {% for at in completed %}
       <div class="task-item">
-        <span class="badge-done">&#10003;</span>
+        <span class="badge-done"><i data-lucide="check" class="icon"></i></span>
         <div>
           <div style="font-weight:600; text-decoration:line-through; color:#6b7280;">{{ at.task.title }}</div>
           <div style="font-size:.75rem; color:#9ca3af;">{{ at.completed_at | dt if at.completed_at else '' }}</div>
@@ -124,7 +159,7 @@
   <!-- CV -->
   {% if profile.resume_content %}
   <div class="section">
-    <h2>&#128196; קורות חיים / CV</h2>
+    <h2><i data-lucide="file-text" class="icon"></i> קורות חיים / CV</h2>
     <div class="resume-box">{{ profile.resume_content }}</div>
   </div>
   {% endif %}
@@ -132,7 +167,7 @@
   <!-- Mentor Notes -->
   {% if notes %}
   <div class="section">
-    <h2>&#128221; הערות מנטור ({{ notes|length }})</h2>
+    <h2><i data-lucide="sticky-note" class="icon"></i> הערות מנטור ({{ notes|length }})</h2>
     {% for n in notes %}
       <div class="note-entry">
         {{ n.text }}
@@ -142,5 +177,8 @@
   </div>
   {% endif %}
 
+  <script>
+    if (window.lucide) { lucide.createIcons(); }
+  </script>
 </body>
 </html>

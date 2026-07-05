@@ -7,68 +7,92 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   <style>
-    body { font-family: 'Heebo', sans-serif; background: #f0f4f8; }
+    :root {
+      --color-primary: #2563eb;
+      --color-primary-hover: #1d4ed8;
+      --color-primary-subtle: #eff4ff;
+      --color-text: #1f2430;
+      --color-text-muted: #6b7280;
+      --color-bg: #ffffff;
+      --color-bg-subtle: #f7f8fa;
+      --color-border: #e5e7eb;
+      --color-success: #2f8f5b;
+      --color-success-subtle: #eaf6f0;
+      --color-warning: #b8860b;
+      --color-warning-subtle: #fbf4e3;
+      --color-danger: #c0392b;
+      --color-danger-subtle: #fbeae8;
+      --color-info: #2563eb;
+      --color-info-subtle: #eff4ff;
+      --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px; --space-6: 32px;
+      --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px;
+      --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+      --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
+    }
+    body { font-family: 'Heebo', sans-serif; background: var(--color-bg-subtle); color: var(--color-text); }
+    .icon { width: 1em; height: 1em; vertical-align: -0.125em; stroke-width: 2; }
     .navbar-biz { background: #0d1f1a; }
     .navbar-brand-text { font-weight: 800; color: #fff; font-size: 1.1rem; }
 
-    .stat-card { background: #fff; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.06); padding: 1.1rem 1.25rem; text-align: center; }
+    .stat-card { background: var(--color-bg); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: var(--space-4) var(--space-5); text-align: center; }
     .stat-num  { font-size: 2rem; font-weight: 800; line-height: 1; }
-    .stat-lbl  { font-size: .78rem; color: #6b7280; margin-top: 4px; }
+    .stat-lbl  { font-size: .78rem; color: var(--color-text-muted); margin-top: var(--space-1); display: flex; align-items: center; justify-content: center; gap: var(--space-1); }
 
-    .section-card { background: #fff; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.06); padding: 1.5rem; margin-bottom: 1.5rem; }
-    .section-title { font-size: .72rem; font-weight: 700; text-transform: uppercase; color: #9ca3af; letter-spacing: .5px; margin-bottom: 1rem; }
+    .section-card { background: var(--color-bg); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); padding: var(--space-5); margin-bottom: var(--space-5); }
+    .section-title { font-size: .72rem; font-weight: 700; text-transform: uppercase; color: var(--color-text-muted); letter-spacing: .5px; margin-bottom: var(--space-4); display: flex; align-items: center; gap: var(--space-1); }
 
     /* Workshop cards */
-    .workshop-card { border-radius: 12px; border: 1px solid #e4e8f0; padding: 1rem 1.25rem; margin-bottom: .75rem; background: #fff; }
-    .workshop-card:hover { border-color: #10b981; }
+    .workshop-card { border-radius: var(--radius-md); border: 1px solid var(--color-border); padding: var(--space-4) var(--space-5); margin-bottom: var(--space-3); background: var(--color-bg); }
+    .workshop-card:hover { border-color: var(--color-primary); }
 
-    .type-one-time  { background: #dbeafe; color: #1d4ed8; }
-    .type-recurring { background: #d1fae5; color: #065f46; }
-    .type-custom    { background: #fde68a; color: #92400e; }
+    .type-one-time  { background: var(--color-info-subtle); color: var(--color-info); }
+    .type-recurring { background: var(--color-success-subtle); color: var(--color-success); }
+    .type-custom    { background: var(--color-warning-subtle); color: var(--color-warning); }
 
-    .status-planned   { background: #e0f2fe; color: #0277bd; }
-    .status-active    { background: #d1fae5; color: #065f46; }
-    .status-completed { background: #f3f4f6; color: #374151; }
-    .status-cancelled { background: #fee2e2; color: #991b1b; }
+    .status-planned   { background: var(--color-info-subtle); color: var(--color-info); }
+    .status-active    { background: var(--color-success-subtle); color: var(--color-success); }
+    .status-completed { background: var(--color-bg-subtle); color: var(--color-text-muted); }
+    .status-cancelled { background: var(--color-danger-subtle); color: var(--color-danger); }
 
     /* Inquiry table */
-    .inquiry-row { padding: .65rem 0; border-bottom: 1px solid #f0f1f5; font-size: .88rem; }
+    .inquiry-row { padding: var(--space-3) 0; border-bottom: 1px solid var(--color-border); font-size: .88rem; }
     .inquiry-row:last-child { border-bottom: none; }
-    .source-wa    { background: #d1fae5; color: #065f46; }
-    .source-email { background: #dbeafe; color: #1d4ed8; }
-    .source-ref   { background: #ede9fe; color: #5b21b6; }
-    .source-other { background: #f3f4f6; color: #374151; }
+    .source-wa    { background: var(--color-success-subtle); color: var(--color-success); }
+    .source-email { background: var(--color-info-subtle); color: var(--color-info); }
+    .source-ref   { background: var(--color-bg-subtle); color: var(--color-text-muted); }
+    .source-other { background: var(--color-bg-subtle); color: var(--color-text-muted); }
 
     /* Activity timeline */
-    .activity-item { display: flex; gap: 1rem; padding: .75rem 0; border-bottom: 1px solid #f0f1f5; }
+    .activity-item { display: flex; gap: var(--space-4); padding: var(--space-3) 0; border-bottom: 1px solid var(--color-border); }
     .activity-item:last-child { border-bottom: none; }
-    .activity-icon { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
-    .icon-workshop { background: #d1fae5; }
-    .icon-lecture  { background: #dbeafe; }
-    .icon-meeting  { background: #ede9fe; }
-    .icon-other    { background: #f3f4f6; }
+    .activity-icon { width: 38px; height: 38px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+    .icon-workshop { background: var(--color-success-subtle); color: var(--color-success); }
+    .icon-lecture  { background: var(--color-info-subtle); color: var(--color-info); }
+    .icon-meeting  { background: var(--color-primary-subtle); color: var(--color-primary); }
+    .icon-other    { background: var(--color-bg-subtle); color: var(--color-text-muted); }
 
     /* Forms */
-    .btn-biz { background: #10b981; border-color: #10b981; color: #fff; }
-    .btn-biz:hover { background: #059669; border-color: #059669; color: #fff; }
-    .form-control:focus, .form-select:focus { border-color: #10b981; box-shadow: 0 0 0 .2rem rgba(16,185,129,.15); }
+    .btn-biz { background: var(--color-primary); border-color: var(--color-primary); color: #fff; border-radius: var(--radius-md); }
+    .btn-biz:hover { background: var(--color-primary-hover); border-color: var(--color-primary-hover); color: #fff; }
+    .form-control:focus, .form-select:focus { border-color: var(--color-primary); box-shadow: 0 0 0 .2rem var(--color-primary-subtle); }
 
     /* Nav pills */
-    .nav-pills .nav-link.active { background: #10b981; }
-    .nav-pills .nav-link { color: #374151; }
+    .nav-pills .nav-link.active { background: var(--color-primary); }
+    .nav-pills .nav-link { color: var(--color-text-muted); }
   </style>
 </head>
 <body>
 
   <nav class="navbar navbar-expand-lg navbar-biz px-4 py-2">
-    <span class="navbar-brand-text">&#127891; InterviewSync</span>
+    <span class="navbar-brand-text"><i data-lucide="graduation-cap" class="icon"></i> InterviewSync</span>
     <div class="ms-2">
-      <span class="badge" style="background:#10b981; font-size:.62rem;">עסקי</span>
+      <span class="badge" style="background:var(--color-primary); font-size:.62rem;">עסקי</span>
     </div>
     <div class="ms-auto d-flex align-items-center gap-3">
       <a href="{{ url_for('admin_hub') }}" class="btn btn-outline-light btn-sm">&#8592; לוח הבית</a>
-      <a href="{{ url_for('admin_schedule') }}" class="btn btn-outline-light btn-sm">&#128197; לוז מאוחד</a>
+      <a href="{{ url_for('admin_schedule') }}" class="btn btn-outline-light btn-sm"><i data-lucide="calendar" class="icon"></i> לוז מאוחד</a>
       <a href="{{ url_for('logout') }}" class="btn btn-outline-light btn-sm">התנתקות</a>
     </div>
   </nav>
@@ -87,8 +111,8 @@
     <div class="row g-3 mb-4">
       <div class="col-6 col-sm-3">
         <div class="stat-card">
-          <div class="stat-num" style="color:#10b981;">{{ overview.workshops_total or 0 }}</div>
-          <div class="stat-lbl">&#127979; סדנאות והרצאות</div>
+          <div class="stat-num" style="color:var(--color-success);">{{ overview.workshops_total or 0 }}</div>
+          <div class="stat-lbl"><i data-lucide="briefcase" class="icon"></i> סדנאות והרצאות</div>
         </div>
       </div>
       <div class="col-6 col-sm-3">
@@ -96,7 +120,7 @@
           {% set new_count = overview.inquiries_new or 0 %}
           <div class="stat-num {{ 'text-warning' if new_count > 0 else 'text-muted' }}">{{ overview.inquiries_total or 0 }}</div>
           <div class="stat-lbl">
-            &#128172; פניות
+            <i data-lucide="inbox" class="icon"></i> פניות
             {% if new_count > 0 %}<span class="badge bg-warning text-dark ms-1" style="font-size:.6rem;">{{ new_count }} חדשות</span>{% endif %}
           </div>
         </div>
@@ -104,26 +128,26 @@
       <div class="col-6 col-sm-3">
         <div class="stat-card">
           <div class="stat-num text-primary">{{ overview.activities_this_month or 0 }}</div>
-          <div class="stat-lbl">&#128203; פעילויות החודש</div>
+          <div class="stat-lbl"><i data-lucide="clipboard-list" class="icon"></i> פעילויות החודש</div>
         </div>
       </div>
       <div class="col-6 col-sm-3">
         <div class="stat-card">
-          <div class="stat-num" style="color:#f59e0b;">{{ overview.workshops_this_month or 0 }}</div>
-          <div class="stat-lbl">&#9889; סדנאות החודש</div>
+          <div class="stat-num" style="color:var(--color-warning);">{{ overview.workshops_this_month or 0 }}</div>
+          <div class="stat-lbl"><i data-lucide="sparkles" class="icon"></i> סדנאות החודש</div>
         </div>
       </div>
     </div>
 
     <!-- Tabs -->
     <ul class="nav nav-pills mb-4 gap-2" id="bizTabs">
-      <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-overview" type="button">&#128202; סקירה</button></li>
-      <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-workshops" id="workshops-tab-btn" type="button">&#127979; סדנאות והרצאות</button></li>
+      <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-overview" type="button"><i data-lucide="bar-chart-2" class="icon"></i> סקירה</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-workshops" id="workshops-tab-btn" type="button"><i data-lucide="briefcase" class="icon"></i> סדנאות והרצאות</button></li>
       <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-inquiries" id="inquiries-tab-btn" type="button">
-        &#128172; פניות יזומות
+        <i data-lucide="inbox" class="icon"></i> פניות יזומות
         {% if overview.inquiries_new > 0 %}<span class="badge bg-warning text-dark ms-1">{{ overview.inquiries_new }}</span>{% endif %}
       </button></li>
-      <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-activities" id="activities-tab-btn" type="button">&#128203; תיעוד פעילות</button></li>
+      <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-activities" id="activities-tab-btn" type="button"><i data-lucide="clipboard-list" class="icon"></i> תיעוד פעילות</button></li>
     </ul>
 
     <div class="tab-content">
@@ -133,7 +157,7 @@
         <div class="row g-4">
           <div class="col-md-6">
             <div class="section-card">
-              <div class="section-title">&#127919; סדנאות קרובות</div>
+              <div class="section-title"><i data-lucide="target" class="icon"></i> סדנאות קרובות</div>
               {% if overview.upcoming_workshops %}
                 {% for w in overview.upcoming_workshops %}
                   <div class="d-flex align-items-start gap-2 py-2 border-bottom">
@@ -159,7 +183,7 @@
           </div>
           <div class="col-md-6">
             <div class="section-card">
-              <div class="section-title">&#128172; פניות אחרונות</div>
+              <div class="section-title"><i data-lucide="inbox" class="icon"></i> פניות אחרונות</div>
               {% if overview.recent_inquiries %}
                 {% for i in overview.recent_inquiries %}
                   <div class="inquiry-row d-flex align-items-start gap-2">
@@ -190,7 +214,7 @@
           <!-- Add form -->
           <div class="col-lg-4">
             <div class="section-card">
-              <div class="section-title">&#10133; הוסף סדנה / הרצאה</div>
+              <div class="section-title"><i data-lucide="plus" class="icon"></i> הוסף סדנה / הרצאה</div>
               <form method="POST" action="{{ url_for('admin_workshops') }}">
                 <input type="hidden" name="action" value="add">
                 <div class="mb-2">
@@ -256,12 +280,12 @@
                       </div>
                       <div class="d-flex gap-1 flex-shrink-0">
                         <button class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:.72rem;"
-                                data-bs-toggle="modal" data-bs-target="#editWS{{ w.id }}">&#9998;</button>
+                                data-bs-toggle="modal" data-bs-target="#editWS{{ w.id }}"><i data-lucide="edit" class="icon"></i></button>
                         <form method="POST" action="{{ url_for('admin_workshops') }}"
                               onsubmit="return confirm('למחוק סדנה זו?')">
                           <input type="hidden" name="action" value="delete">
                           <input type="hidden" name="workshop_id" value="{{ w.id }}">
-                          <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:.72rem;">✕</button>
+                          <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:.72rem;"><i data-lucide="trash-2" class="icon"></i></button>
                         </form>
                       </div>
                     </div>
@@ -320,7 +344,7 @@
           <!-- Add inquiry -->
           <div class="col-lg-4">
             <div class="section-card">
-              <div class="section-title">&#10133; הוסף פנייה חדשה</div>
+              <div class="section-title"><i data-lucide="plus" class="icon"></i> הוסף פנייה חדשה</div>
               <form method="POST" action="{{ url_for('admin_inquiries') }}">
                 <input type="hidden" name="action" value="add">
                 <div class="mb-2"><input type="text" name="full_name" class="form-control form-control-sm" placeholder="שם מלא *" required></div>
@@ -368,7 +392,7 @@
                         {% if i.workshop_title %}<span class="badge bg-light text-muted border rounded-pill" style="font-size:.63rem;">{{ i.workshop_title }}</span>{% endif %}
                       </div>
                       <div class="text-muted" style="font-size:.78rem; margin-top:.2rem;">
-                        {% if i.phone %}<a href="https://wa.me/{{ i.phone | replace('+','') }}" target="_blank" style="color:#25d366; text-decoration:none;">&#128242; {{ i.phone }}</a> · {% endif %}
+                        {% if i.phone %}<a href="https://wa.me/{{ i.phone | replace('+','') }}" target="_blank" style="color:var(--color-success); text-decoration:none;"><i data-lucide="phone" class="icon"></i> {{ i.phone }}</a> · {% endif %}
                         {{ i.topic | truncate(70) if i.topic else '—' }}
                       </div>
                       <div class="text-muted" style="font-size:.7rem;">{{ i.created_at | dt }}</div>
@@ -376,12 +400,12 @@
                     <!-- Quick actions -->
                     <div class="d-flex gap-1 flex-shrink-0">
                       <button class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:.7rem;"
-                              data-bs-toggle="modal" data-bs-target="#editIQ{{ i.id }}">&#9998;</button>
+                              data-bs-toggle="modal" data-bs-target="#editIQ{{ i.id }}"><i data-lucide="edit" class="icon"></i></button>
                       <form method="POST" action="{{ url_for('admin_inquiries') }}"
                             onsubmit="return confirm('למחוק פנייה זו?')">
                         <input type="hidden" name="action" value="delete">
                         <input type="hidden" name="inquiry_id" value="{{ i.id }}">
-                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:.7rem;">✕</button>
+                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:.7rem;"><i data-lucide="trash-2" class="icon"></i></button>
                       </form>
                     </div>
                   </div>
@@ -434,7 +458,7 @@
           <!-- Log form -->
           <div class="col-lg-4">
             <div class="section-card">
-              <div class="section-title">&#128203; תעד פעילות</div>
+              <div class="section-title"><i data-lucide="clipboard-list" class="icon"></i> תעד פעילות</div>
               <form method="POST" action="{{ url_for('admin_activities') }}">
                 <input type="hidden" name="action" value="add">
                 <div class="mb-2"><input type="text" name="title" class="form-control form-control-sm" placeholder="כותרת הפעילות *" required></div>
@@ -470,12 +494,12 @@
           <div class="col-lg-8">
             <div class="section-card">
               <div class="section-title">ציר זמן פעילות ({{ activities|length }})</div>
-              {% set act_icons = {'workshop':'🎪','lecture':'🎤','meeting':'🤝','other':'📌'} %}
+              {% set act_icons = {'workshop':'briefcase','lecture':'mic','meeting':'users','other':'pin'} %}
               {% set icon_cls  = {'workshop':'icon-workshop','lecture':'icon-lecture','meeting':'icon-meeting','other':'icon-other'} %}
               {% for a in activities %}
                 <div class="activity-item">
                   <div class="activity-icon {{ icon_cls.get(a.activity_type,'icon-other') }}">
-                    {{ act_icons.get(a.activity_type,'📌') }}
+                    <i data-lucide="{{ act_icons.get(a.activity_type,'pin') }}" class="icon"></i>
                   </div>
                   <div class="flex-grow-1">
                     <div class="d-flex align-items-start justify-content-between gap-2">
@@ -494,7 +518,7 @@
                             onsubmit="return confirm('למחוק?')">
                         <input type="hidden" name="action" value="delete">
                         <input type="hidden" name="activity_id" value="{{ a.id }}">
-                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:.7rem;">✕</button>
+                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:.7rem;"><i data-lucide="trash-2" class="icon"></i></button>
                       </form>
                     </div>
                   </div>
@@ -525,6 +549,8 @@
         row.style.display = (!val || row.dataset.status === val) ? '' : 'none';
       });
     });
+
+    if (window.lucide) { lucide.createIcons(); }
   </script>
 </body>
 </html>
