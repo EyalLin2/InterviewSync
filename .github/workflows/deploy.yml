@@ -3,8 +3,11 @@ name: Deploy
 # ──────────────────────────────────────────────────────────────
 # CI/CD deployment pipeline (Amazon ECR registry)
 #
-# Staging:    push to main        → :latest + :sha tags
-# Production: git tag  v*.*.*     → :v1.0.0 + :stable tags
+# Staging:    CI passes on main     → :latest + :sha tags
+# Production: git tag  v*.*.*       → :v1.0.0 + :stable tags
+#
+# Staging deploy only fires AFTER the CI workflow succeeds —
+# this prevents pushing a broken image when tests fail.
 #
 # Required secrets (GitHub Settings → Secrets → Actions):
 #   AWS_ACCESS_KEY_ID      — IAM user with ECR push + EKS read access
@@ -18,9 +21,14 @@ name: Deploy
 # ──────────────────────────────────────────────────────────────
 
 on:
+  # Staging: only runs after CI workflow completes successfully on main
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+
+  # Production: triggered by a version tag directly
   push:
-    branches:
-      - main
     tags:
       - "v*.*.*"
 
@@ -29,14 +37,18 @@ env:
   FRONTEND_IMAGE: interviewsync-frontend
 
 jobs:
-  # ── Staging deploy (main push only) ─────────────────────────
+  # ── Staging deploy (only when CI passed on main) ─────────────
   deploy-staging:
     name: Deploy → Staging
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: >
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success'
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - uses: docker/setup-buildx-action@v3
 
@@ -58,7 +70,7 @@ jobs:
           push: true
           tags: |
             ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ env.BACKEND_IMAGE }}:latest
-            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ env.BACKEND_IMAGE }}:${{ github.event.workflow_run.head_sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -69,20 +81,21 @@ jobs:
           push: true
           tags: |
             ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ env.FRONTEND_IMAGE }}:latest
-            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ env.FRONTEND_IMAGE }}:${{ github.event.workflow_run.head_sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Update GitOps repo → trigger ArgoCD staging sync
         run: |
+          SHA=${{ github.event.workflow_run.head_sha }}
           git clone https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/${{ github.repository_owner }}/interviewsync-gitops.git /tmp/gitops
           cd /tmp/gitops
-          sed -i 's/tag: .*/tag: "${{ github.sha }}"/' apps/staging/backend-values.yaml
-          sed -i 's/tag: .*/tag: "${{ github.sha }}"/' apps/staging/frontend-values.yaml
+          sed -i "s/tag: .*/tag: \"${SHA}\"/" apps/staging/backend-values.yaml
+          sed -i "s/tag: .*/tag: \"${SHA}\"/" apps/staging/frontend-values.yaml
           git config user.email "github-actions@github.com"
           git config user.name "GitHub Actions"
           git add -A
-          git diff --staged --quiet || git commit -m "ci: staging → ${{ github.sha }}"
+          git diff --staged --quiet || git commit -m "ci: staging → ${SHA}"
           git push
 
       - name: Notify Slack — staging deployed
@@ -92,7 +105,7 @@ jobs:
         run: |
           if [ -n "$SLACK_WEBHOOK_URL" ]; then
             curl -sf -X POST -H 'Content-type: application/json' \
-              --data "{\"text\":\"✅ *InterviewSync* deployed to *staging* — \`${{ github.sha }}\` by ${{ github.actor }}\"}" \
+              --data "{\"text\":\"✅ *InterviewSync* deployed to *staging* — \`${{ github.event.workflow_run.head_sha }}\` by ${{ github.event.workflow_run.triggering_actor.login }}\"}" \
               "$SLACK_WEBHOOK_URL" || true
           fi
 
@@ -100,7 +113,7 @@ jobs:
   deploy-production:
     name: Deploy → Production
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
 
     steps:
       - uses: actions/checkout@v4
@@ -146,14 +159,15 @@ jobs:
 
       - name: Update GitOps repo → trigger ArgoCD production sync
         run: |
+          TAG=${{ steps.version.outputs.tag }}
           git clone https://x-access-token:${{ secrets.GITOPS_TOKEN }}@github.com/${{ github.repository_owner }}/interviewsync-gitops.git /tmp/gitops
           cd /tmp/gitops
-          sed -i 's/tag: .*/tag: "${{ steps.version.outputs.tag }}"/' apps/production/backend-values.yaml
-          sed -i 's/tag: .*/tag: "${{ steps.version.outputs.tag }}"/' apps/production/frontend-values.yaml
+          sed -i "s/tag: .*/tag: \"${TAG}\"/" apps/production/backend-values.yaml
+          sed -i "s/tag: .*/tag: \"${TAG}\"/" apps/production/frontend-values.yaml
           git config user.email "github-actions@github.com"
           git config user.name "GitHub Actions"
           git add -A
-          git diff --staged --quiet || git commit -m "ci: production → ${{ steps.version.outputs.tag }}"
+          git diff --staged --quiet || git commit -m "ci: production → ${TAG}"
           git push
 
       - name: Notify Slack — production success
