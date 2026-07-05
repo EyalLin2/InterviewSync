@@ -5,7 +5,7 @@ metadata:
   name: {{ .Release.Name }}-alerts
   labels:
     app: {{ .Release.Name }}
-    prometheus: kube-prometheus
+    release: kube-prometheus-stack
     role: alert-rules
 spec:
   groups:
