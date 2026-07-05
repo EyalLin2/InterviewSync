@@ -50,3 +50,7 @@ persistence:
   enabled: false
   storageClass: ""
   size: 5Gi
+
+# Prometheus alerting rules (requires kube-prometheus-stack installed in cluster)
+monitoring:
+  enabled: true

@@ -1,0 +1,43 @@
+{{- if .Values.monitoring.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ .Release.Name }}-alerts
+  labels:
+    app: {{ .Release.Name }}
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+    - name: interviewsync.rules
+      rules:
+        - alert: PodCrashLooping
+          expr: >
+            rate(kube_pod_container_status_restarts_total{
+              namespace="{{ .Release.Namespace }}"
+            }[5m]) > 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Pod {{ "{{" }} $labels.pod {{ "}}" }} is crash-looping"
+            description: >-
+              Pod {{ "{{" }} $labels.pod {{ "}}" }} in namespace
+              {{ "{{" }} $labels.namespace {{ "}}" }} has been restarting repeatedly.
+              Check logs: kubectl logs {{ "{{" }} $labels.pod {{ "}}" }} -n {{ "{{" }} $labels.namespace {{ "}}" }}
+
+        - alert: PodNotReady
+          expr: >
+            kube_pod_status_ready{
+              namespace="{{ .Release.Namespace }}",
+              condition="true"
+            } == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Pod {{ "{{" }} $labels.pod {{ "}}" }} is not ready"
+            description: >-
+              Pod {{ "{{" }} $labels.pod {{ "}}" }} in namespace
+              {{ "{{" }} $labels.namespace {{ "}}" }} has been in a non-ready state for 5 minutes.
+{{- end }}
